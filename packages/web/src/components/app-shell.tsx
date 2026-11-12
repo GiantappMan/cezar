@@ -19,6 +19,7 @@ import type { ReactNode } from 'react'
 import { Link as RouterLink, NavLink, matchPath, useLocation } from 'react-router'
 
 import { TRACKER_PROVIDERS } from '@/lib/tracker-providers'
+import { t, useLocale } from '@/lib/i18n'
 import { AddProjectDialog } from '@/components/add-project-dialog'
 import { CloneProjectDialog } from '@/components/clone-project-dialog'
 import { CreateProjectDialog } from '@/components/create-project-dialog'
@@ -243,6 +244,7 @@ export const AppShell = React.memo(function AppShell({
   projectSwitcher = null,
 }: AppShellProps) {
   const { pathname } = useLocation()
+  useLocale()
   // The nav's area rules reason about the flat route map — strip any `/p/:projectId` prefix
   // (multi-project spec, step 3.2) so `/p/cezar/git/commits` still lights Git.
   const areaPathname = stripProjectPrefix(pathname)
@@ -388,7 +390,7 @@ export const AppShell = React.memo(function AppShell({
         {chromeless ? null : (
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <MobileTopBar
-              title={managerMode ? 'Manager' : (current?.label ?? brandName)}
+              title={managerMode ? t('Manager') : (current ? t(current.label) : brandName)}
               attention={managersAvailable && !managerMode ? managerAttention : null}
             />
             {/* The drawer keeps its fixed 264px: it is a full-height overlay on a phone, where
@@ -492,6 +494,7 @@ const Sidebar = React.memo(function Sidebar({
 }: NavProps & SidebarResize & { desktop?: 'macos' | 'windows' | 'linux' | null }) {
   const [folded, setFolded] = useSidebarFolded()
   const [toggled, setToggled] = React.useState(false)
+  useLocale()
   const foldButton = React.useRef<HTMLButtonElement>(null)
   React.useEffect(() => {
     if (toggled && !folded) foldButton.current?.focus()
@@ -519,7 +522,7 @@ const Sidebar = React.memo(function Sidebar({
         {...props}
         slot="sidebar-rail"
         onExpand={() => toggle(false)}
-        expandTitle={`Show sidebar (${formatChord('Mod+B')})`}
+        expandTitle={t('Show sidebar ({chord})', { chord: formatChord('Mod+B') })}
         expandShortcut={FOLD_ARIA_KEYS}
         autoFocus={toggled}
         desktop={desktop}
@@ -540,6 +543,7 @@ const Sidebar = React.memo(function Sidebar({
 /** The rail a Focus view holds. ⌘B lives on `Sidebar`, which is unmounted here, so the rail
  *  carries its own: same chord as its expand button, which turns Focus off. */
 function FocusSidebarRail({ desktop, ...props }: NavProps & { desktop: 'macos' | 'windows' | 'linux' | null }) {
+  useLocale()
   useCommandShortcut(
     'b',
     () => {
@@ -553,7 +557,7 @@ function FocusSidebarRail({ desktop, ...props }: NavProps & { desktop: 'macos' |
       {...props}
       slot="focus-sidebar-rail"
       onExpand={exitSidebarRail}
-      expandTitle={`Show sidebar (${formatChord('Mod+B')}, turns Focus off)`}
+      expandTitle={t('Show sidebar ({chord}, turns Focus off)', { chord: formatChord('Mod+B') })}
       expandShortcut={FOLD_ARIA_KEYS}
       desktop={desktop}
     />
@@ -595,6 +599,7 @@ function SidebarIconRail({
   autoFocus?: boolean
   desktop: 'macos' | 'windows' | 'linux' | null
 }) {
+  useLocale()
   return (
     <aside
       data-slot={slot}
@@ -611,8 +616,8 @@ function SidebarIconRail({
         <RouterLink
           to={managerMode ? '/' : managerTo}
           data-slot="rail-mode-switch"
-          aria-label={managerMode ? 'Tasks' : `Manager${managerAttention ? MANAGER_ATTENTION_TEXT[managerAttention] : ''}`}
-          title={managerMode ? 'Tasks' : 'Manager'}
+          aria-label={managerMode ? t('Tasks') : t('Manager') + (managerAttention ? MANAGER_ATTENTION_TEXT[managerAttention] : '')}
+          title={managerMode ? t('Tasks') : t('Manager')}
           className="relative flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           {managerMode ? <ListChecksIcon className="size-4" aria-hidden="true" /> : <BotIcon className="size-4" aria-hidden="true" />}
@@ -625,7 +630,7 @@ function SidebarIconRail({
         // Manager mode mirrors its expanded sidebar: the way to add one, then the managers.
         <>
           <Button asChild variant="contrast" size="icon-sm" className="mt-1">
-            <RouterLink to="/manager/new" data-slot="rail-new-manager" aria-label="New manager" title="New manager">
+            <RouterLink to="/manager/new" data-slot="rail-new-manager" aria-label={t('New manager')} title={t('New manager')}>
               <PlusIcon className="size-4" aria-hidden="true" />
             </RouterLink>
           </Button>
@@ -634,7 +639,7 @@ function SidebarIconRail({
       ) : (
       <>
       <Button asChild variant="contrast" size="icon-sm" className="mt-1">
-        <Link to="/new" data-slot="rail-new-task" aria-label="New task" title="New task (C)">
+        <Link to="/new" data-slot="rail-new-task" aria-label={t('New task')} title={t('New task (C)')}>
           <PlusIcon className="size-4" aria-hidden="true" />
         </Link>
       </Button>
@@ -651,8 +656,8 @@ function SidebarIconRail({
             <Link
               key={item.to}
               to={item.to}
-              aria-label={item.label}
-              title={item.label}
+              aria-label={t(item.label)}
+              title={t(item.label)}
               aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'relative flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
@@ -675,7 +680,7 @@ function SidebarIconRail({
         size="icon-sm"
         data-slot={slot === 'sidebar-rail' ? 'sidebar-unfold' : undefined}
         data-action={slot === 'focus-sidebar-rail' ? 'expand-sidebar' : undefined}
-        aria-label="Show sidebar"
+        aria-label={t('Show sidebar')}
         aria-keyshortcuts={expandShortcut}
         title={expandTitle}
         autoFocus={autoFocus}
@@ -704,6 +709,7 @@ function ProjectHeader({
 }) {
   const name = switcher?.activeName ?? fallbackName
   const projects = switcher?.projects ?? []
+  useLocale()
   return (
     <header
       data-slot="project-header"
@@ -718,7 +724,7 @@ function ProjectHeader({
               variant="ghost"
               size="sm"
               data-slot="project-switcher"
-              aria-label={`Project: ${name} — switch project`}
+              aria-label={t('Project: {name} — switch project', { name })}
               className="min-w-0 gap-1.5 px-2 text-body font-semibold"
             >
               <span className="truncate">{name}</span>
@@ -726,7 +732,7 @@ function ProjectHeader({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-60">
-            <DropdownMenuLabel className="text-xs text-soft-foreground">Projects</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-soft-foreground">{t('Projects')}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {projects.map((project) => {
               const current = project.id === switcher?.activeId
@@ -754,8 +760,9 @@ function ProjectHeader({
 
 /** The `<md` drawer: the shared `SidebarDrawer` around the SAME content the column renders. */
 const MobileNavDrawer = React.memo(function MobileNavDrawer({ onNavigate, ...props }: NavProps & { onNavigate: () => void }) {
+  useLocale()
   return (
-    <SidebarDrawer slot="mobile-nav-drawer" title="Navigation">
+    <SidebarDrawer slot="mobile-nav-drawer" title={t('Navigation')}>
       {(closeButton) => <SidebarContent {...props} onNavigate={onNavigate} headerAction={closeButton} />}
     </SidebarDrawer>
   )
@@ -810,6 +817,7 @@ function SidebarContent({
    *  below the traffic lights. */
   compactHeader?: boolean
 }) {
+  useLocale()
   return (
     <div
       data-slot="sidebar-content"
@@ -854,7 +862,7 @@ function SidebarContent({
               React composer has owned auto-start parity since R4 Step 1.3. */}
           <Link to="/new" onClick={onNavigate}>
             <PlusIcon className="size-[15px]" aria-hidden="true" />
-            New task
+            {t('New task')}
             {/* Decorative: the `c`-to-create accelerator is registered in the command palette.
                 (⌘N is also bound there, but only the desktop shell receives it — the browser
                 reserves ⌘N for a new window — so the chip advertises the one that always works.) */}
@@ -920,7 +928,7 @@ function SidebarContent({
                   )}
                 >
                   <Icon className="size-4 shrink-0" aria-hidden="true" />
-                  {item.label}
+                  {t(item.label)}
                   {item.badge === 'inbox-count' && inboxCount ? (
                     <span
                       data-slot="nav-badge"
@@ -934,7 +942,7 @@ function SidebarContent({
                   {item.badge === 'tasks-unread' && unreadCount ? (
                     <span
                       data-slot="nav-unread-badge"
-                      title={`${unreadCount} unread finished ${unreadCount === 1 ? 'task' : 'tasks'}`}
+                      title={t(`{n} unread finished ${unreadCount === 1 ? 'task' : 'tasks'}`, { n: unreadCount })}
                       className="ml-auto rounded-full bg-violet px-1.5 py-px text-micro font-semibold text-violet-foreground"
                     >
                       {unreadCount}
@@ -946,13 +954,13 @@ function SidebarContent({
                       className="ml-auto flex items-center"
                     >
                       <span className="size-1.5 rounded-full bg-violet" aria-hidden="true" />
-                      <span className="sr-only">Skills update available</span>
+                      <span className="sr-only">{t('Skills update available')}</span>
                     </span>
                   ) : null}
                   {newNavItems.has(item.to) ? (
                     <span data-slot="nav-new-marker" className="ml-auto flex items-center">
                       <span className="size-1.5 rounded-full bg-violet" aria-hidden="true" />
-                      <span className="sr-only">New</span>
+                      <span className="sr-only">{t('New')}</span>
                     </span>
                   ) : null}
                 </Link>
@@ -1038,6 +1046,7 @@ function sidebarSectionIconClass(isActive: boolean) {
  * lit across all of them where a `pathname ===` check on a full location would not.
  */
 function DashboardLink({ onNavigate }: { onNavigate?: () => void }) {
+  useLocale()
   return (
     <NavLink
       to="/dashboard"
@@ -1048,7 +1057,7 @@ function DashboardLink({ onNavigate }: { onNavigate?: () => void }) {
       {({ isActive }) => (
         <>
           <LayoutDashboardIcon className={sidebarSectionIconClass(isActive)} aria-hidden="true" />
-          Dashboard
+          {t('Dashboard')}
         </>
       )}
     </NavLink>
@@ -1067,6 +1076,7 @@ function DashboardLink({ onNavigate }: { onNavigate?: () => void }) {
 function AllTasksLink({ onNavigate }: { onNavigate?: () => void }) {
   const { pathname } = useLocation()
   const isActive = pathname === '/tasks'
+  useLocale()
   return (
     <RouterLink
       to="/tasks"
@@ -1079,7 +1089,7 @@ function AllTasksLink({ onNavigate }: { onNavigate?: () => void }) {
       className={cn(SIDEBAR_SECTION_LINK_CLASS, isActive && 'bg-muted')}
     >
       <LayersIcon className={sidebarSectionIconClass(isActive)} aria-hidden="true" />
-      All tasks
+      {t('All tasks')}
     </RouterLink>
   )
 }
@@ -1099,13 +1109,14 @@ function GlobalSettingsLink({
   className?: string
   onNavigate?: () => void
 }) {
+  useLocale()
   return (
     <Button asChild variant="ghost" size="icon" className={cn('size-7', className)}>
       <RouterLink
         to="/settings/global"
         data-slot="global-settings-link"
-        aria-label="Global settings"
-        title="Global settings"
+        aria-label={t('Global settings')}
+        title={t('Global settings')}
         onClick={onNavigate}
       >
         <SettingsIcon className="size-4" aria-hidden="true" />
@@ -1137,6 +1148,7 @@ function AddProjectMenu() {
   const [browsing, setBrowsing] = React.useState(false)
   const [cloning, setCloning] = React.useState(false)
   const [creating, setCreating] = React.useState(false)
+  useLocale()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -1144,15 +1156,15 @@ function AddProjectMenu() {
         <Button
           variant="outline"
           size="icon"
-          aria-label="Add project"
-          title="Add project"
+          aria-label={t('Add project')}
+          title={t('Add project')}
           className="size-11 shrink-0 md:size-9"
         >
           <FolderOpenIcon className="size-4" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
-        <DropdownMenuLabel className="text-xs text-soft-foreground">Add project</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs text-soft-foreground">{t('Add project')}</DropdownMenuLabel>
         <DropdownMenuItem
           data-slot="add-project-local"
           onSelect={() => {
@@ -1161,7 +1173,7 @@ function AddProjectMenu() {
           }}
         >
           <FolderIcon aria-hidden="true" />
-          Open local folder…
+          {t('Open local folder…')}
         </DropdownMenuItem>
         <DropdownMenuItem
           data-slot="add-project-clone"
@@ -1171,7 +1183,7 @@ function AddProjectMenu() {
           }}
         >
           <GithubIcon aria-hidden="true" />
-          Clone from GitHub…
+          {t('Clone from GitHub…')}
         </DropdownMenuItem>
         <DropdownMenuItem
           data-slot="add-project-create"
@@ -1181,7 +1193,7 @@ function AddProjectMenu() {
           }}
         >
           <FolderPlusIcon aria-hidden="true" />
-          New project…
+          {t('New project…')}
         </DropdownMenuItem>
       </DropdownMenuContent>
       {browsing ? (
@@ -1278,6 +1290,7 @@ export function StarChip({ count }: { count: number }) {
 
 /** Mobile chrome (<md): the sidebar's replacement. Its menu button opens `MobileNavDrawer`. */
 function MobileTopBar({ title, attention = null }: { title: string; attention?: ManagerAttention | null }) {
+  useLocale()
   return (
     <header
       data-slot="mobile-top-bar"
@@ -1292,7 +1305,7 @@ function MobileTopBar({ title, attention = null }: { title: string; attention?: 
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Open menu"
+            aria-label={t('Open menu')}
             // 44px: the minimum touch target, overriding the 36px desktop icon-button size.
             className="relative -ml-1.5 size-11"
           >
@@ -1300,7 +1313,7 @@ function MobileTopBar({ title, attention = null }: { title: string; attention?: 
             {attention ? (
               <span data-slot="mobile-manager-attention" className="absolute top-2.5 right-2.5 flex">
                 <span className={cn('size-1.5 rounded-full', MANAGER_ATTENTION_DOT[attention])} aria-hidden="true" />
-                <span className="sr-only">{attention === 'needs-you' ? 'A manager needs you' : 'A manager has news'}</span>
+                <span className="sr-only">{attention === 'needs-you' ? t('A manager needs you') : t('A manager has news')}</span>
               </span>
             ) : null}
           </Button>

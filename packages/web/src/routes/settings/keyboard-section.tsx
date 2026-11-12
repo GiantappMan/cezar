@@ -13,6 +13,7 @@ import {
   isApplePlatform,
 } from '@/lib/keybindings'
 import { clientSurface } from '@/lib/telemetry'
+import { t, useLocale } from '@/lib/i18n'
 import { useKeybindings } from '@/lib/use-keybindings'
 import { cn } from '@/lib/utils'
 
@@ -23,6 +24,7 @@ import { cn } from '@/lib/utils'
  */
 export function KeyboardSection() {
   const keybindings = useKeybindings()
+  useLocale()
   const [recording, setRecording] = React.useState<string | null>(null)
   const [problem, setProblem] = React.useState<string | null>(null)
   const customized = Object.keys(keybindings.overrides).length > 0
@@ -63,7 +65,7 @@ export function KeyboardSection() {
       if (refused) return setProblem(`${formatChord(chord)} — ${refused}`)
       const previous = [...keybindings.bindings].find(([id, held]) => held === chord && id !== recording)?.[0]
       keybindings.assign(recording, chord)
-      if (previous) toast(`${formatChord(chord)} moved from ${labelOf(previous)} to ${labelOf(recording)}`)
+      if (previous) toast(t('{chord} moved from {from} to {to}', { chord: formatChord(chord), from: labelOf(previous), to: labelOf(recording) }))
       setRecording(null)
     }
     // A press anywhere but this row's chord button (whose click toggles) gives the keyboard back.
@@ -89,7 +91,7 @@ export function KeyboardSection() {
       <section className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">Task shortcuts</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t('Task shortcuts')}</h2>
             <p className="text-ui text-muted-foreground">
               Run a task’s commands from the keyboard while the task is open. {formatChord('Mod+P')} lists them all;
               press {apple ? '⇧↵' : 'Shift+Enter'} on a row there to set its shortcut. {apple ? '⌘' : 'Ctrl'} chords also
@@ -107,14 +109,14 @@ export function KeyboardSection() {
             disabled={!customized || !keybindings.ready}
             onClick={keybindings.resetAll}
           >
-            <RotateCcwIcon aria-hidden="true" /> Reset all
+            <RotateCcwIcon aria-hidden="true" /> {t('Reset all')}
           </Button>
         </div>
       </section>
 
       {groups.map(([group, entries]) => (
         <section key={group} className="flex flex-col gap-1">
-          <h3 className="eyebrow text-soft-foreground">{group}</h3>
+          <h3 className="eyebrow text-soft-foreground">{t(group)}</h3>
           <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
             {entries.map((entry) => {
               const chord = keybindings.bindings.get(entry.id)
@@ -122,16 +124,16 @@ export function KeyboardSection() {
               const changed = entry.id in keybindings.overrides
               return (
                 <li key={entry.id} data-slot="shortcut-row" data-command-id={entry.id} className="flex items-center gap-2 px-3 py-1.5">
-                  <span className="min-w-0 flex-1 truncate text-sm">{entry.label}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm">{t(entry.label)}</span>
                   {isRecording ? (
                     <span data-slot="shortcut-recording" className="text-xs text-primary">
-                      {problem ?? 'Press keys… (esc cancels, ⌫ removes)'}
+                      {problem ?? t('Press keys… (esc cancels, ⌫ removes)')}
                     </span>
                   ) : null}
                   <button
                     type="button"
                     data-slot="shortcut-chord"
-                    aria-label={chord ? `Change the shortcut for ${entry.label} (${formatChord(chord)})` : `Set a shortcut for ${entry.label}`}
+                    aria-label={chord ? t('Change the shortcut for {label} ({chord})', { label: t(entry.label), chord: formatChord(chord) }) : t('Set a shortcut for {label}', { label: t(entry.label) })}
                     disabled={!keybindings.ready}
                     onClick={() => {
                       setProblem(null)
@@ -151,8 +153,8 @@ export function KeyboardSection() {
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      aria-label={`Reset ${entry.label} to ${DEFAULT_KEYBINDINGS[entry.id] ? formatChord(DEFAULT_KEYBINDINGS[entry.id]!) : 'no shortcut'}`}
-                      title="Reset to default"
+                      aria-label={t('Reset {label} to {target}', { label: t(entry.label), target: DEFAULT_KEYBINDINGS[entry.id] ? formatChord(DEFAULT_KEYBINDINGS[entry.id]!) : t('no shortcut') })}
+                      title={t('Reset to default')}
                       onClick={() => keybindings.reset(entry.id)}
                     >
                       <RotateCcwIcon aria-hidden="true" />
@@ -161,8 +163,8 @@ export function KeyboardSection() {
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      aria-label={`Remove the shortcut for ${entry.label}`}
-                      title="Remove"
+                      aria-label={t('Remove the shortcut for {label}', { label: t(entry.label) })}
+                      title={t('Remove')}
                       onClick={() => keybindings.assign(entry.id, null)}
                     >
                       <XIcon aria-hidden="true" />
@@ -181,5 +183,5 @@ export function KeyboardSection() {
 }
 
 function labelOf(id: string): string {
-  return BINDABLE_COMMANDS.find((entry) => entry.id === id)?.label ?? id
+  return t(BINDABLE_COMMANDS.find((entry) => entry.id === id)?.label ?? id)
 }

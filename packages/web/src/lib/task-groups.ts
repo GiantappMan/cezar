@@ -1,5 +1,6 @@
 import type { RunRecord } from '@open-mercato/cezar-api-client'
 import { isAwaitingAnswer, isNeedsYouStatus } from './attention'
+import { t } from '@/lib/i18n'
 
 /**
  * How the task list is bucketed, sorted and collapsed — the pure half of the sidebar quick-list
@@ -258,7 +259,7 @@ export function sortTimestamp(run: RunTimes, sortBy: SortBy): string {
 
 /** The time column's heading under `sortBy`. */
 export function sortTimeLabel(sortBy: SortBy): string {
-  return sortBy === 'created' ? 'Created' : 'Updated'
+  return sortBy === 'created' ? t('Created') : t('Updated')
 }
 
 /**
@@ -288,8 +289,8 @@ export function taskSections<T extends Pick<RunRecord, 'id' | 'pinned' | 'dispat
   if (pinned.length === 0) return [{ key: 'rest', label: null, runs: [...runs] }]
   const rest = runs.filter((run) => !inPinned(run))
   return [
-    { key: 'pinned', label: 'Pinned', runs: pinned },
-    ...(rest.length > 0 ? [{ key: 'rest' as const, label: 'All tasks', runs: rest }] : []),
+    { key: 'pinned', label: t('Pinned'), runs: pinned },
+    ...(rest.length > 0 ? [{ key: 'rest' as const, label: t('All tasks'), runs: rest }] : []),
   ]
 }
 

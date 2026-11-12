@@ -8,6 +8,8 @@
  * different key from `Mod`. Stored as that string, so a binding means the same on every machine.
  */
 
+import { t } from '@/lib/i18n'
+
 export type Overrides = Readonly<Record<string, string | null>>
 
 export function isApplePlatform(
@@ -140,7 +142,7 @@ const RESERVED = new Set([
 export function altGrProblem(event: ChordEvent, apple = isApplePlatform()): string | undefined {
   if (apple || ['Control', 'Alt', 'AltGraph'].includes(event.key)) return undefined
   if (!(event.getModifierState?.('AltGraph') || (event.ctrlKey && event.altKey))) return undefined
-  return 'Ctrl+Alt — types characters on many layouts'
+  return t('Ctrl+Alt — types characters on many layouts')
 }
 
 /** Why `chord` cannot be bound, or undefined when it can. */
@@ -148,11 +150,11 @@ export function chordProblem(chord: string, apple = isApplePlatform()): string |
   const modifiers = chord.split('+').slice(0, -1)
   // A bare key or Shift+key is typing; the workspace's own bare keys are not rebindable here.
   if (!modifiers.some((m) => m === 'Mod' || m === 'Ctrl' || m === 'Alt')) {
-    return 'Use ⌘/Ctrl, ⌃ or ⌥ with the key'
+    return t('Use ⌘/Ctrl, ⌃ or ⌥ with the key')
   }
   // Off a Mac, Ctrl+Alt is AltGr on many layouts — the chord would eat a typed character.
-  if (!apple && modifiers.includes('Mod') && modifiers.includes('Alt')) return 'Ctrl+Alt types characters on many layouts'
-  if (RESERVED.has(chord)) return 'That shortcut is taken by the browser or cezar'
+  if (!apple && modifiers.includes('Mod') && modifiers.includes('Alt')) return t('Ctrl+Alt types characters on many layouts')
+  if (RESERVED.has(chord)) return t('That shortcut is taken by the browser or cezar')
   return undefined
 }
 

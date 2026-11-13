@@ -72,13 +72,21 @@ while (Date.now() < deadline) {
 const web = server.exitCode === null ? run('dev:web', ['--open']) : null;
 
 // Either process dying takes the whole dev session down — a half-running
-// cockpit (UI without API, or API without UI) just looks broken.
+// cockpit (UI without API, or API without UI) just looks broken. On Windows
+// `child.kill` only reaches the direct child (the npm shim), not the server it
+// spawned, so the tree is killed through taskkill instead.
 const children = [server, web].filter(Boolean);
 let shuttingDown = false;
+const killTree = (child) => {
+  if (child.exitCode !== null) return;
+  if (process.platform === 'win32')
+    spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+  else child.kill('SIGTERM');
+};
 const shutdown = (code) => {
   if (shuttingDown) return;
   shuttingDown = true;
-  for (const child of children) if (child.exitCode === null) child.kill('SIGTERM');
+  for (const child of children) killTree(child);
   process.exitCode = code;
 };
 for (const child of children) child.on('exit', (code) => shutdown(code ?? 0));

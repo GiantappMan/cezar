@@ -2485,4 +2485,132 @@ export const zhCN: Record<string, string> = {
     '此周期内 {n} 个失败{s}。含子任务；「已完成」不代表已验收或已部署。',
   'outcome': '结果',
   'outcomes': '结果',
+
+  // ---- 第六轮补漏（设置子页正文） --
+  'Notify when an agent needs you': '智能体需要你时通知',
+  'A browser notification when a task starts waiting, asks for review, or fails — only while this tab is in the background. Off by default.':
+    '当任务开始等待、请求审查或失败时发送浏览器通知 —— 仅在此标签页处于后台时生效。默认关闭。',
+  'Confirm before approving': '批准前先确认',
+  'Approve opens a summary to confirm. With a switch off, Approve sends straight away. The card still appears and still needs your tap: a manager never acts on its own.':
+    '点击“批准”会打开摘要供你确认。开关关闭时，“批准”会直接发送。卡片仍会出现、仍需你点击：管理器绝不会自作主张。',
+  'Merges': '合并 PR',
+  'Show the project, pull request, method and head commit first.': '先显示项目、拉取请求、方式与头部提交。',
+  'Show the name, revision and definition first.': '先显示名称、修订版本与定义。',
+  'Show the name, interval and full prompt first.': '先显示名称、间隔与完整提示词。',
+  'Organisation skills repositories': '组织技能仓库',
+  'Git repositories whose skills are available in every project, kept up to date from the remote. A project’s own skills with the same name win. Use ':
+    'Git 仓库，其中的技能在所有项目中均可用，并从远端保持更新。项目内同名技能优先。填写 ',
+  ', a git URL or a local path; access uses your existing git credentials.': '、git URL 或本地路径；访问沿用你已有的 git 凭据。',
+  'Update Open Mercato skills automatically': '自动更新 Open Mercato 技能',
+  'Checks installed Open Mercato skills in the background and applies available updates. Other skills and untracked folders are never changed.':
+    '在后台检查已安装的 Open Mercato 技能并应用可用更新。其他技能与未跟踪的文件夹不会被改动。',
+  'Global system prompt': '全局系统提示词',
+  'Read by every agent step of every new task, in every project. A project’s own system prompt is added after it and takes precedence where they conflict.':
+    '每个项目中每个新任务的每个智能体步骤都会读取。项目自己的系统提示词会追加在其后，冲突时以项目的为准。',
+  'General rules for every project — conventions, tone, review requirements…': '适用于所有项目的通用规则 —— 约定、语气、审查要求…',
+  'Leave empty and save to clear. Applied to new runs only.': '留空并保存即可清除。仅对新运行生效。',
+  'Values for this project only — an e2e runner’s model key, a staging login. They reach the audiences you pick and never an agent session.':
+    '仅本项目使用的值 —— e2e 运行器的模型密钥、预发布环境的登录凭据。它们只会到达你勾选的使用方，绝不会进入智能体会话。',
+  'Encrypted with a data key kept in your OS keychain.': '使用保存在操作系统钥匙串中的数据密钥加密。',
+  'Who may read it': '谁可以读取',
+  'Task counts and crash reports, sent to cezar’s maintainers at Open Mercato': '任务计数与崩溃报告，发送给 Open Mercato 的 cezar 维护者',
+  '. Never prompts, code, diffs, paths or repository names. Off unless you turn it on; turning it off deletes this machine’s install id.':
+    '。绝不发送提示词、代码、diff、路径或仓库名。默认关闭，除非你主动开启；关闭后会删除本机的安装 ID。',
+  'This server runs under CI, a test runner or ': '此服务器正运行在 CI、测试运行器或 ',
+  ', so nothing is sent from it.': '之下，因此不会从这里发送任何数据。',
+  'Agentic browser end-to-end testing': '智能体驱动的浏览器端到端测试',
+  'No model key — smoke tests run without one; agent steps need one': '无模型密钥 —— 冒烟测试没有它也能运行；智能体步骤则需要',
+  'Stored encrypted as a project secret for check steps only — never handed to an agent session.':
+    '以项目密钥形式加密存储，仅供检查步骤使用 —— 绝不会交给智能体会话。',
+  'Connect the coding agents available on this computer.': '连接这台计算机上可用的编码智能体。',
+  'Use {name}': '使用{name}',
+  'When the agent working on a task runs out of its usage allowance, the next agent below continues the same task.':
+    '当任务当前的智能体用尽其用量额度时，列表中的下一个智能体会接着完成同一任务。',
+  'The next agent’s provider receives the task and its repository context, and may bill its own plan.':
+    '接手的智能体所属服务商将收到该任务及其仓库上下文，并可能按其自己的套餐计费。',
+  'Preselected for new tasks in THIS repo, and used by the chain planner. Each task can still pick another runner.':
+    '在本仓库中预选用于新任务，并供链式规划器使用。每个任务仍可选择其他运行器。',
+  'Read by every agent step of every new task in this project, whichever runner executes it. Added after the global instructions (General settings → Instructions) and takes precedence over them.':
+    '本项目中每个新任务的每个智能体步骤都会读取，无论由哪个运行器执行。追加在全局指令（通用设置 → 指令）之后，且优先于它们。',
+  'Extra rules for every agent run — conventions, tone, review requirements…': '每次智能体运行的附加规则 —— 约定、语气、审查要求…',
+  'How new task branches are named. Generated from the first prompt.': '新任务分支的命名方式。由首个提示词生成。',
+  'Describe your branch naming convention…': '描述你的分支命名约定…',
+  'Leave empty for the default names. A new task waits for its name before it forks.': '留空则使用默认名称。新任务会先等命名完成再分叉。',
+  "Reusable snippets you can insert into a prompt — the new-task composer, the GitHub hand-over, and the Inbox's “Add instructions” box all offer this list. Assign a template to a skill and it fills the prompt in for you when you pick that skill, as long as you have not typed anything yet.":
+    '可插入提示词的可复用片段 —— 新任务编辑器、GitHub 交接和收件箱的“添加指示”框都会提供这份列表。把模板指定给某个技能后，只要你尚未输入任何内容，选中该技能就会自动为你填入提示词。',
+  'Label (e.g. "Add tests")': '标签（如“添加测试”）',
+  'New task worktrees branch from this and draft PRs target it. Also settable from the Git view.':
+    '新任务的工作树从此分支创建，草稿 PR 也以它为目标。也可在 Git 视图中设置。',
+  'Review changes before finishing': '完成前审查变更',
+  'Live title updates': '实时更新标题',
+  "Refresh a task's short title through the namer model as the run progresses. A manual rename always wins and stops updates for that task.":
+    '随运行推进，通过命名模型刷新任务的短标题。手动重命名始终优先，并会停止该任务的自动更新。',
+  'Older finished worktrees are reclaimed to free disk; their branch is kept so the work stays recoverable. 0 = unlimited. In-review and running tasks are never reclaimed, so the count on disk can exceed this.':
+    '较旧的已完成工作树会被回收以释放磁盘；其分支保留，工作成果仍可找回。0 = 不限制。待审查和运行中的任务绝不会被回收，因此磁盘上的数量可能超过此值。',
+  'Keeping the last {n} finished worktree on disk.': '磁盘上保留最近 {n} 个已完成的工作树。',
+  'Keeping the last {n} finished worktrees on disk.': '磁盘上保留最近 {n} 个已完成的工作树。',
+  'Task worktrees currently on disk. Delete one to reclaim its space now, or reclaim everything past the keep-limit at once. Reclamation keeps branches; deleting a worktree also deletes its managed branch.':
+    '当前磁盘上的任务工作树。删除其中一个可立即回收其空间，或一次性回收超出保留上限的所有工作树。回收会保留分支；删除工作树则会连同其受管分支一起删除。',
+  'One-click launch (auto-submit)': '一键启动（自动提交）',
+  ' — re-drag the buttons after changing this': ' —— 更改后请重新拖动按钮',
+  'prefills the form — nothing starts by itself': '仅预填表单 —— 不会自行启动任何任务',
+  'Filter bookmarklet skills': '筛选书签小程序技能',
+  'CPU over the last up to {n} seconds': '最近最多 {n} 秒的 CPU 占用',
+  'Latest {name} models unavailable': '{name} 的最新模型不可用',
+
+  // ---- 第七轮补漏（智能体设置正文 / 提示词模板 aria） -----------------------------------
+  'Default models': '默认模型',
+  'Models are locked to the defaults configured in the native coding-agent settings.':
+    '模型已锁定为原生编程智能体设置中的默认配置。',
+  'The model preselected in the composer for each runner. Auto lets the runner decide per task.':
+    '输入框中为每个运行器预选的模型。auto 由运行器按任务自行决定。',
+  'No fallback agents yet. Add the agent that should take over first.': '还没有后备智能体。请先添加接手的智能体。',
+  'Every agent is already listed': '所有智能体都已在列表中',
+  'Model for the agent to add': '要添加的智能体的模型',
+  'Model selection is locked to native coding-agent settings.': '模型选择已锁定为原生编程智能体设置。',
+  'Native agent settings': '原生智能体设置',
+  'Up to {n} agents.': '最多 {n} 个智能体。',
+  'Settings changes apply to new tasks. Each agent is tried once. If no agent in the list can continue, the task stops and waits for you.':
+    '设置更改仅对新建任务生效。每个智能体会被尝试一次；若列表中没有智能体能继续，任务会停下等待你。',
+  'Scope and permissions': '范围与权限',
+  'Quick task and the final step of step-list workflows can switch agents; workflow graphs and earlier steps keep waiting for the limit to reset.':
+    '快速任务与步骤列表工作流的最后一步可以切换智能体；工作流图和更早的步骤会继续等待额度重置。',
+  'Task budgets still apply. Tool restrictions are enforced by Claude only; other agents run with their own permissions.':
+    '任务预算仍然生效。工具限制仅由 Claude 执行；其他智能体按自身权限运行。',
+  'Label for {label}': '{label} 的标签',
+  'this template': '此模板',
+  'Remove this template': '移除此模板',
+  'Text for {label}': '{label} 的文本',
+  'Apply {label} automatically with a skill': '将「{label}」绑定到技能自动应用',
+  'Pick the skills this template applies itself to': '选择此模板会自动应用到的技能',
+  'Default model for {runner}': '{runner} 的默认模型',
+
+  // ---- 第八轮补漏（键盘页说明段 / 密钥页表单 / 管理器布局） ------------------------------
+  'Run a task’s commands from the keyboard while the task is open. {chord} lists them all; press {submit} on a row there to set its shortcut. {modKey} chords also work while you type.':
+    '任务打开时可直接用键盘执行它的命令。{chord} 列出全部命令；在某一行按 {submit} 即可设置它的快捷键。输入时也可使用 {modKey} 组合键。',
+  '{altKeys} go to the previous / next task, {altShiftKeys} to the previous / next one that needs you':
+    '{altKeys} 跳到上一个 / 下一个任务，{altShiftKeys} 跳到上一个 / 下一个需要你的任务',
+  ' — and {keys} do that from any application.': ' —— 并且 {keys} 可在任意应用程序中使用。',
+  'Project secrets': '项目密钥',
+  'Workspace secrets': '工作区密钥',
+  'Values shared by every project on this machine — a key cezar’s own features use, a token every project’s checks need. A project secret of the same name wins. They never reach an agent session.':
+    '本机所有项目共享的密钥值 —— 供 cezar 自身功能使用的密钥、各项目检查步骤所需的令牌。同名项目密钥优先。它们绝不会进入智能体会话。',
+  'Loading secrets…': '正在加载密钥…',
+  'No secrets stored.': '尚未存储任何密钥。',
+  'Stored {scope} secrets': '已存储的{scope}密钥',
+  'Delete {name}': '删除 {name}',
+  'Stored values cannot be read: {n}.': '已存储的值无法读取：{n}。',
+  'Encrypted with a data key in ~/.cezar/secrets/.key (0600) — no OS keychain is available on this machine, so this is a private file, not a vault.':
+    '使用 ~/.cezar/secrets/.key (0600) 中的数据密钥加密 —— 本机没有可用的操作系统钥匙串，因此这是私密文件而非保险库。',
+  'Add or replace a secret': '添加或替换密钥',
+  'Name': '名称',
+  'Value': '值',
+  'Check steps (workflow commands)': '检查步骤（工作流命令）',
+  'cezar itself (its own features — not the agents)': 'cezar 自身（它自己的功能 —— 不含智能体）',
+  'Agents are never an audience: a secret cannot be handed to a Claude Code, Codex or OpenCode session.':
+    '智能体绝不是接收方：密钥不会交给 Claude Code、Codex 或 OpenCode 会话。',
+  'Save secret': '保存密钥',
+  '{name} saved': '{name} 已保存',
+  '{name} removed': '{name} 已移除',
+  'pick at least one audience': '请至少选择一个接收方',
 }

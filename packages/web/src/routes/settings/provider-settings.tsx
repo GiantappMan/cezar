@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch'
 import { toast } from '@/components/ui/toaster'
 import { Spinner } from '@/components/ui/spinner'
 import { providerStatusFor } from '@/lib/provider-status'
+import { t, useLocale } from '@/lib/i18n'
 import { writeClipboard } from '@/lib/clipboard'
 
 /** The provider cards this pane renders, in order. Exported so tests count them from the
@@ -78,6 +79,7 @@ function withProviderEnabled(
 }
 
 export function ProviderSettings() {
+  useLocale()
   const status = useProviderStatus()
   const refresh = useRefreshProviderStatus()
   const retry = useRetryProviderAuth()
@@ -199,7 +201,7 @@ export function ProviderSettings() {
       <div className="mb-2">
         <h2 className="text-sm font-semibold text-foreground">Providers</h2>
         <p className="text-ui text-muted-foreground">
-          Connect the coding agents available on this computer.
+          {t('Connect the coding agents available on this computer.')}
         </p>
       </div>
 
@@ -271,7 +273,7 @@ export function ProviderSettings() {
                     {state !== 'not-installed' ? (
                       <Switch
                         checked={current?.enabled ?? true}
-                        aria-label={`Use ${provider.label}`}
+                        aria-label={t('Use {name}', { name: provider.label })}
                         onCheckedChange={(enabled) => queueToggle(provider.id, enabled)}
                       />
                     ) : null}

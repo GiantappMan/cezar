@@ -9,6 +9,7 @@ import { CenteredState } from '@/components/centered-state'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/toaster'
 import { LoadingState, SettingsSkeleton } from '@/components/loading-state'
+import { t, useLocale } from '@/lib/i18n'
 import { SettingsField } from './settings-field'
 import { WorktreesPanel } from './worktrees-panel'
 import { WorktreeLifecycleEditor } from './worktree-lifecycle-editor'
@@ -28,6 +29,7 @@ const WORKTREE_RETENTION_MIN = 0
 const WORKTREE_RETENTION_MAX = 1000
 
 export function WorktreesSection() {
+  useLocale()
   const config = useConfig()
 
   if (config.isPending) {
@@ -50,6 +52,7 @@ export function WorktreesSection() {
 }
 
 function WorktreesForm({ config }: { config: ConfigResponse }) {
+  useLocale()
   const queryClient = useQueryClient()
 
   const save = useMutation({
@@ -91,7 +94,7 @@ function WorktreesForm({ config }: { config: ConfigResponse }) {
     >
       <SettingsField
         title="Keep last N worktrees"
-        hint="Older finished worktrees are reclaimed to free disk; their branch is kept so the work stays recoverable. 0 = unlimited. In-review and running tasks are never reclaimed, so the count on disk can exceed this."
+        hint={t('Older finished worktrees are reclaimed to free disk; their branch is kept so the work stays recoverable. 0 = unlimited. In-review and running tasks are never reclaimed, so the count on disk can exceed this.')}
       >
         <div className="flex items-center gap-2">
           <input
@@ -125,7 +128,9 @@ function WorktreesForm({ config }: { config: ConfigResponse }) {
           </p>
         ) : (
           <p className="text-meta text-soft-foreground">
-            {retentionNum === 0 ? 'Keeping every finished worktree.' : `Keeping the last ${retentionNum} finished worktree${retentionNum === 1 ? '' : 's'} on disk.`}
+            {retentionNum === 0 ? 'Keeping every finished worktree.' : retentionNum === 1
+              ? t('Keeping the last {n} finished worktree on disk.', { n: retentionNum })
+              : t('Keeping the last {n} finished worktrees on disk.', { n: retentionNum })}
           </p>
         )}
       </SettingsField>
@@ -134,7 +139,7 @@ function WorktreesForm({ config }: { config: ConfigResponse }) {
 
       <SettingsField
         title="Worktrees"
-        hint="Task worktrees currently on disk. Delete one to reclaim its space now, or reclaim everything past the keep-limit at once. Reclamation keeps branches; deleting a worktree also deletes its managed branch."
+        hint={t('Task worktrees currently on disk. Delete one to reclaim its space now, or reclaim everything past the keep-limit at once. Reclamation keeps branches; deleting a worktree also deletes its managed branch.')}
       >
         <WorktreesPanel />
       </SettingsField>

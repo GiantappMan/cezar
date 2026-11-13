@@ -9,6 +9,7 @@ import { CenteredState } from '@/components/centered-state'
 import { Input } from '@/components/ui/input'
 import { LoadingState, SettingsSkeleton } from '@/components/loading-state'
 import { bookmarkletUrl } from '@/lib/bookmarklet'
+import { t, useLocale } from '@/lib/i18n'
 import { useActiveProjectId } from '@/lib/project-router'
 import { orderSkills } from '@/lib/skills'
 
@@ -57,6 +58,7 @@ export function BookmarkletsSection() {
  * generator also has its own Settings subpage.
  */
 export function BookmarkletPanel({ skills }: { skills: readonly Skill[] }) {
+  useLocale()
   const launchKey = useLaunchKey()
   const health = useHealth()
   const projects = useProjects()
@@ -91,7 +93,7 @@ export function BookmarkletPanel({ skills }: { skills: readonly Skill[] }) {
 
   return (
     <div data-slot="bookmarklet-panel" className="mx-auto w-full max-w-2xl">
-      <h2 className="text-base font-semibold">Run from GitHub</h2>
+      <h2 className="text-base font-semibold">{t('Run from GitHub')}</h2>
       <p className="mt-2 text-ui leading-relaxed text-muted-foreground">
         Drag a button below to your browser&apos;s bookmarks bar. On any GitHub PR or issue, click it
         to open this cockpit directly. The cockpit must be running: <span className="font-mono">npx cezar</span>.
@@ -105,8 +107,8 @@ export function BookmarkletPanel({ skills }: { skills: readonly Skill[] }) {
           onChange={(event) => setAuto(event.target.checked)}
           className="size-3.5"
         />
-        One-click launch (auto-submit){' '}
-        <span className="font-normal text-soft-foreground">— re-drag the buttons after changing this</span>
+        {t('One-click launch (auto-submit)')}{' '}
+        <span className="font-normal text-soft-foreground">{t(' — re-drag the buttons after changing this')}</span>
       </label>
 
       <div data-slot="bm-generic" className="mt-4">
@@ -114,14 +116,14 @@ export function BookmarkletPanel({ skills }: { skills: readonly Skill[] }) {
         <BookmarkletRow
           label={repoName ? `cezar (${repoName}): this PR/issue` : 'cezar: this PR/issue'}
           url={bookmarkletUrl('', false, key, origin, projectId)}
-          hint="prefills the form — nothing starts by itself"
+          hint={t('prefills the form — nothing starts by itself')}
         />
       </div>
 
       <Input
         data-slot="bm-filter"
         placeholder="Filter skills…"
-        aria-label="Filter bookmarklet skills"
+        aria-label={t('Filter bookmarklet skills')}
         value={filter}
         onChange={(event) => setFilter(event.target.value)}
         className="mt-5 h-8 text-ui"

@@ -93,12 +93,18 @@ export function KeyboardSection() {
           <div>
             <h2 className="text-sm font-semibold text-foreground">{t('Task shortcuts')}</h2>
             <p className="text-ui text-muted-foreground">
-              Run a task’s commands from the keyboard while the task is open. {formatChord('Mod+P')} lists them all;
-              press {apple ? '⇧↵' : 'Shift+Enter'} on a row there to set its shortcut. {apple ? '⌘' : 'Ctrl'} chords also
-              work while you type. {apple ? '⌥↑ / ⌥↓' : 'Alt+↑ / Alt+↓'} go to the previous / next task,{' '}
-              {apple ? '⌥⇧↑ / ⌥⇧↓' : 'Alt+Shift+↑ / Alt+Shift+↓'} to the previous / next one that needs you
+              {t('Run a task’s commands from the keyboard while the task is open. {chord} lists them all; press {submit} on a row there to set its shortcut. {modKey} chords also work while you type.', {
+                chord: formatChord('Mod+P'),
+                submit: apple ? '⇧↵' : 'Shift+Enter',
+                modKey: apple ? '⌘' : 'Ctrl',
+              })}
+              {' '}
+              {t('{altKeys} go to the previous / next task, {altShiftKeys} to the previous / next one that needs you', {
+                altKeys: apple ? '⌥↑ / ⌥↓' : 'Alt+↑ / Alt+↓',
+                altShiftKeys: apple ? '⌥⇧↑ / ⌥⇧↓' : 'Alt+Shift+↑ / Alt+Shift+↓',
+              })}
               {clientSurface() === 'desktop'
-                ? ` — and ${apple ? '⌃⌥↑ / ⌃⌥↓' : 'Ctrl+Alt+↑ / Ctrl+Alt+↓'} do that from any application.`
+                ? t(' — and {keys} do that from any application.', { keys: apple ? '⌃⌥↑ / ⌃⌥↓' : 'Ctrl+Alt+↑ / Ctrl+Alt+↓' })
                 : '.'}
             </p>
           </div>

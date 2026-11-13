@@ -173,7 +173,7 @@ export function MachineCard() {
                 viewBox={`0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}`}
                 preserveAspectRatio="none"
                 role="img"
-                aria-label={`CPU over the last up to ${history.length * 2} seconds`}
+                aria-label={t('CPU over the last up to {n} seconds', { n: history.length * 2 })}
               >
                 <polyline
                   points={points}

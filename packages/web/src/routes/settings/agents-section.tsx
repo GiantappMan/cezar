@@ -31,6 +31,7 @@ import {
   hasAgentAccounts,
 } from '@/components/default-agent-picker'
 import { modelCatalogStatus, modelsForRunner, RUNNERS } from '@/routes/new-task-form'
+import { t, useLocale } from '@/lib/i18n'
 import { ProviderSettings } from './provider-settings'
 import { useConfigSave } from './use-config-save'
 
@@ -49,6 +50,7 @@ import { useConfigSave } from './use-config-save'
  */
 
 export function AgentsSection() {
+  useLocale()
   const config = useConfig()
   // One row per runner here, so every runner's own host catalog is needed at once (#794) —
   // unlike the composer, which only ever renders the runner the user picked.
@@ -83,6 +85,7 @@ function AgentsForm({
   catalogs: ReturnType<typeof useRunnerModelCatalogs>
   providerStatus: ReturnType<typeof useProviderStatus>
 }) {
+  useLocale()
   const save = useConfigSave()
   const scope = useProjectScope()
   const fallbackProjectId = scope.projectId ?? 'default'
@@ -147,11 +150,11 @@ function AgentsForm({
       />
 
       <Field
-        title="Default models"
+        title={t('Default models')}
         hint={
           config.modelsLocked
-            ? 'Models are locked to the defaults configured in the native coding-agent settings.'
-            : 'The model preselected in the composer for each runner. Auto lets the runner decide per task.'
+            ? t('Models are locked to the defaults configured in the native coding-agent settings.')
+            : t('The model preselected in the composer for each runner. Auto lets the runner decide per task.')
         }
       >
         <div className="flex max-w-md flex-col gap-2">
@@ -186,17 +189,17 @@ function AgentsForm({
                 <span className="w-24 shrink-0 font-mono text-xs text-muted-foreground">{runner.label}</span>
                 {config.modelsLocked ? (
                   <output
-                    aria-label={`Default model for ${runner.label}`}
+                    aria-label={t('Default model for {runner}', { runner: runner.label })}
                     data-slot="agents-model"
                     data-runner={runner.id}
-                    title="Model selection is locked to native coding-agent settings."
+                    title={t('Model selection is locked to native coding-agent settings.')}
                     className="block w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm shadow-xs"
                   >
                     {configuredModelLabel}
                   </output>
                 ) : (
                   <select
-                    aria-label={`Default model for ${runner.label}`}
+                    aria-label={t('Default model for {runner}', { runner: runner.label })}
                     data-slot="agents-model"
                     data-runner={runner.id}
                     value={configuredModel}
@@ -293,9 +296,10 @@ function FallbackField({
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
+  useLocale()
   const dragRevision = useRef<number | null>(null)
   const title = 'Automatic fallback'
-  const hint = 'When the agent working on a task runs out of its usage allowance, the next agent below continues the same task.'
+  const hint = t('When the agent working on a task runs out of its usage allowance, the next agent below continues the same task.')
   const runnerLabel = (id: string) => RUNNERS.find((runner) => runner.id === id)?.label ?? id
   // Every runner offers its discovered login; runners with extra accounts list those too.
   const options: FallbackOption[] = RUNNERS.flatMap((runner) => {
@@ -412,12 +416,12 @@ function FallbackField({
             ? 'Off — add an agent first.' : 'Off — the list is saved but not used.'}
         </p>
         <p id="fallback-disclosure" className="text-ui text-muted-foreground">
-          The next agent’s provider receives the task and its repository context, and may bill its own plan.
+          {t('The next agent’s provider receives the task and its repository context, and may bill its own plan.')}
         </p>
 
         {candidates.length === 0 ? (
           <p data-slot="fallback-empty" className="text-ui text-muted-foreground">
-            No fallback agents yet. Add the agent that should take over first.
+            {t('No fallback agents yet. Add the agent that should take over first.')}
           </p>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter}
@@ -489,20 +493,20 @@ function FallbackField({
             disabled={saving || full || addable.length === 0}
             className="min-w-0 flex-1 basis-full sm:basis-0 rounded-md border border-input bg-card px-3 py-1.5 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50"
           >
-            {addable.length === 0 ? <option value="">Every agent is already listed</option> : null}
+            {addable.length === 0 ? <option value="">{t('Every agent is already listed')}</option> : null}
             {addable.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}
           </select>
           {modelsLocked ? (
             <output
-              aria-label="Model for the agent to add"
-              title="Model selection is locked to native coding-agent settings."
+              aria-label={t('Model for the agent to add')}
+              title={t('Model selection is locked to native coding-agent settings.')}
               className="min-w-0 flex-1 rounded-md border border-input bg-muted/30 px-3 py-1.5 text-sm text-muted-foreground"
             >
-              Native agent settings
+              {t('Native agent settings')}
             </output>
           ) : (
             <select
-              aria-label="Model for the agent to add"
+              aria-label={t('Model for the agent to add')}
               data-slot="fallback-add-model"
               value={pickedModel}
               onChange={(event) => setPickedModel(event.target.value)}
@@ -520,15 +524,15 @@ function FallbackField({
             <PlusIcon /> Add agent
           </Button>
         </div>
-        {full ? <p className="text-ui text-muted-foreground">Up to {MAX_FALLBACK_AGENTS} agents.</p> : null}
+        {full ? <p className="text-ui text-muted-foreground">{t('Up to {n} agents.', { n: MAX_FALLBACK_AGENTS })}</p> : null}
 
         <div data-slot="fallback-terms" className="space-y-2 text-ui text-muted-foreground">
-          <p>Settings changes apply to new tasks. Each agent is tried once. If no agent in the list can continue, the task stops and waits for you.</p>
+          <p>{t('Settings changes apply to new tasks. Each agent is tried once. If no agent in the list can continue, the task stops and waits for you.')}</p>
           <details>
-            <summary className="w-fit cursor-pointer rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">Scope and permissions</summary>
+            <summary className="w-fit cursor-pointer rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">{t('Scope and permissions')}</summary>
             <div className="mt-2 space-y-2">
-              <p>Quick task and the final step of step-list workflows can switch agents; workflow graphs and earlier steps keep waiting for the limit to reset.</p>
-              <p>Task budgets still apply. Tool restrictions are enforced by Claude only; other agents run with their own permissions.</p>
+              <p>{t('Quick task and the final step of step-list workflows can switch agents; workflow graphs and earlier steps keep waiting for the limit to reset.')}</p>
+              <p>{t('Task budgets still apply. Tool restrictions are enforced by Claude only; other agents run with their own permissions.')}</p>
             </div>
           </details>
         </div>
@@ -574,6 +578,7 @@ function DefaultAgentField({
   const scope = useProjectScope()
   const repo = useRepo()
   const select = useSelectAgentProfile()
+  useLocale()
 
   // `projectId: null` is the boot project, which every route addresses by the reserved `default`
   // alias. The repo ROOT is the key the account store uses, and `useRepo` is project-scoped so it
@@ -593,7 +598,7 @@ function DefaultAgentField({
       hint={
         hasAccounts
           ? 'Preselected for new tasks in THIS repo, and used by the chain planner. Each task can still pick another agent or account. The account is stored on this machine only — it is never committed, so a teammate keeps their own.'
-          : 'Preselected for new tasks in THIS repo, and used by the chain planner. Each task can still pick another runner.'
+          : t('Preselected for new tasks in THIS repo, and used by the chain planner. Each task can still pick another runner.')
       }
     >
       <DefaultAgentPicker

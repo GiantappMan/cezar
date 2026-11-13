@@ -9,6 +9,7 @@ import { queryKeys, useE2eStatus, useRun } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/toaster'
 import { LinesSkeleton, LoadingState } from '@/components/loading-state'
+import { t, useLocale } from '@/lib/i18n'
 import { scopeTo } from '@/lib/project-router'
 import testerArmyLogo from '@/assets/integrations/tester-army.png'
 
@@ -58,6 +59,7 @@ function Row({ ok, children }: { ok: boolean; children: React.ReactNode }) {
  * steps only, never to an agent.
  */
 export function TesterArmyE2eCard() {
+  useLocale()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const status = useE2eStatus()
@@ -113,7 +115,7 @@ export function TesterArmyE2eCard() {
                 {badge}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">Agentic browser end-to-end testing</p>
+            <p className="text-xs text-muted-foreground">{t('Agentic browser end-to-end testing')}</p>
           </div>
           <a href={TESTER_ARMY_REPO} target="_blank" rel="noreferrer"
             className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
@@ -133,7 +135,7 @@ export function TesterArmyE2eCard() {
             <Row ok={credentials.length > 0}>
               {credentials.length > 0
                 ? <>Model key: <code>{credentials.join(', ')}</code></>
-                : 'No model key — smoke tests run without one; agent steps need one'}
+                : t('No model key — smoke tests run without one; agent steps need one')}
             </Row>
           </ul>
         ) : null}
@@ -164,7 +166,7 @@ export function TesterArmyE2eCard() {
             className="mt-1 block w-full rounded border border-border bg-background p-2" />
         </label>
         <p className="mt-1 text-xs text-muted-foreground">
-          Stored encrypted as a project secret for check steps only — never handed to an agent session.
+          {t('Stored encrypted as a project secret for check steps only — never handed to an agent session.')}
         </p>
         {error ? <p role="alert" className="mt-2 text-sm text-danger">{error}</p> : null}
         <div className="mt-3">

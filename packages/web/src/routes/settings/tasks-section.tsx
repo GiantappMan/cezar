@@ -9,6 +9,7 @@ import { LoadingState, SettingsSkeleton } from '@/components/loading-state'
 import { TrunkBasedFields } from './trunk-based-fields'
 import { SettingsField } from './settings-field'
 import { useConfigSave } from './use-config-save'
+import { t, useLocale } from '@/lib/i18n'
 
 /**
  * Settings → Tasks: how a task of THIS repo behaves — which branch it forks from, whether it
@@ -17,6 +18,7 @@ import { useConfigSave } from './use-config-save'
  * live" needs one answer.
  */
 export function TasksSection() {
+  useLocale()
   const config = useConfig()
 
   if (config.isPending) {
@@ -39,6 +41,7 @@ export function TasksSection() {
 }
 
 function TasksForm({ config }: { config: ConfigResponse }) {
+  useLocale()
   const repo = useRepo()
   const save = useConfigSave()
 
@@ -51,7 +54,7 @@ function TasksForm({ config }: { config: ConfigResponse }) {
 
       <SettingsField
         title="Base branch"
-        hint="New task worktrees branch from this and draft PRs target it. Also settable from the Git view."
+        hint={t('New task worktrees branch from this and draft PRs target it. Also settable from the Git view.')}
       >
         {repo.data?.info ? (
           <select
@@ -77,12 +80,12 @@ function TasksForm({ config }: { config: ConfigResponse }) {
       </SettingsField>
 
       <SettingsField
-        title="Review changes before finishing"
+        title={t('Review changes before finishing')}
         hint="When on, a task with changes pauses so you can Accept, Send back, or open a Draft PR. Autonomous tasks always skip this and finish on their own. Default: off — tasks finish without asking."
       >
         <label className="flex w-fit items-center gap-3">
           <Switch
-            aria-label="Review changes before finishing"
+            aria-label={t('Review changes before finishing')}
             data-slot="tasks-review-gate"
             checked={config.reviewGate ?? false}
             disabled={save.isPending}
@@ -101,12 +104,12 @@ function TasksForm({ config }: { config: ConfigResponse }) {
       </SettingsField>
 
       <SettingsField
-        title="Live title updates"
-        hint="Refresh a task's short title through the namer model as the run progresses. A manual rename always wins and stops updates for that task."
+        title={t('Live title updates')}
+        hint={t('Refresh a task\'s short title through the namer model as the run progresses. A manual rename always wins and stops updates for that task.')}
       >
         <label className="flex w-fit items-center gap-3">
           <Switch
-            aria-label="Live title updates"
+            aria-label={t('Live title updates')}
             data-slot="tasks-live-title-updates"
             checked={config.liveTitleUpdates ?? true}
             disabled={save.isPending}

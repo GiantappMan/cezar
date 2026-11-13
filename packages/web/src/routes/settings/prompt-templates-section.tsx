@@ -28,6 +28,7 @@ import {
   type PromptTemplate,
 } from '@/lib/prompt-templates'
 import { isProjectSkill, partitionSkillsForDisplay, searchSkills, skillKeywords } from '@/lib/skills'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /**
@@ -44,6 +45,7 @@ import { cn } from '@/lib/utils'
 /** `embedded`: rendered inside Settings → Instructions, which already provides the page chassis
  *  (padding, width), so the form draws no outer wrapper of its own. */
 export function PromptTemplatesSection({ embedded = false }: { embedded?: boolean } = {}) {
+  useLocale()
   const uiState = useUiState()
 
   if (uiState.isPending) {
@@ -71,6 +73,7 @@ export function PromptTemplatesSection({ embedded = false }: { embedded?: boolea
 }
 
 function PromptTemplatesForm({ initial, embedded }: { initial: PromptTemplate[]; embedded: boolean }) {
+  useLocale()
   const queryClient = useQueryClient()
   const skills = useSkills()
   // Already cached by the section gate above; read again here for the picker's #519 tiers.
@@ -135,7 +138,7 @@ function PromptTemplatesForm({ initial, embedded }: { initial: PromptTemplate[];
     >
       <Field
         title="Prompt templates"
-        hint="Reusable snippets you can insert into a prompt — the new-task composer, the GitHub hand-over, and the Inbox's “Add instructions” box all offer this list. Assign a template to a skill and it fills the prompt in for you when you pick that skill, as long as you have not typed anything yet."
+        hint={t('Reusable snippets you can insert into a prompt — the new-task composer, the GitHub hand-over, and the Inbox\'s “Add instructions” box all offer this list. Assign a template to a skill and it fills the prompt in for you when you pick that skill, as long as you have not typed anything yet.')}
       >
         <div data-slot="prompt-template-list" className="flex flex-col gap-3">
           {templates.length === 0 ? (
@@ -152,7 +155,7 @@ function PromptTemplatesForm({ initial, embedded }: { initial: PromptTemplate[];
               >
                 <div className="flex items-center gap-2">
                   <Input
-                    aria-label={`Label for ${template.label || 'this template'}`}
+                    aria-label={t('Label for {label}', { label: template.label || t('this template') })}
                     data-slot="prompt-template-label-input"
                     value={template.label}
                     maxLength={80}
@@ -164,14 +167,14 @@ function PromptTemplatesForm({ initial, embedded }: { initial: PromptTemplate[];
                     variant="ghost"
                     size="sm"
                     data-action="prompt-template-remove"
-                    title="Remove this template"
+                    title={t('Remove this template')}
                     onClick={() => removeTemplate(template.id)}
                   >
                     <XIcon aria-hidden="true" className="size-3.5" />
                   </Button>
                 </div>
                 <Textarea
-                  aria-label={`Text for ${template.label || 'this template'}`}
+                  aria-label={t('Text for {label}', { label: template.label || t('this template') })}
                   data-slot="prompt-template-text-input"
                   value={template.text}
                   maxLength={PROMPT_TEMPLATE_TEXT_LIMIT}
@@ -215,7 +218,7 @@ function PromptTemplatesForm({ initial, embedded }: { initial: PromptTemplate[];
           <Input
             aria-label="New template label"
             data-slot="prompt-template-new-label"
-            placeholder='Label (e.g. "Add tests")'
+            placeholder={t('Label (e.g. "Add tests")')}
             value={newLabel}
             maxLength={80}
             onChange={(event) => setNewLabel(event.target.value)}
@@ -346,8 +349,8 @@ function TemplateSkillsPicker({
         <button
           type="button"
           data-slot="prompt-template-skills-trigger"
-          aria-label={`Apply ${label || 'this template'} automatically with a skill`}
-          title="Pick the skills this template applies itself to"
+          aria-label={t('Apply {label} automatically with a skill', { label: label || t('this template') })}
+          title={t('Pick the skills this template applies itself to')}
           disabled={skills.length === 0}
           className={cn(
             'inline-flex h-[26px] items-center gap-1.5 rounded-full border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50',

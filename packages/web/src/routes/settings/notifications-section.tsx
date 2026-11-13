@@ -10,6 +10,7 @@ import {
   notificationSupport,
   type NotificationSupport,
 } from '@/lib/notifications'
+import { t, useLocale } from '@/lib/i18n'
 
 /**
  * Settings → Notifications (R6 Step 1.7, spec §"Cross-cutting").
@@ -30,6 +31,7 @@ import {
  *    per-browser) — the section then says plainly that this browser is blocking delivery.
  */
 export function NotificationsSection() {
+  useLocale()
   const queryClient = useQueryClient()
   const uiState = useWorkspaceUiState()
 
@@ -91,11 +93,10 @@ export function NotificationsSection() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-sm font-semibold text-foreground">
-              <label htmlFor="notifications-enabled">Notify when an agent needs you</label>
+              <label htmlFor="notifications-enabled">{t('Notify when an agent needs you')}</label>
             </h2>
             <p className="text-ui text-muted-foreground">
-              A browser notification when a task starts waiting, asks for review, or fails —
-              only while this tab is in the background. Off by default.
+              {t('A browser notification when a task starts waiting, asks for review, or fails — only while this tab is in the background. Off by default.')}
             </p>
           </div>
           <Switch

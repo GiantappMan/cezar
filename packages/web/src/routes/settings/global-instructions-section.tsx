@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/toaster'
 import { LoadingState, SettingsSkeleton } from '@/components/loading-state'
+import { t, useLocale } from '@/lib/i18n'
 import { SettingsField } from './settings-field'
 
 /** Mirrors `systemPrompt` in src/workspace/config.ts. */
@@ -20,6 +21,7 @@ const GLOBAL_PROMPT_MAX = 20_000
  * system prompt is merged after them and wins where they conflict (`resolveExtraSystemPrompt`).
  */
 export function GlobalInstructionsSection() {
+  useLocale()
   const config = useWorkspaceConfig()
   if (config.isPending) {
     return <LoadingState label="Loading instructions…"><SettingsSkeleton /></LoadingState>
@@ -39,6 +41,7 @@ export function GlobalInstructionsSection() {
 }
 
 function GlobalInstructionsForm({ config }: { config: WorkspaceConfigResponse }) {
+  useLocale()
   const queryClient = useQueryClient()
   const save = useMutation({
     mutationFn: (patch: SetWorkspaceConfigInput) => putWorkspaceConfig(patch),
@@ -62,15 +65,15 @@ function GlobalInstructionsForm({ config }: { config: WorkspaceConfigResponse })
       className="mx-auto flex w-full max-w-2xl flex-col gap-7 p-4 pb-[calc(90px+env(safe-area-inset-bottom))] md:p-6 md:pb-6"
     >
       <SettingsField
-        title="Global system prompt"
-        hint="Read by every agent step of every new task, in every project. A project's own system prompt is added after it and takes precedence where they conflict."
+        title={t('Global system prompt')}
+        hint={t('Read by every agent step of every new task, in every project. A project’s own system prompt is added after it and takes precedence where they conflict.')}
       >
         <Textarea
-          aria-label="Global system prompt"
+          aria-label={t('Global system prompt')}
           data-slot="global-instructions-prompt"
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
-          placeholder="General rules for every project — conventions, tone, review requirements…"
+          placeholder={t('General rules for every project — conventions, tone, review requirements…')}
           className="min-h-32 max-w-xl"
         />
         <div className="flex max-w-xl items-center gap-3">
@@ -89,7 +92,7 @@ function GlobalInstructionsForm({ config }: { config: WorkspaceConfigResponse })
               {trimmed.length.toLocaleString()} characters — the limit is {GLOBAL_PROMPT_MAX.toLocaleString()}.
             </p>
           ) : (
-            <p className="text-meta text-soft-foreground">Leave empty and save to clear. Applied to new runs only.</p>
+            <p className="text-meta text-soft-foreground">{t('Leave empty and save to clear. Applied to new runs only.')}</p>
           )}
         </div>
       </SettingsField>

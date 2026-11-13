@@ -5,6 +5,7 @@ import { useWorkspaceUiState, workspaceQueryKeys } from '@/api/queries'
 import { Switch } from '@/components/ui/switch'
 import { toast } from '@/components/ui/toaster'
 import { actionConfirms, MANAGER_CONFIRM_TYPES } from '@/lib/managers'
+import { t, useLocale } from '@/lib/i18n'
 import type { ManagerConfirm, WorkspaceUiState } from '@open-mercato/cezar-api-client'
 
 const SWITCHES: ReadonlyArray<{ type: (typeof MANAGER_CONFIRM_TYPES)[number]; label: string; description: string }> = [
@@ -19,6 +20,7 @@ const SWITCHES: ReadonlyArray<{ type: (typeof MANAGER_CONFIRM_TYPES)[number]; la
  * act alone.
  */
 export function ManagerSection() {
+  useLocale()
   const queryClient = useQueryClient()
   const uiState = useWorkspaceUiState()
   const setting = uiState.data?.managerConfirm
@@ -39,22 +41,25 @@ export function ManagerSection() {
   }
 
   return (
-    <div data-slot="manager-confirm-settings" className="flex max-w-2xl flex-col gap-4">
+    <div
+      data-slot="manager-confirm-settings"
+      className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4 pb-[calc(90px+env(safe-area-inset-bottom))] md:p-6 md:pb-6"
+    >
       <div>
-        <h2 className="text-sm font-semibold">Confirm before approving</h2>
+        <h2 className="text-sm font-semibold">{t('Confirm before approving')}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Approve opens a summary to confirm. With a switch off, Approve sends straight away. The card still appears and still needs your tap: a manager never acts on its own.
+          {t('Approve opens a summary to confirm. With a switch off, Approve sends straight away. The card still appears and still needs your tap: a manager never acts on its own.')}
         </p>
       </div>
       <ul className="flex flex-col gap-3">
         {SWITCHES.map(({ type, label, description }) => (
           <li key={type} className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium">{label}</p>
-              <p className="text-xs text-muted-foreground">{description}</p>
+              <p className="text-sm font-medium">{t(label)}</p>
+              <p className="text-xs text-muted-foreground">{t(description)}</p>
             </div>
             <Switch
-              aria-label={label}
+              aria-label={t(label)}
               checked={actionConfirms(setting, type)}
               disabled={uiState.data === undefined}
               onCheckedChange={(next) => toggle(type, next)}

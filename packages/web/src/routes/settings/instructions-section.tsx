@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/toaster'
 import { LoadingState, SettingsSkeleton } from '@/components/loading-state'
+import { t, useLocale } from '@/lib/i18n'
 import { PromptTemplatesSection } from './prompt-templates-section'
 import { SettingsField } from './settings-field'
 import { useConfigSave } from './use-config-save'
@@ -29,6 +30,7 @@ const SYSTEM_PROMPT_MAX = 20_000
 const BRANCH_NAMING_MAX = 4_000
 
 export function InstructionsSection() {
+  useLocale()
   const config = useConfig()
 
   if (config.isPending) {
@@ -51,6 +53,7 @@ export function InstructionsSection() {
 }
 
 function InstructionsForm({ config }: { config: ConfigResponse }) {
+  useLocale()
   const save = useConfigSave()
 
   const [prompt, setPrompt] = useState(config.systemPrompt ?? '')
@@ -80,14 +83,14 @@ function InstructionsForm({ config }: { config: ConfigResponse }) {
     >
       <SettingsField
         title="System prompt"
-        hint="Read by every agent step of every new task in this project, whichever runner executes it. Added after the global instructions (General settings → Instructions) and takes precedence over them."
+        hint={t('Read by every agent step of every new task in this project, whichever runner executes it. Added after the global instructions (General settings → Instructions) and takes precedence over them.')}
       >
         <Textarea
           aria-label="System prompt"
           data-slot="instructions-system-prompt"
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
-          placeholder="Extra rules for every agent run — conventions, tone, review requirements…"
+          placeholder={t('Extra rules for every agent run — conventions, tone, review requirements…')}
           className="min-h-32 max-w-xl"
         />
         <div className="flex max-w-xl items-center gap-3">
@@ -106,21 +109,21 @@ function InstructionsForm({ config }: { config: ConfigResponse }) {
               {trimmedPrompt.length.toLocaleString()} characters — the limit is {SYSTEM_PROMPT_MAX.toLocaleString()}.
             </p>
           ) : (
-            <p className="text-meta text-soft-foreground">Leave empty and save to clear. Applied to new runs only.</p>
+            <p className="text-meta text-soft-foreground">{t('Leave empty and save to clear. Applied to new runs only.')}</p>
           )}
         </div>
       </SettingsField>
 
       <SettingsField
         title="Branch naming"
-        hint="How new task branches are named. Generated from the first prompt."
+        hint={t('How new task branches are named. Generated from the first prompt.')}
       >
         <Textarea
           aria-label="Branch naming"
           data-slot="instructions-branch-naming"
           value={branchNaming}
           onChange={(event) => setBranchNaming(event.target.value)}
-          placeholder="Describe your branch naming convention…"
+          placeholder={t('Describe your branch naming convention…')}
           className="min-h-24 max-w-xl"
         />
         <div className="flex max-w-xl items-center gap-3">
@@ -141,7 +144,7 @@ function InstructionsForm({ config }: { config: ConfigResponse }) {
             </p>
           ) : (
             <p className="text-meta text-soft-foreground">
-              Leave empty for the default names. A new task waits for its name before it forks.
+              {t('Leave empty for the default names. A new task waits for its name before it forks.')}
             </p>
           )}
         </div>

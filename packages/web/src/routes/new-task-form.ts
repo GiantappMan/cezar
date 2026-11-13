@@ -15,6 +15,7 @@ import type {
   WorkflowDef,
 } from '@open-mercato/cezar-api-client'
 import type { ReasoningEffortOption } from '@/components/reasoning-effort-pill'
+import { t } from '@/lib/i18n'
 
 /**
  * The new-task form's picker rules and its POST body, as pure functions — the exact semantics
@@ -255,7 +256,7 @@ export function modelCatalogStatus(
   if (!runnerDiscoversModels(runner)) return undefined
   const name = DISCOVERY_RUNNER_LABEL[runner]
   if (catalog?.stale) return `Using cached ${name} model list`
-  if (failed || catalog?.source === 'unavailable') return `Latest ${name} models unavailable`
+  if (failed || catalog?.source === 'unavailable') return t('Latest {name} models unavailable', { name })
   return undefined
 }
 

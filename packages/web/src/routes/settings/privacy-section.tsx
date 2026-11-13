@@ -4,6 +4,7 @@ import { ArrowUpRightIcon } from 'lucide-react'
 import { useTelemetryConsent } from '@/api/queries'
 import { useSetTelemetryConsent } from '@/components/telemetry-consent'
 import { Switch } from '@/components/ui/switch'
+import { t, useLocale } from '@/lib/i18n'
 import { TELEMETRY_DOC_URL } from '@/lib/telemetry-consent'
 
 /**
@@ -12,6 +13,7 @@ import { TELEMETRY_DOC_URL } from '@/lib/telemetry-consent'
  * switching off deletes the install id.
  */
 export function PrivacySection() {
+  useLocale()
   const consent = useTelemetryConsent()
   const setConsent = useSetTelemetryConsent()
   const [saving, setSaving] = React.useState(false)
@@ -32,13 +34,12 @@ export function PrivacySection() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-sm font-semibold text-foreground">
-              <label htmlFor="telemetry-enabled">Share usage data</label>
+              <label htmlFor="telemetry-enabled">{t('Share usage data')}</label>
             </h2>
             <p className="text-ui text-muted-foreground">
-              Task counts and crash reports, sent to cezar’s maintainers at Open Mercato
-              {data ? <> (<span className="font-mono text-label">{data.endpoint}</span>)</> : null}. Never
-              prompts, code, diffs, paths or repository names. Off unless you turn it on; turning it
-              off deletes this machine’s install id.
+              {t('Task counts and crash reports, sent to cezar’s maintainers at Open Mercato')}
+              {data ? <> (<span className="font-mono text-label">{data.endpoint}</span>)</> : null}
+              {t('. Never prompts, code, diffs, paths or repository names. Off unless you turn it on; turning it off deletes this machine’s install id.')}
             </p>
           </div>
           <Switch
@@ -58,8 +59,8 @@ export function PrivacySection() {
           </p>
         ) : blockedBy === 'automation' ? (
           <p data-slot="telemetry-blocked" className="text-ui text-muted-foreground">
-            This server runs under CI, a test runner or <code className="font-mono text-label">CEZ_DRY_RUN=1</code>,
-            so nothing is sent from it.
+            {t('This server runs under CI, a test runner or ')}<code className="font-mono text-label">CEZ_DRY_RUN=1</code>
+            {t(', so nothing is sent from it.')}
           </p>
         ) : null}
 

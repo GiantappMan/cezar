@@ -1233,6 +1233,7 @@ function AddProjectMenu() {
  */
 export function VersionChip({ version, latestVersion, brandName }: { version: string; latestVersion: string | null; brandName: string }) {
   const updateAvailable = Boolean(latestVersion && latestVersion !== version)
+  useLocale()
   // The chip opens the self-update dialog (PoC): channel, latest, and a version picker.
   const [open, setOpen] = React.useState(false)
   return (
@@ -1241,8 +1242,10 @@ export function VersionChip({ version, latestVersion, brandName }: { version: st
         type="button"
         data-slot="version-chip"
         data-update-available={updateAvailable ? 'true' : undefined}
-        title={updateAvailable ? `v${version} — update available: v${latestVersion}` : `v${version}`}
-        aria-label={updateAvailable ? `${brandName} v${version}, update to v${latestVersion} available — open updater` : `${brandName} v${version} — open updater`}
+        title={updateAvailable ? t('v{version} — update available: v{latest}', { version, latest: latestVersion }) : `v${version}`}
+        aria-label={updateAvailable
+          ? t('{brand} v{version}, update to v{latest} available — open updater', { brand: brandName, version, latest: latestVersion })
+          : t('{brand} v{version} — open updater', { brand: brandName, version })}
         onClick={() => setOpen(true)}
         className="flex min-w-0 cursor-pointer items-center gap-1 rounded-full border border-border px-1.5 py-px font-mono text-micro font-medium text-soft-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
@@ -1272,14 +1275,16 @@ export function VersionChip({ version, latestVersion, brandName }: { version: st
  */
 export function StarChip({ count }: { count: number }) {
   const formatted = formatStarCount(count)
+  useLocale()
+  const starTitle = t('Star cezar on GitHub — {count} stars', { count: count.toLocaleString() })
   return (
     <a
       data-slot="star-chip"
       href={CEZAR_REPO_URL}
       target="_blank"
       rel="noopener noreferrer"
-      title={`Star cezar on GitHub — ${count.toLocaleString()} stars`}
-      aria-label={`Star cezar on GitHub — ${count.toLocaleString()} stars`}
+      title={starTitle}
+      aria-label={starTitle}
       className="flex shrink-0 items-center gap-1 rounded-full border border-border px-1.5 py-px font-mono text-micro font-medium text-soft-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
     >
       <span aria-hidden="true">⭐</span>

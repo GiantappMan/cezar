@@ -2603,7 +2603,7 @@ export const zhCN: Record<string, string> = {
   'Encrypted with a data key in ~/.cezar/secrets/.key (0600) — no OS keychain is available on this machine, so this is a private file, not a vault.':
     '使用 ~/.cezar/secrets/.key (0600) 中的数据密钥加密 —— 本机没有可用的操作系统钥匙串，因此这是私密文件而非保险库。',
   'Add or replace a secret': '添加或替换密钥',
-  'Name': '名称',
+  // 'Name' 已有词条，此处不再重复 —— 对象字面量的同名键会直接让 tsc 报 TS1117。
   'Value': '值',
   'Check steps (workflow commands)': '检查步骤（工作流命令）',
   'cezar itself (its own features — not the agents)': 'cezar 自身（它自己的功能 —— 不含智能体）',
@@ -2613,4 +2613,83 @@ export const zhCN: Record<string, string> = {
   '{name} saved': '{name} 已保存',
   '{name} removed': '{name} 已移除',
   'pick at least one audience': '请至少选择一个接收方',
+
+  // ---- 第九轮补漏（设置首页：项目文件夹 / Webhook 卡；外部集成页：TesterArmy e2e 卡；外壳提示） ----
+  // integrations-section.tsx
+  'Tools cezar can set up in this project for you — each one as a task you review and merge.':
+    'cezar 可以替你在这个项目里配置的工具 —— 每一项都是一个任务，由你审查并合并。',
+  'Test frameworks': '测试框架',
+  // tester-army-e2e-card.tsx
+  'Setting up — cezar is installing and configuring e2e in its own worktree.': '正在设置 —— cezar 在自己的工作树中安装并配置 e2e。',
+  'its draft PR is ready — merge it to finish.': '它的草稿 PR 已就绪 —— 合并即可完成。',
+  'merge branch {branch} to finish.': '合并分支 {branch} 即可完成。',
+  'merge the setup task’s branch to finish.': '合并设置任务的分支即可完成。',
+  'Ready for review — {next}': '待审查 —— {next}',
+  'Setup finished.': '设置完成。',
+  'Setup finished — {next}': '设置完成 —— {next}',
+  'The last setup failed — open the task to see why, then try again.': '上一次设置失败了 —— 打开任务查看原因，然后重试。',
+  'The last setup was cancelled.': '上一次设置已被取消。',
+  'e2e setup started': 'e2e 设置已启动',
+  'Setting up': '设置中',
+  'Not set up': '未设置',
+  'cezar installs it for this project, points it at your dev server, writes a smoke test and an':
+    'cezar 会为这个项目安装它、指向你的开发服务器，编写一个冒烟测试和一个',
+  'workflow, proves it all passes in a real browser and opens a draft PR for you to merge.':
+    '工作流，在真实浏览器中验证全部通过，并开一个草稿 PR 供你合并。',
+  'Loading status…': '正在加载状态…',
+  'Configured': '已配置',
+  'Not configured in this checkout': '此检出中尚未配置',
+  'workflow available': '工作流可用',
+  'workflow not added yet': '工作流尚未添加',
+  'Model key:': '模型密钥：',
+  'Open the draft PR': '打开草稿 PR',
+  'Open the setup task': '打开设置任务',
+  'Set up again': '重新设置',
+  'Set up e2e': '设置 e2e',
+  'Model provider': '模型提供商',
+  'API key': 'API 密钥',
+  '(optional)': '（可选）',
+  ' — stored': ' —— 已存储',
+  'stored — leave empty to keep it': '已存储 —— 留空即保持不变',
+  'Setup in progress…': '设置进行中…',
+  'e2e status': 'e2e 状态',
+  // project-location.tsx
+  'Project folder': '项目文件夹',
+  'Project folder copied': '已复制项目文件夹路径',
+  'Where this project lives on disk. Every task worktree, git command and agent run resolves against it.':
+    '此项目在磁盘上的位置。所有任务工作树、git 命令和智能体运行都以它为基准。',
+  'Copy the project folder path': '复制项目文件夹路径',
+  'click to copy': '点击复制',
+  'Open with': '打开方式',
+  'Opening the project folder in {app}': '正在用 {app} 打开项目文件夹',
+  // webhook-card.tsx
+  'Task updates sent to Slack, Discord or your own endpoint.': '将任务动态发送到 Slack、Discord 或你自己的端点。',
+  'Status unavailable — could not load server health.': '状态不可用 —— 无法加载服务器健康信息。',
+  // 'Loading webhook status…' 已有词条（webhooks 一节），不再重复。
+  'Not available on this server’s platform.': '此服务器平台不支持。',
+  'Off on this server.': '此服务器上 Webhook 未开启。',
+  'Status unavailable — open Webhooks for details.': '状态不可用 —— 详情请打开「Webhook」。',
+  'No receivers yet.': '还没有接收端。',
+  '{n} active': '{n} 个活跃',
+  '{n} paused': '{n} 个已暂停',
+  '{n} inactive': '{n} 个未激活',
+  '{n} need attention': '{n} 条需要处理',
+  '{n} pending': '{n} 条待投递',
+  'Webhook delivery needs attention. Open Webhooks for details.': 'Webhook 投递需要处理。详情请打开「Webhook」。',
+  'Manage webhooks': '管理 Webhook',
+  'Open webhook settings': '打开 Webhook 设置',
+  // settings-shell.tsx 残留的 tooltip / aria
+  'Back (Esc)': '返回 (Esc)',
+  'Settings sections': '设置分区',
+  'Settings navigation': '设置导航',
+  'Sections of this area': '此区域的分区',
+  'Open settings menu': '打开设置菜单',
+  'Collapse {name}': '折叠 {name}',
+  'Expand {name}': '展开 {name}',
+  'Open {name}’s {section}': '打开 {name} 的「{section}」',
+  // app-shell.tsx：设置侧栏页脚的版本 / 点星芯片
+  'v{version} — update available: v{latest}': 'v{version} —— 有可用更新：v{latest}',
+  '{brand} v{version}, update to v{latest} available — open updater': '{brand} v{version}，可更新到 v{latest} —— 打开更新器',
+  '{brand} v{version} — open updater': '{brand} v{version} —— 打开更新器',
+  'Star cezar on GitHub — {count} stars': '在 GitHub 上给 cezar 点星 —— {count} 个 star',
 }

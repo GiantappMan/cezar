@@ -286,6 +286,7 @@ function ProjectTreeRow({
 }) {
   const active = project.id === activeProjectId
   const touch = React.useContext(TouchTargetsContext)
+  useLocale()
   // Unique per INSTANCE: below `md` the hidden desktop column and the open drawer both render
   // this row, and `aria-controls` must not point at the hidden twin.
   const bodyId = `settings-project-${React.useId()}-${project.id}`
@@ -309,7 +310,7 @@ function ProjectTreeRow({
           // Only while the body is rendered: a reference to an id that is not in the DOM is an
           // a11y error, and a collapsed row has no body.
           aria-controls={expanded ? bodyId : undefined}
-          aria-label={`${expanded ? 'Collapse' : 'Expand'} ${project.name}`}
+          aria-label={expanded ? t('Collapse {name}', { name: project.name }) : t('Expand {name}', { name: project.name })}
           className={cn(
             'flex shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted/60 hover:text-foreground',
             touch ? 'size-11' : 'size-7',
@@ -324,7 +325,7 @@ function ProjectTreeRow({
           <RouterLink
             to={switchTo}
             data-slot="settings-project-link"
-            title={`Open ${project.name}'s ${sections.find((s) => s.id === openSectionId)?.title ?? 'General'}`}
+            title={t('Open {name}’s {section}', { name: project.name, section: t(sections.find((s) => s.id === openSectionId)?.title ?? 'General') })}
             className={cn(
               'flex min-w-0 flex-1 items-center gap-1.5 rounded-md py-1.5 pr-2 text-left text-ui font-semibold text-muted-foreground transition-colors hover:text-foreground',
               touch && 'min-h-11',
@@ -407,6 +408,7 @@ function SettingsMobileDrawer({ onOpenChange, ...props }: SidebarProps & {
   onOpenChange: (open: boolean) => void
 }) {
   const { pathname } = useLocation()
+  useLocale()
   React.useEffect(() => {
     onOpenChange(false)
   }, [pathname, onOpenChange])
@@ -420,7 +422,7 @@ function SettingsMobileDrawer({ onOpenChange, ...props }: SidebarProps & {
     return () => query.removeEventListener('change', onChange)
   }, [onOpenChange])
   return (
-    <SidebarDrawer slot="settings-mobile-drawer" title="Settings navigation">
+    <SidebarDrawer slot="settings-mobile-drawer" title={t('Settings navigation')}>
       {(closeButton) => <SettingsSidebarContent {...props} headerAction={closeButton} />}
     </SidebarDrawer>
   )
@@ -485,7 +487,7 @@ function SettingsSidebarContent({
           variant="ghost"
           size="sm"
           data-slot="settings-back"
-          title="Back (Esc)"
+          title={t('Back (Esc)')}
           onClick={leave}
           // h-[26px]: the brand tile's height. A taller control would grow this row and shift
           // the logo down the moment settings opens — the row must be pixel-identical to the
@@ -499,7 +501,7 @@ function SettingsSidebarContent({
       </div>
 
       <nav
-        aria-label="Settings sections"
+        aria-label={t('Settings sections')}
         data-slot="settings-nav"
         data-scope={scope}
         className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain px-2.5 py-1.5"
@@ -610,7 +612,7 @@ function SectionPills({
     )
   return (
     <nav
-      aria-label="Sections of this area"
+      aria-label={t('Sections of this area')}
       data-slot="settings-nav-mobile"
       className="flex shrink-0 gap-1.5 overflow-x-auto border-b border-border px-3 py-2.5 md:hidden"
     >
@@ -647,6 +649,7 @@ function SectionPills({
  *  desktop. A `div`, not a `header`: the density e2e measures the route's first `header`,
  *  which is the page header. */
 function MobileBar({ title, projectName }: { title: string; projectName: string | null }) {
+  useLocale()
   return (
     <div
       data-slot="settings-mobile-bar"
@@ -659,7 +662,7 @@ function MobileBar({ title, projectName }: { title: string; projectName: string 
       {/* A real SheetTrigger, as in the app shell: Radix restores focus here on close and
           wires aria-haspopup / aria-expanded / aria-controls. The drawer holds Back. */}
       <SheetTrigger asChild>
-        <Button type="button" variant="ghost" size="icon" aria-label="Open settings menu" className="size-11">
+        <Button type="button" variant="ghost" size="icon" aria-label={t('Open settings menu')} className="size-11">
           <MenuIcon aria-hidden="true" className="size-[17px]" />
         </Button>
       </SheetTrigger>

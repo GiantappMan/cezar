@@ -4,6 +4,7 @@ import { openProjectIn } from '@/api/client'
 import { useHealth, useOpenTargets, useProjects } from '@/api/queries'
 import { OpenInMenu, cliTargetRunner } from '@/components/open-in-menu'
 import { toast } from '@/components/ui/toaster'
+import { t, useLocale } from '@/lib/i18n'
 import { useActiveProjectId } from '@/lib/project-router'
 import { withServedBootProject } from '@/lib/served-boot-project'
 import { SettingsField } from './settings-field'
@@ -41,17 +42,18 @@ export function useActiveProjectRoot(): string | null {
  *  so the user can select it by hand instead of being told nothing happened. */
 function copyPath(root: string) {
   void writeClipboard(root)
-    .then(() => toast('Project folder copied'))
+    .then(() => toast(t('Project folder copied')))
     .catch(() => toast(root))
 }
 
 export function ProjectFolderField() {
+  useLocale()
   const root = useActiveProjectRoot()
   if (root === null) return null
   return (
     <SettingsField
-      title="Project folder"
-      hint="Where this project lives on disk. Every task worktree, git command and agent run resolves against it."
+      title={t('Project folder')}
+      hint={t('Where this project lives on disk. Every task worktree, git command and agent run resolves against it.')}
     >
       <div
         data-slot="project-location"
@@ -70,11 +72,11 @@ export function ProjectFolderField() {
           <button
             type="button"
             data-action="project-location-copy"
-            title="Copy the project folder path"
+            title={t('Copy the project folder path')}
             onClick={() => copyPath(root)}
             className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            Copy
+            {t('Copy')}
           </button>
           <OpenWithMenu root={root} />
         </div>
@@ -84,15 +86,18 @@ export function ProjectFolderField() {
 }
 
 export function ProjectLocationNav() {
+  useLocale()
   const root = useActiveProjectRoot()
   if (root === null) return null
   return (
     <div data-slot="project-location" data-variant="nav" className="mt-auto px-2.5 pt-3">
-      <p className="text-meta text-soft-foreground">Project folder</p>
+      <p className="text-meta text-soft-foreground">{t('Project folder')}</p>
       <button
         type="button"
         data-action="project-location-copy"
-        title={`${root} — click to copy`}
+        // The path stays outside t()'s {hole} replacement: a `$&`-bearing path would be eaten by
+        // String#replace's special replacement patterns.
+        title={`${root} — ${t('click to copy')}`}
         onClick={() => copyPath(root)}
         className="block w-full truncate text-left font-mono text-meta text-muted-foreground transition-colors hover:text-foreground"
       >
@@ -114,6 +119,7 @@ export function ProjectLocationNav() {
  * empty target list, and a menu whose every item is missing is worse than no menu.
  */
 function OpenWithMenu({ root }: { root: string }) {
+  useLocale()
   const targets = useOpenTargets()
   const open = useMutation({
     mutationFn: (target: string) => openProjectIn(target),
@@ -127,7 +133,7 @@ function OpenWithMenu({ root }: { root: string }) {
   return (
     <OpenInMenu
       slot="project-location-open"
-      label="Open with"
+      label={t('Open with')}
       triggerVariant="outline"
       title={root}
       disabled={open.isPending}
@@ -137,7 +143,7 @@ function OpenWithMenu({ root }: { root: string }) {
       onPick={(target) =>
         open.mutate(target, {
           onSuccess: () =>
-            toast(`Opening the project folder in ${choices.find((c) => c.target.id === target)?.target.label ?? target}`),
+            toast(t('Opening the project folder in {app}', { app: choices.find((c) => c.target.id === target)?.target.label ?? target })),
         })
       }
     />

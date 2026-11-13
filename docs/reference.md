@@ -1299,6 +1299,10 @@ npm run test:package # pack/install and exercise the built CLI
 npm run test:e2e     # real-browser cockpit suite (agent-browser)
 ```
 
+`bun` works too: `bun install` then `bun run dev` (same for the other scripts). The dev
+launcher detects a non-npm runner and drives the workspaces through the npm that ships
+beside node, so both package managers share one script.
+
 The stack is deliberately small: **TypeScript** (strict, ESM), **Hono** + SSE for
 the server, **Zod** at every boundary, **YAML** for workflows, and a **React 19 +
 Vite + Tailwind v4 + shadcn/ui** cockpit shipped pre-built in `packages/cezar/web/dist/` — the

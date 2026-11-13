@@ -15,6 +15,7 @@
 // package that owns each process also owns how it starts.
 
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { createServer } from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -35,12 +36,18 @@ if (apiPort !== 4321) console.log(`dev: port 4321 is taken (another cockpit?) �
 
 // Under `npm run`, npm_execpath is npm's own cli.js — running it through
 // process.execPath works on every platform (no .cmd shim needed on Windows).
-const npmExecpath = process.env.npm_execpath;
+// Other runners (bun, pnpm) set it to their own EXECUTABLE, which node cannot
+// load as a script — so fall back to the npm that ships beside this node, and
+// to the shell shim if even that is missing.
+const npmExecpath = process.env.npm_execpath?.endsWith('.js')
+  ? process.env.npm_execpath
+  : path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+const useExecpath = existsSync(npmExecpath);
 const npmCli = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const run = (script, extraArgs) => {
   const args = ['run', script, '--', ...extraArgs];
   const env = { ...process.env, CEZ_API_PORT: String(apiPort) };
-  return npmExecpath
+  return useExecpath
     ? spawn(process.execPath, [npmExecpath, ...args], { cwd: repoRoot, stdio: 'inherit', env })
     : spawn(npmCli, args, { cwd: repoRoot, stdio: 'inherit', env, shell: process.platform === 'win32' });
 };

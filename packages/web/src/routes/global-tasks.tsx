@@ -24,6 +24,7 @@ import {
 } from '@/api/queries'
 import type { ProjectListEntry, RunIndexEntry, RunsIndexResponse } from '@open-mercato/cezar-api-client'
 import { dispatchKindLabel, subtaskLabel, taskTreeRows, type TaskTreeInput } from '@/lib/task-tree'
+import { t, useLocale } from '@/lib/i18n'
 import { CenteredState } from '@/components/centered-state'
 import { FacetFilter, SegmentedControl, ToggleChip } from '@/components/facet-filter'
 import { Segmented } from '@/components/segmented'
@@ -237,6 +238,7 @@ function useIndexedRunMutation<V extends { task: GlobalTask }>({
 
 export function GlobalTasksRoute() {
   const projects = useProjects()
+  useLocale()
   // The same host gate the per-project table honours: `CEZ_HIDE_COST` and friends turn these
   // columns off everywhere, and a cross-project view is not an exception.
   const metrics = usageMetricVisibility(useHealth().data)
@@ -409,7 +411,7 @@ export function GlobalTasksRoute() {
         <CenteredState
           icon={<LayersIcon />}
           tone="danger"
-          title="Tasks across projects did not load"
+          title={t('Tasks across projects did not load')}
           subtitle={(index.error ?? projects.error)?.message}
         />
       </div>
@@ -426,8 +428,8 @@ export function GlobalTasksRoute() {
         type="text"
         value={queryDraft}
         onChange={(event) => setQueryDraft(event.target.value)}
-        placeholder="Search every project…"
-        aria-label="Search tasks across projects"
+        placeholder={t('Search every project…')}
+        aria-label={t('Search tasks across projects')}
         className="h-9 w-full rounded-md border border-input bg-card pr-3 pl-8 text-ui text-foreground outline-none placeholder:text-soft-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
       />
     </div>
@@ -513,7 +515,7 @@ export function GlobalTasksRoute() {
                         {group.label}
                       </Link>
                     ) : (
-                      group.label
+                      t(group.label)
                     )}
                     <span className="font-mono text-meta font-medium tabular-nums">
                       {group.tasks.length}
@@ -622,6 +624,7 @@ function FilterBar({
   /** Rows each origin would show under the current facets and view. */
   originCounts: Record<TaskOrigin, number>
 }) {
+  useLocale()
   const tags = React.useMemo(() => allProjectTags(projects), [projects])
 
   // One `tasksExcludingFacet` per facet: the counts a facet shows must not already assume that
@@ -649,9 +652,9 @@ function FilterBar({
       <div className="flex flex-wrap items-center gap-1.5">
         <Segmented
           slot="task-origin"
-          label="Show tasks started by"
+          label={t('Show tasks started by')}
           value={origin}
-          options={TASK_ORIGIN_OPTIONS.map((option) => ({ ...option, count: originCounts[option.value] }))}
+          options={TASK_ORIGIN_OPTIONS.map((option) => ({ ...option, label: t(option.label), count: originCounts[option.value] }))}
           onChange={onOriginChange}
         />
         <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
@@ -659,45 +662,45 @@ function FilterBar({
             one project is that project's own Tasks page, which every project name here links to. */}
         <FacetFilter
           slot="status"
-          label="Status"
+          label={t('Status')}
           selected={filters.statuses}
           onToggle={(value) => onToggle('statuses', value)}
           onClear={() => onClearFacet('statuses')}
           options={allStatuses(tasks)
-            .map((status) => ({ value: status, label: status }))
+            .map((status) => ({ value: status, label: t(status) }))
             .map(withCount(counts.statuses))}
-          emptyLabel="No tasks to filter"
+          emptyLabel={t('No tasks to filter')}
         />
         <FacetFilter
           slot="workflow"
-          label="Workflow"
+          label={t('Workflow')}
           selected={filters.workflows}
           onToggle={(value) => onToggle('workflows', value)}
           onClear={() => onClearFacet('workflows')}
           options={allWorkflows(tasks)
             .map((workflow) => ({ value: workflow, label: workflow }))
             .map(withCount(counts.workflows))}
-          emptyLabel="No tasks to filter"
+          emptyLabel={t('No tasks to filter')}
         />
         <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
-        <span className="text-meta font-medium text-soft-foreground">Group by</span>
+        <span className="text-meta font-medium text-soft-foreground">{t('Group by')}</span>
         {/* Pressing the pressed one releases it — see `toggleGroupBy`, which is why there is
             no "None" button to hunt for. */}
         <SegmentedControl
           slot="group-by"
-          label="Group tasks by"
+          label={t('Group tasks by')}
           value={groupBy}
-          options={GROUP_BY_OPTIONS}
+          options={GROUP_BY_OPTIONS.map((option) => ({ ...option, label: t(option.label) }))}
           onChange={(picked) => onGroupByChange(toggleGroupBy(groupBy, picked))}
         />
         {/* Same labelled-segmented grammar as Group by beside it. */}
         <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
-        <span className="text-meta font-medium text-soft-foreground">Sort by</span>
+        <span className="text-meta font-medium text-soft-foreground">{t('Sort by')}</span>
         <Segmented
           slot="sort-by"
-          label="Sort tasks by"
+          label={t('Sort tasks by')}
           value={sortBy}
-          options={SORT_OPTIONS}
+          options={SORT_OPTIONS.map((option) => ({ ...option, label: t(option.label) }))}
           onChange={onSortByChange}
         />
         {canReset({ filters, groupBy }) ? (
@@ -708,8 +711,7 @@ function FilterBar({
             className="ml-auto inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <XIcon className="size-3" aria-hidden="true" />
-            Clear
-            {` (${resetCount({ filters, groupBy })})`}
+            {t('Clear ({n})', { n: resetCount({ filters, groupBy }) })}
           </button>
         ) : null}
       </div>
@@ -732,7 +734,7 @@ function FilterBar({
               real question, and it is the one this chip answers. */}
           <ToggleChip
             slot="tag-filter"
-            label="Untagged"
+            label={t('Untagged')}
             count={counts.tags.get(UNTAGGED) ?? 0}
             selected={filters.tags.includes(UNTAGGED)}
             onToggle={() => onToggle('tags', UNTAGGED)}
@@ -1115,7 +1117,7 @@ function ReadToggle({
           <Icon className="size-3.5" aria-hidden="true" />
         </button>
       </TooltipTrigger>
-      <TooltipContent side="left">{unread ? 'Mark read' : 'Mark unread'}</TooltipContent>
+      <TooltipContent side="left">{unread ? t('Mark read') : t('Mark unread')}</TooltipContent>
     </Tooltip>
   )
 }
@@ -1294,15 +1296,15 @@ function GlobalTasksEmptyState({
           heading="h2"
           icon={<LayersIcon />}
           tone="neutral"
-          title={origin === 'regular' ? 'No regular tasks here' : 'No automation tasks here'}
+          title={origin === 'regular' ? t('No regular tasks here') : t('No automation tasks here')}
           subtitle={
             origin === 'regular'
-              ? 'Tasks started by automations are hidden.'
-              : 'Only tasks started by automations are shown.'
+              ? t('Tasks started by automations are hidden.')
+              : t('Only tasks started by automations are shown.')
           }
           actions={
             <Button type="button" variant="outline" onClick={onShowAll}>
-              Show all tasks
+              {t('Show all tasks')}
             </Button>
           }
         />
@@ -1315,8 +1317,8 @@ function GlobalTasksEmptyState({
         heading="h2"
         icon={<SearchXIcon />}
         tone="neutral"
-        title="No matching tasks"
-        subtitle="No task in any project matches these filters."
+        title={t('No matching tasks')}
+        subtitle={t('No task in any project matches these filters.')}
       />
     )
   }
@@ -1325,16 +1327,16 @@ function GlobalTasksEmptyState({
       heading="h2"
       icon={<ArchiveIcon />}
       tone="neutral"
-      title="Nothing archived yet"
-      subtitle="Finished tasks you archive land here, from every project."
+      title={t('Nothing archived yet')}
+      subtitle={t('Finished tasks you archive land here, from every project.')}
     />
   ) : (
     <CenteredState
       heading="h2"
       icon={<ListChecksIcon />}
       tone="neutral"
-      title="No tasks yet"
-      subtitle="Start a task in any project and it shows up here."
+      title={t('No tasks yet')}
+      subtitle={t('Start a task in any project and it shows up here.')}
     />
   )
 }

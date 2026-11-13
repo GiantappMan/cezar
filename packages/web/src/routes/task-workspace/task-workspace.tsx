@@ -72,6 +72,7 @@ import { ViewDropZones } from './view-drop-zones'
 import { WorkspaceColumns, type ColumnActions } from './workspace-columns'
 import { IMPACT_FILE, impactAssetsPath } from '../task-assets/impact-model'
 import { useImpactAutoSwitch } from '../task-assets/use-impact-auto-switch'
+import { t } from '@/lib/i18n'
 
 /** Lazy: xterm is the heaviest thing on this screen, and most visits never open a shell. */
 const TerminalDrawer = lazy(() =>
@@ -132,15 +133,15 @@ export function TaskWorkspaceRoute({ view }: { view?: ViewId }) {
         <CenteredState
           icon={notFound ? <SearchXIcon /> : <MessageSquareTextIcon />}
           tone={notFound ? 'neutral' : 'danger'}
-          title={notFound ? 'Task not found' : 'Could not load this task'}
+          title={notFound ? t('Task not found') : t('Could not load this task')}
           subtitle={
             notFound
-              ? 'No run has this id. It may have been deleted, or the link is from another machine.'
+              ? t('No run has this id. It may have been deleted, or the link is from another machine.')
               : run.error.message
           }
           actions={
             <Button asChild variant="outline">
-              <Link to="/">Back to tasks</Link>
+              <Link to="/">{t('Back to tasks')}</Link>
             </Button>
           }
         />
@@ -440,8 +441,8 @@ function WorkspaceView({
         variant="ghost"
         size="icon-sm"
         data-action="maximize-layout"
-        aria-label="Full view"
-        title="Full view — hide everything but this layout (F)"
+        aria-label={t('Full view')}
+        title={t('Full view — hide everything but this layout (F)')}
         className="text-muted-foreground"
         onClick={toggleMaximized}
       >
@@ -644,13 +645,13 @@ function WorkspaceView({
   const headerExtras = useCallback(
     (view: ViewId) =>
       view === 'terminal' && terminalAllowed ? (
-        <IconTooltip label="Move to bottom — under every view">
+        <IconTooltip label={t('Move to bottom — under every view')}>
           <Button
             type="button"
             variant="ghost"
             size="icon-xs"
             data-action="terminal-to-drawer"
-            aria-label="Move to bottom"
+            aria-label={t('Move to bottom')}
             onClick={moveTerminalToDrawer}
             className="text-soft-foreground hover:text-foreground"
           >
@@ -676,20 +677,20 @@ function WorkspaceView({
           return <FilesView run={run} embedded stateKey={`${run.id}:${layoutName}:${index}:files`} />
         case 'graph':
           return (
-            <Suspense fallback={<ColumnLoading title="Loading graph…" />}>
+            <Suspense fallback={<ColumnLoading title={t('Loading graph…')} />}>
               <GraphColumn run={run} embedded />
             </Suspense>
           )
         case 'assets':
           // A layout of the Assets view alone keeps its selection in the URL; a split one does not.
           return (
-            <Suspense fallback={<ColumnLoading title="Loading assets…" />}>
+            <Suspense fallback={<ColumnLoading title={t('Loading assets…')} />}>
               <AssetsColumn runId={run.id} run={run} routed={column.width >= 100} />
             </Suspense>
           )
         case 'terminal':
           return terminalAllowed ? (
-            <Suspense fallback={<ColumnLoading title="Loading terminal…" />}>
+            <Suspense fallback={<ColumnLoading title={t('Loading terminal…')} />}>
               <TerminalDrawer runId={run.id} height={0} onHeightChange={noop} onOpenInBrowser={openInBrowser} fill />
             </Suspense>
           ) : (
@@ -697,8 +698,8 @@ function WorkspaceView({
               icon={<TerminalIcon />}
               tone="neutral"
               heading="h2"
-              title="Terminal disabled"
-              subtitle="The terminal is off on this cockpit — it is off in hosted mode unless CEZ_TERMINAL=1."
+              title={t('Terminal disabled')}
+              subtitle={t('The terminal is off on this cockpit — it is off in hosted mode unless CEZ_TERMINAL=1.')}
             />
           )
         case 'browser':
@@ -801,11 +802,11 @@ function WorkspaceView({
                 icon={<LayoutGridIcon />}
                 tone="neutral"
                 heading="h2"
-                title="No layouts"
-                subtitle="You closed every layout of this task. Create a new one, or come back later — the task will open with a Chat layout."
+                title={t('No layouts')}
+                subtitle={t('You closed every layout of this task. Create a new one, or come back later — the task will open with a Chat layout.')}
                 actions={
                   <Button variant="outline" onClick={createLayout}>
-                    New layout
+                    {t('New layout')}
                   </Button>
                 }
               />

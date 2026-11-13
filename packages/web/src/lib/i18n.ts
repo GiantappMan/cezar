@@ -31,18 +31,22 @@ export function writeLocalePref(pref: LocalePref): void {
 }
 
 function browserPrefersZh(): boolean {
-  return typeof navigator !== 'undefined' && navigator.language.toLowerCase().startsWith('zh')
+  // `navigator.language` is undefined in some test environments (see dictation-language.ts).
+  return typeof navigator !== 'undefined' && (navigator.language ?? '').toLowerCase().startsWith('zh')
 }
 
-// Cache keyed on the stored pref so t() costs one localStorage read per render pass at most.
-let cachedPref: string | null = null
+// Cache keyed on pref + browser language so t() costs one localStorage read per render pass
+// at most, while a changed browser language still re-evaluates under 'auto'.
+let cachedKey: string | null = null
 let cachedLocale: Locale = 'en'
 
 export function resolveLocale(): Locale {
   const pref = readLocalePref()
-  if (pref !== cachedPref) {
-    cachedPref = pref
-    cachedLocale = pref === 'zh' ? 'zh' : pref === 'en' ? 'en' : browserPrefersZh() ? 'zh' : 'en'
+  const browser = browserPrefersZh() ? 'zh' : 'en'
+  const key = `${pref}|${browser}`
+  if (key !== cachedKey) {
+    cachedKey = key
+    cachedLocale = pref === 'zh' ? 'zh' : pref === 'en' ? 'en' : browser
   }
   return cachedLocale
 }

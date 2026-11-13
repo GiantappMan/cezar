@@ -25,6 +25,7 @@ import { Coverage } from './rows'
 import { ExportRows } from './export-rows'
 import { OutcomeInsights } from './insights'
 import { useDashboardFilter } from './url-filter'
+import { t } from '@/lib/i18n'
 
 const labels = {
   running: 'Running now',
@@ -140,22 +141,22 @@ export function Overview({
                         onCurrent(group, event.currentTarget)
                       else open(group)
                     }}
-                    aria-label={`${labels[group]}: ${value}`}
+                    aria-label={t('{label}: {n}', { label: t(labels[group]), n: value })}
                   >
                     <MetricContent
-                      label={labels[group]}
+                      label={t(labels[group])}
                       value={value}
                       icon={<Icon className="size-4" />}
                     >
                       {group === 'running' || group === 'needs-you'
-                        ? 'Current state'
-                        : `Last ${period === '7d' ? 7 : 30} calendar days`}
+                        ? t('Current state')
+                        : t('Last {n} calendar days', { n: period === '7d' ? 7 : 30 })}
                     </MetricContent>
                     <span
                       data-export-exclude
                       className="mt-4 flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover/metric:text-foreground"
                     >
-                      View tasks{' '}
+                      {t('View tasks')}{' '}
                       <ChevronRight
                         className="size-3 transition-transform group-hover/metric:translate-x-0.5 motion-reduce:transition-none"
                         aria-hidden="true"
@@ -342,7 +343,7 @@ export function Overview({
         >
           <SheetHeader>
             <SheetTitle>
-              {selection ? labels[selection.group] : 'Tasks'}
+              {selection ? t(labels[selection.group]) : t('Tasks')}
               {selection?.projectId ? ` · ${selection.projectId}` : ''}
             </SheetTitle>
             <SheetDescription>
@@ -459,9 +460,9 @@ function OutcomeTask({
   const inactive = removed || obsolete
   const attention = deriveAttention(row)
   const label = current && removed
-    ? 'Task removed'
+    ? t('Task removed')
     : obsolete
-      ? group === 'running' ? 'No longer running' : 'No longer needs you'
+      ? group === 'running' ? t('No longer running') : t('No longer needs you')
       : attention.label
   return (
     <div className="border-b py-3">
@@ -478,7 +479,7 @@ function OutcomeTask({
       </Link>
       <p className="text-xs text-muted-foreground">
         <StatusDot tone={attention.tone} /> {projectName(row.projectId)} ·{' '}
-        {label} · {row.archived ? 'Archived · ' : ''}
+        {label} · {row.archived ? t('Archived · ') : ''}
         <time
           dateTime={row.finishedAt ?? row.createdAt}
           title={new Date(row.finishedAt ?? row.createdAt).toLocaleString()}

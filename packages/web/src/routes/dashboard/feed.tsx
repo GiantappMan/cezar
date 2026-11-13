@@ -8,12 +8,13 @@ import { Card } from '@/components/ui/card'
 import { SegmentedControl } from '@/components/facet-filter'
 import { isIdleClosed } from '@/lib/attention'
 import { shortAge } from '@/lib/format'
+import { t, useLocale } from '@/lib/i18n'
 import { TaskRow, Coverage } from './rows'
 import { DashboardEntryContext, readPanel, savePanel, useStagedRows } from './state'
 function sourceLabel(key: string) {
-  if (!key.startsWith('github:')) return key === 'tasks' ? 'Task results' : key
+  if (!key.startsWith('github:')) return key === 'tasks' ? t('Task results') : key
   const parts = key.slice(7).split(':')
-  const kind = parts.pop() === 'pr' ? 'Pull requests' : 'Issues'
+  const kind = parts.pop() === 'pr' ? t('Pull requests') : t('Issues')
   const name = parts
     .join(':')
     .replace(/^project:/, 'Project ')
@@ -41,6 +42,7 @@ export function Feed({
   const rows = staged.rows
   const updates = staged.updates
   const entry = useContext(DashboardEntryContext)
+  useLocale()
   const list = useRef<HTMLDivElement>(null)
   const scrollKey = `feed:${filter}`
   const restore = useMemo(() => ({
@@ -76,18 +78,18 @@ export function Feed({
       <div className="space-y-2 border-b px-4 pt-2.5 pb-2">
         <div className="flex min-h-9 flex-wrap items-center justify-between gap-2">
           <h2 ref={heading} tabIndex={-1} className={widgetHeading}>
-            {tasksOnly ? 'Recent results' : 'Recent results & GitHub'}
+            {tasksOnly ? t('Recent results') : t('Recent results & GitHub')}
           </h2>
-          <span className="font-mono text-meta text-soft-foreground">Last 7 days</span>
+          <span className="font-mono text-meta text-soft-foreground">{t('Last 7 days')}</span>
         </div>
         {!tasksOnly && (
           <SegmentedControl
             slot="dashboard-feed"
-            label="Results source"
+            label={t('Results source')}
             value={filter}
             options={[
-              { value: 'all', label: 'All' },
-              { value: 'tasks', label: 'Tasks' },
+              { value: 'all', label: t('All') },
+              { value: 'tasks', label: t('Tasks') },
               { value: 'github', label: 'GitHub' },
             ]}
             onChange={setFilter}
@@ -139,10 +141,10 @@ export function Feed({
                   }}
                 >
                   {query.githubFetching
-                    ? 'Refreshing…'
+                    ? t('Refreshing…')
                     : errors.length || githubFailed
-                      ? 'Retry GitHub'
-                      : 'Refresh GitHub'}
+                      ? t('Retry GitHub')
+                      : t('Refresh GitHub')}
                 </Button>
               )}
             </div>

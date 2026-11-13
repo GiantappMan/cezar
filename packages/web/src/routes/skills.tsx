@@ -26,6 +26,7 @@ import { Switch } from '@/components/ui/switch'
 import { toast } from '@/components/ui/toaster'
 import { LoadingState, RowsSkeleton } from '@/components/loading-state'
 import { filterSkills, groupSkillsByRepo, isProjectSkill, orderSkills, skillUsedBy } from '@/lib/skills'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 type SkillCatalogItem = Skill & { enabled: boolean }
@@ -54,8 +55,8 @@ function skillActivation(
 
   return {
     ariaLabel: alwaysEnabled
-      ? `${skill.name} is always enabled`
-      : `${skill.enabled ? 'Disable' : 'Enable'} ${skill.name}`,
+      ? t('{name} is always enabled', { name: skill.name })
+      : t(skill.enabled ? 'Disable {name}' : 'Enable {name}', { name: skill.name }),
     checked: alwaysEnabled || skill.enabled,
     disabled: alwaysEnabled || pending || importableUnavailable,
     onCheckedChange: () => onToggle(skill.name),
@@ -76,12 +77,13 @@ function skillActivation(
  */
 
 export function SkillsRoute() {
+  useLocale()
   return (
     <div data-route="skills" className="flex min-h-full flex-col">
       {/* Desktop header — below `md` the shell's top bar already says "Skills". */}
       <header className="sticky top-0 z-10 hidden h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-5 md:flex">
-        <h1 className="text-base font-semibold">Skills</h1>
-        <p className="text-ui text-muted-foreground">Markdown playbooks agents can follow.</p>
+        <h1 className="text-base font-semibold">{t('Skills')}</h1>
+        <p className="text-ui text-muted-foreground">{t('Markdown playbooks agents can follow.')}</p>
       </header>
       <SkillsCatalog />
     </div>
@@ -89,6 +91,7 @@ export function SkillsRoute() {
 }
 
 function SkillsCatalog() {
+  useLocale()
   const projectId = useActiveProjectId() ?? ''
   const updateQuery = useSkillsUpdate(projectId, Boolean(projectId))
   const skillsQuery = useSkills()
@@ -150,7 +153,7 @@ function SkillsCatalog() {
         icon={<TriangleAlertIcon />}
         tone="danger"
         heading="h2"
-        title="Could not load skills"
+        title={t('Could not load skills')}
         subtitle={skillsQuery.error.message}
       />
     )
@@ -203,8 +206,8 @@ function SkillsCatalog() {
         <div className="flex shrink-0 items-center gap-2 p-3 pb-2">
           <Input
             data-slot="skills-filter"
-            placeholder="Filter skills…"
-            aria-label="Filter skills"
+            placeholder={t('Filter skills…')}
+            aria-label={t('Filter skills')}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="h-8 text-ui"
@@ -213,7 +216,7 @@ function SkillsCatalog() {
             type="button"
             data-slot="skills-detailed"
             aria-pressed={detailed}
-            title={detailed ? 'Show short descriptions' : 'Show full descriptions'}
+            title={detailed ? t('Show short descriptions') : t('Show full descriptions')}
             onClick={() => setDetailed((value) => !value)}
             className="flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none aria-pressed:bg-muted aria-pressed:text-foreground"
           >
@@ -239,12 +242,12 @@ function SkillsCatalog() {
           <div className="shrink-0 px-3 pb-2">
             <select
               data-slot="skills-repo-filter"
-              aria-label="Filter by repository"
+              aria-label={t('Filter by repository')}
               value={activeRepo ?? '__all__'}
               onChange={(event) => setRepoFilter(event.target.value === '__all__' ? null : event.target.value)}
               className="h-8 w-full rounded-md border border-border bg-card px-2 text-ui text-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
-              <option value="__all__">All repositories</option>
+              <option value="__all__">{t('All repositories')}</option>
               {repoGroups.map((group) => (
                 <option key={group.key} value={group.key}>
                   {group.label} ({group.skills.length})
@@ -349,8 +352,8 @@ function SkillsCatalog() {
               icon={<SparklesIcon />}
               tone="neutral"
               heading="h2"
-              title="No skill selected"
-              subtitle="Pick a skill from the catalog."
+              title={t('No skill selected')}
+              subtitle={t('Pick a skill from the catalog.')}
             />
           )}
         </div>

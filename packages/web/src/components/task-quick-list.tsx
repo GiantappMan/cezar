@@ -35,6 +35,7 @@ import { filterRunsByOrigin } from '@/lib/task-filters'
 import { useTaskOrigin } from '@/lib/task-origin'
 import { dispatchKindLabel, subtaskLabel, taskTreeRows } from '@/lib/task-tree'
 import { formatCost, taskReference, taskReferences } from '@/lib/tasks-table'
+import { t, useLocale } from '@/lib/i18n'
 import { usageMetricVisibility } from '@/lib/token-metrics'
 import { useNow } from '@/lib/use-now'
 import { cn } from '@/lib/utils'
@@ -79,6 +80,7 @@ export function TaskQuickList({
   onToggleArchive?: (run: RunRecord, archived: boolean) => void
 }) {
   const counts = listCounts(runs)
+  useLocale()
   const buckets = groupRuns(runs, view)
   // Withheld in the archived view, where `groupRuns` answers one `Archived` bucket and never
   // reads `run.pinned` — the same call the thread header makes on an archived run.
@@ -91,21 +93,21 @@ export function TaskQuickList({
       <div className="sticky top-0 z-10 bg-sidebar pt-2 pb-1">
         <div className="inline-flex w-full gap-0.5 rounded-md bg-muted p-[3px]">
           <ViewTab view="active" current={view} onSelect={onViewChange} count={counts.active}>
-            Active
+            {t('Active')}
             {/* The one reason to look at a tab you are not on. */}
             {counts.waiting > 0 && view !== 'active' ? (
-              <StatusDot tone="pending" pulse data-slot="waiting-dot" aria-label="needs you" />
+              <StatusDot tone="pending" pulse data-slot="waiting-dot" aria-label={t('needs you')} />
             ) : null}
           </ViewTab>
           <ViewTab view="archived" current={view} onSelect={onViewChange} count={counts.archived}>
-            Archived
+            {t('Archived')}
           </ViewTab>
         </div>
       </div>
 
       {buckets.length === 0 ? (
         <p className="px-3 py-3.5 text-xs text-soft-foreground">
-          {view === 'archived' ? 'Nothing archived yet.' : 'No tasks yet — describe one.'}
+          {view === 'archived' ? t('Nothing archived yet.') : t('No tasks yet — describe one.')}
         </p>
       ) : (
         <QuickListBuckets
@@ -149,6 +151,7 @@ export function QuickListBuckets({
   onToggleArchive?: (run: RunRecord, archived: boolean) => void
 }) {
   // Which variant groups are open. Local: it is view state about this list, nothing else reads it.
+  useLocale()
   const [expanded, setExpanded] = React.useState<ReadonlySet<string>>(() => new Set())
   const toggleGroup = (groupId: string) =>
     setExpanded((current) => {
@@ -162,7 +165,7 @@ export function QuickListBuckets({
       {buckets.map((bucket) => (
         <div key={bucket.label} data-slot="quick-list-bucket" data-bucket={bucket.label}>
           <h2 className="px-3 pt-2.5 pb-1 eyebrow text-soft-foreground">
-            {bucket.label}
+            {t(bucket.label)}
           </h2>
           {nestRows(bucket.rows).map((node) => (
             <Row
@@ -318,8 +321,8 @@ function Row({
         <Link
           to={scopeTo(scope, `/compare/${row.groupId}`)}
           data-slot="group-compare"
-          title="Compare the variants"
-          aria-label={`Compare the variants of ${row.title}`}
+          title={t('Compare the variants')}
+          aria-label={t('Compare the variants of {title}', { title: row.title })}
           className="mr-1.5 inline-flex size-6 shrink-0 items-center justify-center rounded-sm text-soft-foreground hover:bg-violet/10 hover:text-violet"
         >
           <ScaleIcon className="size-3.5" aria-hidden="true" />
@@ -555,7 +558,7 @@ const RunRow = React.memo(function RunRow({
                 data-slot="dispatch-kind"
                 className="shrink-0 rounded-full bg-muted px-1.5 py-px text-micro font-medium text-muted-foreground"
               >
-                {dispatchKind}
+                {t(dispatchKind)}
               </span>
             ) : null}
             {/* The diff numbers, once a turn has produced any (R2 #389). Nothing before that — a

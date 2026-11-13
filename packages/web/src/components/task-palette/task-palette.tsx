@@ -57,6 +57,7 @@ import { copyToClipboard, useCanOpenTerminal, useRunActions, useRunOpenChoices }
 
 import { buildTaskCommands, TASK_COMMAND_GROUPS, type TaskCommand } from './commands'
 import { OPEN_TASK_PALETTE_EVENT, type TaskPaletteSubject } from './open'
+import { t } from '@/lib/i18n'
 
 /**
  * ⌘P — the task palette (spec 2026-10-17-task-palette). ⌘K finds; ⌘P acts on ONE task, the
@@ -588,12 +589,12 @@ function SubjectBar({ runId, picked }: { runId: string; picked: boolean }) {
       data-slot="task-palette-subject"
       className="flex min-w-0 items-center gap-2 border-b border-border px-3 py-2 text-xs text-muted-foreground"
     >
-      <span className="shrink-0">Task</span>
+      <span className="shrink-0">{t('Task')}</span>
       <span className="min-w-0 flex-1 truncate font-medium text-foreground">{runTitle(run)}</span>
       <Pill className="shrink-0" dot={attention.tone} pulse={attention.pulse}>
         {attention.label}
       </Pill>
-      {picked ? <span className="shrink-0 text-soft-foreground">⌫ back to tasks</span> : null}
+      {picked ? <span className="shrink-0 text-soft-foreground">{t('⌫ back to tasks')}</span> : null}
     </div>
   )
 }
@@ -615,7 +616,7 @@ function CommandGroups({
         const members = commands.filter((command) => command.group === group.id && !command.hidden)
         if (members.length === 0) return null
         return (
-          <CommandGroup key={group.id} heading={group.heading}>
+          <CommandGroup key={group.id} heading={t(group.heading)}>
             {members.map((command) => {
               const chord = shortcutFor(command, bindings)
               return (
@@ -633,19 +634,19 @@ function CommandGroups({
                   className={cn('group/command', command.danger && 'data-[selected=true]:text-danger')}
                 >
                   {command.icon}
-                  <span className="min-w-0 flex-1 truncate">{command.label}</span>
+                  <span className="min-w-0 flex-1 truncate">{t(command.label)}</span>
                   {command.unavailable ? (
                     <span className="shrink-0 truncate text-xs text-soft-foreground">{command.unavailable}</span>
                   ) : command.pressed ? (
-                    <span className="shrink-0 text-xs text-primary">on</span>
+                    <span className="shrink-0 text-xs text-primary">{t('on')}</span>
                   ) : null}
                   {/* The mouse twin of ⇧↵ — only commands that can be bound by id. */}
                   {!recordable(command.id) ? null : (
                     <button
                       type="button"
                       data-slot="task-palette-record"
-                      aria-label={`Set a shortcut for ${command.label}`}
-                      title="Set a shortcut (⇧↵)"
+                      aria-label={t('Set a shortcut for {label}', { label: t(command.label) })}
+                      title={t('Set a shortcut (⇧↵)')}
                       className="hidden shrink-0 rounded p-0.5 text-soft-foreground group-hover/command:inline-flex hover:text-foreground"
                       onPointerDown={(event) => event.preventDefault()}
                       onClick={(event) => {

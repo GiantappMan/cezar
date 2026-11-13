@@ -15,6 +15,7 @@ import type { Accent, Density, Width } from '@/lib/appearance'
 import type { Theme } from '@/lib/theme'
 import { useProjectOrder } from '@/lib/use-project-order'
 import { useLiveUsageEnabled, writeLiveUsageEnabled } from '@/lib/live-usage-pref'
+import { readLocalePref, writeLocalePref, t, useLocale, type LocalePref } from '@/lib/i18n'
 import { toast } from '@/components/ui/toaster'
 
 /**
@@ -54,6 +55,13 @@ const DENSITY_OPTIONS: Array<{ value: Density; label: string }> = [
 const WIDTH_OPTIONS: Array<{ value: Width; label: string }> = [
   { value: 'narrow', label: 'Narrow' },
   { value: 'wide', label: 'Full' },
+]
+
+/** Language: 'auto' follows navigator.language (zh → 中文), the others pin it. Per browser. */
+const LANGUAGE_OPTIONS: Array<{ value: LocalePref; label: string }> = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'zh', label: '中文' },
+  { value: 'en', label: 'English' },
 ]
 
 /** One segmented radio group — the shared chassis of all three controls. */
@@ -102,7 +110,7 @@ function Segmented<V extends string>({
                 style={{ background: option.swatch }}
               />
             ) : null}
-            {option.label}
+            {t(option.label)}
           </button>
         )
       })}
@@ -133,12 +141,13 @@ function ProjectOrderField() {
   const projects = useProjects()
   const { order, canReorder, reset } = useProjectOrder()
   const multiProject = (projects.data?.projects.length ?? 0) > 1
+  useLocale()
   if (!multiProject || order.length === 0) return null
 
   return (
     <Field
-      title="Project order"
-      hint="The sidebar is in the order you dragged it into. Reset puts it back to most-recently-opened first. Shared with every browser signed in to this cezar."
+      title={t('Project order')}
+      hint={t('The sidebar is in the order you dragged it into. Reset puts it back to most-recently-opened first. Shared with every browser signed in to this cezar.')}
     >
       <Button
         type="button"
@@ -149,7 +158,7 @@ function ProjectOrderField() {
         onClick={reset}
         className="w-fit"
       >
-        Reset order
+        {t('Reset order')}
       </Button>
     </Field>
   )
@@ -186,10 +195,11 @@ function BrandingFields() {
       setLastName(branding.name)
     }
   }, [branding?.name])
+  useLocale()
   return <>
-    <Field title="Instance name" hint="Shown in the sidebar and browser tab across this workspace.">
+    <Field title={t('Instance name')} hint={t('Shown in the sidebar and browser tab across this workspace.')}>
       <div className="flex flex-wrap items-center gap-2">
-        <input data-slot="branding-name" aria-label="Instance name" maxLength={80} value={name} onChange={(event) => setName(event.currentTarget.value)}
+        <input data-slot="branding-name" aria-label={t('Instance name')} maxLength={80} value={name} onChange={(event) => setName(event.currentTarget.value)}
           onBlur={() => {
             const value = name.trim()
             if (!value) { setName(branding?.name ?? 'cezar'); return }
@@ -198,17 +208,17 @@ function BrandingFields() {
           }}
           className="h-9 w-64 rounded-md border border-border bg-background px-3 text-sm" />
         <Button type="button" variant="outline" size="sm" disabled={!branding || branding.name === 'cezar' || save.isPending}
-          onClick={() => save.mutate({ branding: { name: null } })}>Reset name</Button>
+          onClick={() => save.mutate({ branding: { name: null } })}>{t('Reset name')}</Button>
       </div>
     </Field>
-    <Field title="Logo" hint="PNG, JPEG, WebP, GIF, AVIF, or safe SVG up to 2 MB. Stored on this machine and shared by its browsers.">
+    <Field title={t('Logo')} hint={t('PNG, JPEG, WebP, GIF, AVIF, or safe SVG up to 2 MB. Stored on this machine and shared by its browsers.')}>
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3">
-        {logoDraft ? <img src={logoDraft.url} alt="Logo preview" className="size-10 rounded-md border border-border bg-background object-contain p-1" /> : branding?.logoUrl ? <img src={branding.logoUrl} alt="Current instance logo" className="size-10 rounded-md border border-border bg-background object-contain p-1" /> : <span aria-hidden="true" className="size-10 rounded-md border border-dashed border-border bg-background" />}
+        {logoDraft ? <img src={logoDraft.url} alt={t('Logo preview')} className="size-10 rounded-md border border-border bg-background object-contain p-1" /> : branding?.logoUrl ? <img src={branding.logoUrl} alt={t('Current instance logo')} className="size-10 rounded-md border border-border bg-background object-contain p-1" /> : <span aria-hidden="true" className="size-10 rounded-md border border-dashed border-border bg-background" />}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-foreground">{logoDraft?.file.name ?? (branding?.logoUrl ? 'Current logo' : 'No logo selected')}</p>
-          <p className="text-xs text-muted-foreground">Choose an image to preview it before saving.</p>
+          <p className="truncate text-sm font-medium text-foreground">{logoDraft?.file.name ?? (branding?.logoUrl ? t('Current logo') : t('No logo selected'))}</p>
+          <p className="text-xs text-muted-foreground">{t('Choose an image to preview it before saving.')}</p>
         </div>
-        <input ref={logoInput} data-slot="branding-logo" aria-label="Upload logo" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/svg+xml" disabled={upload.isPending} hidden
+        <input ref={logoInput} data-slot="branding-logo" aria-label={t('Upload logo')} type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/svg+xml" disabled={upload.isPending} hidden
           onChange={(event) => {
             const file = event.currentTarget.files?.[0]
             if (file) setLogoDraft({ file, url: URL.createObjectURL(file) })
@@ -216,12 +226,12 @@ function BrandingFields() {
           }} />
         <Button type="button" variant="outline" size="sm" disabled={!branding || upload.isPending} onClick={() => logoInput.current?.click()}>
           <UploadIcon aria-hidden="true" className="size-3.5" />
-          Choose logo
+          {t('Choose logo')}
         </Button>
         {logoDraft ? <>
-          <Button type="button" size="sm" disabled={upload.isPending} onClick={() => upload.mutate(logoDraft.file)}>Save logo</Button>
-          <Button type="button" variant="outline" size="sm" disabled={upload.isPending} onClick={() => setLogoDraft(null)}>Cancel</Button>
-        </> : branding?.logoUrl ? <Button type="button" variant="outline" size="sm" disabled={upload.isPending} onClick={() => upload.mutate(null)}>Remove logo</Button> : null}
+          <Button type="button" size="sm" disabled={upload.isPending} onClick={() => upload.mutate(logoDraft.file)}>{t('Save logo')}</Button>
+          <Button type="button" variant="outline" size="sm" disabled={upload.isPending} onClick={() => setLogoDraft(null)}>{t('Cancel')}</Button>
+        </> : branding?.logoUrl ? <Button type="button" variant="outline" size="sm" disabled={upload.isPending} onClick={() => upload.mutate(null)}>{t('Remove logo')}</Button> : null}
       </div>
     </Field>
   </>
@@ -231,6 +241,8 @@ export function AppearanceSection() {
   const { theme, setTheme } = useTheme()
   const { accent, density, width, setAccent, setDensity, setWidth } = useAppearance()
   const liveUsage = useLiveUsageEnabled()
+  useLocale()
+  const language = readLocalePref()
 
   return (
     <div
@@ -238,39 +250,48 @@ export function AppearanceSection() {
       className="mx-auto flex w-full max-w-2xl flex-col gap-7 p-4 pb-[calc(90px+env(safe-area-inset-bottom))] md:p-6 md:pb-6"
     >
       <BrandingFields />
-      <Field title="Theme" hint="System follows your OS preference. Applies to this browser.">
-        <Segmented slot="appearance-theme" label="Theme" value={theme} options={THEME_OPTIONS} onChange={setTheme} />
+      <Field title={t('Language')} hint={t('Auto follows your browser language. Applies to this browser.')}>
+        <Segmented
+          slot="appearance-language"
+          label={t('Language')}
+          value={language}
+          options={LANGUAGE_OPTIONS}
+          onChange={writeLocalePref}
+        />
+      </Field>
+      <Field title={t('Theme')} hint={t('System follows your OS preference. Applies to this browser.')}>
+        <Segmented slot="appearance-theme" label={t('Theme')} value={theme} options={THEME_OPTIONS} onChange={setTheme} />
       </Field>
 
-      <Field title="Accent" hint="The primary action color. Saved with this repo's cockpit state.">
-        <Segmented slot="appearance-accent" label="Accent" value={accent} options={ACCENT_OPTIONS} onChange={setAccent} />
+      <Field title={t('Accent')} hint={t("The primary action color. Saved with this repo's cockpit state.")}>
+        <Segmented slot="appearance-accent" label={t('Accent')} value={accent} options={ACCENT_OPTIONS} onChange={setAccent} />
       </Field>
 
       <Field
-        title="Density"
-        hint="Compact tightens spacing across the cockpit — text stays the same size."
+        title={t('Density')}
+        hint={t('Compact tightens spacing across the cockpit — text stays the same size.')}
       >
-        <Segmented slot="appearance-density" label="Density" value={density} options={DENSITY_OPTIONS} onChange={setDensity} />
+        <Segmented slot="appearance-density" label={t('Density')} value={density} options={DENSITY_OPTIONS} onChange={setDensity} />
       </Field>
 
       <Field
-        title="Reading width"
-        hint="Full gives task sessions, commits, and skill content the whole available area. Narrow keeps a comfortable reading column. The Changes tab is always full-width."
+        title={t('Reading width')}
+        hint={t('Full gives task sessions, commits, and skill content the whole available area. Narrow keeps a comfortable reading column. The Changes tab is always full-width.')}
       >
-        <Segmented slot="appearance-width" label="Reading width" value={width} options={WIDTH_OPTIONS} onChange={setWidth} />
+        <Segmented slot="appearance-width" label={t('Reading width')} value={width} options={WIDTH_OPTIONS} onChange={setWidth} />
       </Field>
 
       <Field
-        title="Usage gauges"
-        hint="Claude account, plan limits left (5h, 7d) and context fill in the task header. Applies to this browser."
+        title={t('Usage gauges')}
+        hint={t('Claude account, plan limits left (5h, 7d) and context fill in the task header. Applies to this browser.')}
       >
         <Segmented
           slot="appearance-live-usage"
-          label="Usage gauges"
+          label={t('Usage gauges')}
           value={liveUsage ? 'on' : 'off'}
           options={[
-            { value: 'on', label: 'Show' },
-            { value: 'off', label: 'Hide' },
+            { value: 'on', label: t('Show') },
+            { value: 'off', label: t('Hide') },
           ]}
           onChange={(value) => writeLiveUsageEnabled(value === 'on')}
         />

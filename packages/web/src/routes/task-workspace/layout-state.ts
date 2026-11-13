@@ -19,6 +19,7 @@ import {
 } from '@open-mercato/cezar-api-client'
 
 import { drawerStorageKey } from './drawer-state'
+import { t } from '@/lib/i18n'
 
 /** The surfaces a column can show. `terminal` is deliberately absent — it is the bottom drawer,
  *  not a column — and an unavailable view must never be representable in saved state (spec §5.1,
@@ -108,7 +109,9 @@ export function viewAliases(view: ViewId): readonly string[] {
 }
 
 export function viewLabel(view: ViewId): string {
-  return VIEW_LABELS[view]
+  // Display-only translation; VIEW_LABELS itself stays English because it is the persisted
+  // layout-name contract (`nameMatchesView`, DEFAULT_LAYOUTS).
+  return t(VIEW_LABELS[view])
 }
 
 export function isViewId(raw: unknown): raw is ViewId {

@@ -89,6 +89,7 @@ import {
 } from '@/lib/task-groups'
 import { TASK_ORIGIN_OPTIONS, useTaskOrigin, type TaskOrigin } from '@/lib/task-origin'
 import { dispatchKindLabel, subtaskLabel, taskTreeRows } from '@/lib/task-tree'
+import { t, useLocale } from '@/lib/i18n'
 import {
   compareGroups,
   filterRuns,
@@ -198,6 +199,7 @@ export function TasksOverview({
    *  automation, or automations off) is shown as itself. */
   automationNames?: ReadonlyMap<string, string>
 }) {
+  useLocale()
   const [query, setQuery] = React.useState('')
   // The subtask accordion (#1110): ids of the parents whose dispatched rows are unfolded.
   // Empty on arrival — collapsed is the default, and the chip on the parent row is the handle.
@@ -294,13 +296,13 @@ export function TasksOverview({
       {/* Desktop header. Below `md` the shell's top bar already says "Tasks", and the drawer
           carries the shared Active/Archived tabs — repeating them here would be a third copy. */}
       <header className="sticky top-0 z-10 hidden h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-5 md:flex">
-        <h1 className="text-base font-semibold">Tasks</h1>
+        <h1 className="text-base font-semibold">{t('Tasks')}</h1>
         <div className="inline-flex gap-0.5 rounded-md bg-muted p-[3px]">
           <OverviewTab view="active" current={view} onSelect={onViewChange} count={counts.active}>
-            Active
+            {t('Active')}
           </OverviewTab>
           <OverviewTab view="archived" current={view} onSelect={onViewChange} count={counts.archived}>
-            Archived
+            {t('Archived')}
           </OverviewTab>
         </div>
         <div className="flex-1" />
@@ -316,7 +318,7 @@ export function TasksOverview({
             onClick={onMarkAllRead}
           >
             <CheckCheckIcon className="size-3.5" aria-hidden="true" />
-            Mark all read
+            {t('Mark all read')}
           </Button>
         ) : null}
         {/* Only when there is something to sweep, like the legacy header's count-gated broom. */}
@@ -329,7 +331,7 @@ export function TasksOverview({
             onClick={onArchiveFinished}
           >
             <ArchiveIcon className="size-3.5" aria-hidden="true" />
-            Archive finished
+            {t('Archive finished')}
           </Button>
         ) : null}
         <div className="relative w-60">
@@ -341,8 +343,8 @@ export function TasksOverview({
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search tasks…"
-            aria-label="Search tasks"
+            placeholder={t('Search tasks…')}
+            aria-label={t('Search tasks')}
             className="h-9 w-full rounded-md border border-input bg-card pr-3 pl-8 text-ui text-foreground outline-none placeholder:text-soft-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           />
         </div>
@@ -369,7 +371,7 @@ export function TasksOverview({
           />
         ) : null}
         {onTaskAction ? <TasksSelectionToolbar displayed={displayed} selection={selection} archived={view === 'archived'} /> : null}
-        {runs === undefined ? null : hasScheduledTasks && all.length === 0 ? <p className="text-sm text-muted-foreground">No tasks have started yet.</p> : visible.length === 0 ? (
+        {runs === undefined ? null : hasScheduledTasks && all.length === 0 ? <p className="text-sm text-muted-foreground">{t('No tasks have started yet.')}</p> : visible.length === 0 ? (
           <TasksEmptyState
             view={view}
             query={query}
@@ -518,11 +520,11 @@ export function TasksOverview({
           >
             <ScaleIcon className="size-[15px] shrink-0 text-soft-foreground" aria-hidden="true" />
             <span>
-              <strong className="font-semibold text-foreground">{group.title}</strong> — {group.count} variants
-              finished
+              <strong className="font-semibold text-foreground">{group.title}</strong>{' '}
+              {t('— {n} variants finished', { n: group.count })}
             </span>
             <Button asChild variant="outline" size="sm" className="md:ml-auto">
-              <Link to={`/compare/${group.groupId}`}>Compare</Link>
+              <Link to={`/compare/${group.groupId}`}>{t('Compare')}</Link>
             </Button>
           </div>
         ))}
@@ -533,7 +535,7 @@ export function TasksOverview({
       <Link
         to="/new"
         data-slot="new-task-fab"
-        aria-label="New task"
+        aria-label={t('New task')}
         className="fixed right-4 bottom-[calc(16px+var(--phone-bar,0px)+env(safe-area-inset-bottom))] z-20 inline-flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-modal md:hidden"
       >
         <PlusIcon className="size-[22px]" aria-hidden="true" />
@@ -623,6 +625,7 @@ function TasksEmptyState({
   firstRun?: React.ReactNode
 }) {
   const needle = query.trim()
+  useLocale()
   const kind = needle
     ? 'search-miss'
     : filtered
@@ -639,10 +642,10 @@ function TasksEmptyState({
           heading="h2"
           icon={<SearchXIcon />}
           tone="neutral"
-          title="No tasks match these filters"
+          title={t('No tasks match these filters')}
           actions={
             <Button type="button" variant="outline" onClick={onClearFilters}>
-              Clear filters
+              {t('Clear filters')}
             </Button>
           }
         />
@@ -651,15 +654,15 @@ function TasksEmptyState({
           heading="h2"
           icon={<WorkflowIcon />}
           tone="neutral"
-          title={origin === 'regular' ? 'No regular tasks here' : 'No automation tasks here'}
+          title={origin === 'regular' ? t('No regular tasks here') : t('No automation tasks here')}
           subtitle={
             origin === 'regular'
-              ? 'Tasks started by automations are hidden.'
-              : 'Only tasks started by automations are shown.'
+              ? t('Tasks started by automations are hidden.')
+              : t('Only tasks started by automations are shown.')
           }
           actions={
             <Button type="button" variant="outline" onClick={onShowAll}>
-              Show all tasks
+              {t('Show all tasks')}
             </Button>
           }
         />
@@ -668,16 +671,16 @@ function TasksEmptyState({
           heading="h2"
           icon={<SearchXIcon />}
           tone="neutral"
-          title="No matching tasks"
-          subtitle={`No tasks match “${needle}”.`}
+          title={t('No matching tasks')}
+          subtitle={t('No tasks match “{needle}”.', { needle })}
         />
       ) : kind === 'archive' ? (
         <CenteredState
           heading="h2"
           icon={<ArchiveIcon />}
           tone="neutral"
-          title="Nothing archived yet"
-          subtitle="Finished tasks you archive land here."
+          title={t('Nothing archived yet')}
+          subtitle={t('Finished tasks you archive land here.')}
         />
       ) : firstRun ? (
         firstRun
@@ -687,13 +690,13 @@ function TasksEmptyState({
           icon={<ListChecksIcon />}
           tone="primary"
           backdrop
-          title="No tasks yet"
-          subtitle="Describe a task to get started."
+          title={t('No tasks yet')}
+          subtitle={t('Describe a task to get started.')}
           actions={
             <Button asChild>
               <Link to="/new">
                 <PlusIcon aria-hidden="true" />
-                New task
+                {t('New task')}
               </Link>
             </Button>
           }
@@ -754,33 +757,34 @@ function TasksFilterBar({
     }))
   const clear = (facet: TaskFacetId) => onFiltersChange((current) => ({ ...current, [facet]: [] }))
   const active = activeTaskFacetCount(filters)
+  useLocale()
 
   return (
     <div data-slot="tasks-filters" className="mb-3 flex flex-wrap items-center gap-1.5">
       <Segmented
         slot="task-origin"
-        label="Show tasks started by"
+        label={t('Show tasks started by')}
         value={origin}
-        options={TASK_ORIGIN_OPTIONS.map((option) => ({ ...option, count: perOrigin[option.value] }))}
+        options={TASK_ORIGIN_OPTIONS.map((option) => ({ ...option, label: t(option.label), count: perOrigin[option.value] }))}
         onChange={onOriginChange}
       />
       <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
       <FacetFilter
         slot="status"
-        label="Status"
+        label={t('Status')}
         selected={filters.statuses}
         onToggle={(value) => toggle('statuses', value)}
         onClear={() => clear('statuses')}
         options={distinctValues(inView.map((run) => run.status)).map((status) => ({
           value: status,
-          label: status,
+          label: t(status),
           count: statusCounts.get(status) ?? 0,
         }))}
-        emptyLabel="No tasks to filter"
+        emptyLabel={t('No tasks to filter')}
       />
       <FacetFilter
         slot="workflow"
-        label="Workflow"
+        label={t('Workflow')}
         selected={filters.workflows}
         onToggle={(value) => toggle('workflows', value)}
         onClear={() => clear('workflows')}
@@ -789,12 +793,12 @@ function TasksFilterBar({
           label: workflow,
           count: workflowCounts.get(workflow) ?? 0,
         }))}
-        emptyLabel="No tasks to filter"
+        emptyLabel={t('No tasks to filter')}
       />
       {origin !== 'regular' && automationIds.length > 0 ? (
         <FacetFilter
           slot="automation"
-          label="Automation"
+          label={t('Automation')}
           selected={filters.automations}
           onToggle={(value) => toggle('automations', value)}
           onClear={() => clear('automations')}
@@ -803,7 +807,7 @@ function TasksFilterBar({
             label: automationNames?.get(id) ?? id,
             count: automationCounts.get(id) ?? 0,
           }))}
-          emptyLabel="No automation tasks"
+          emptyLabel={t('No automation tasks')}
         />
       ) : null}
       {active > 0 ? (
@@ -814,13 +818,19 @@ function TasksFilterBar({
           className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <XIcon className="size-3" aria-hidden="true" />
-          Clear ({active})
+          {t('Clear ({n})', { n: active })}
         </button>
       ) : null}
       {/* The all-projects bar's labelled-segmented grammar (its Group by and Sort by). */}
       <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
-      <span className="text-meta font-medium text-soft-foreground">Sort by</span>
-      <Segmented slot="sort-by" label="Sort tasks by" value={sortBy} options={SORT_OPTIONS} onChange={onSortByChange} />
+      <span className="text-meta font-medium text-soft-foreground">{t('Sort by')}</span>
+      <Segmented
+        slot="sort-by"
+        label={t('Sort tasks by')}
+        value={sortBy}
+        options={SORT_OPTIONS.map((option) => ({ ...option, label: t(option.label) }))}
+        onChange={onSortByChange}
+      />
     </div>
   )
 }
@@ -900,19 +910,19 @@ function TaskColumnHeader({
   if (!column.canFold) {
     return (
       <Th columnId={column.id} right={column.align === 'right'}>
-        {column.label}
+        {t(column.label)}
       </Th>
     )
   }
 
-  const action = expanded ? 'Fold' : 'Expand'
+  const action = expanded ? t('Fold') : t('Expand')
   return (
     <Th columnId={column.id} right={column.align === 'right'} folded={!expanded}>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
             type="button"
-            aria-label={`${action} ${column.label} column`}
+            aria-label={t('{action} {label} column', { action, label: t(column.label) })}
             aria-pressed={expanded}
             disabled={disabled}
             onClick={() => onToggle(column.id)}
@@ -924,7 +934,7 @@ function TaskColumnHeader({
           >
             {expanded ? (
               <>
-                <span>{column.label}</span>
+                <span>{t(column.label)}</span>
                 <ChevronsLeftIcon className="size-3 opacity-55" aria-hidden="true" />
               </>
             ) : (
@@ -935,7 +945,7 @@ function TaskColumnHeader({
             )}
           </button>
         </TooltipTrigger>
-        <TooltipContent side="top">{column.label} · {action} column</TooltipContent>
+        <TooltipContent side="top">{t('{label} · {action} column', { label: t(column.label), action })}</TooltipContent>
       </Tooltip>
     </Th>
   )
@@ -1039,8 +1049,8 @@ const TableRow = React.memo(function TableRow({
       }}
       className="group/row cursor-pointer hover:bg-muted"
     >
-      {selectable ? <td className="border-b border-border px-2"><span className="inline-flex items-center gap-1">
-        <TaskSelectionCheckbox label={`Select ${runTitle(run)}`} checked={selected} disabled={actionsBusy} onChange={() => onSelect(run.id)} />
+              {selectable ? <td className="border-b border-border px-2"><span className="inline-flex items-center gap-1">
+        <TaskSelectionCheckbox label={t('Select {title}', { title: runTitle(run) })} checked={selected} disabled={actionsBusy} onChange={() => onSelect(run.id)} />
         <TaskQuickActions run={run} busy={actionsBusy} onAction={onAction} />
       </span></td> : null}
       {columns.map((column) => {
@@ -1059,7 +1069,7 @@ const TableRow = React.memo(function TableRow({
               colSpan={2}
               className={cn(TD_BASE, 'text-right font-mono text-meta text-soft-foreground')}
             >
-              #{queuePosition} in queue
+              {t('#{n} in queue', { n: queuePosition })}
             </td>
           ) : (
             <UsageTds
@@ -1310,7 +1320,7 @@ function TitleCell({
           // The first thing to go when the title would be squeezed (#979): the tick still marks a child.
           className="shrink-0 rounded-full bg-muted px-1.5 py-px text-micro font-medium text-muted-foreground @max-[300px]:hidden"
         >
-          {dispatchKindLabel(run)}
+          {t(dispatchKindLabel(run)!)}
         </span>
       ) : null}
       {/* What this task dispatched, counted rather than listed — and, since #1110, the accordion
@@ -1337,7 +1347,7 @@ function TitleCell({
         <button
           type="button"
           data-slot="row-rename"
-          aria-label="Rename task"
+          aria-label={t('Rename task')}
           onClick={editor.begin}
           className="shrink-0 rounded-sm p-0.5 text-soft-foreground opacity-0 transition-opacity group-hover/row:opacity-100 hover:text-foreground focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
         >
@@ -1469,7 +1479,7 @@ const TaskCard = React.memo(function TaskCard({
       className="cursor-pointer rounded-lg border border-border bg-card px-3.5 py-3 shadow-xs"
     >
       <div className="flex items-start gap-2.5">
-        {selectable ? <TaskSelectionCheckbox label={`Select ${runTitle(run)}`} checked={selected}
+        {selectable ? <TaskSelectionCheckbox label={t('Select {title}', { title: runTitle(run) })} checked={selected}
           disabled={actionsBusy} onChange={() => onSelect(run.id)} /> : null}
         <Pill dot={attention.tone} pulse={attention.pulse} className="mt-px shrink-0" title={scheduled?.title}>
           {attention.label}
@@ -1491,7 +1501,7 @@ const TaskCard = React.memo(function TaskCard({
             data-slot="dispatch-kind"
             className="mt-px shrink-0 rounded-full bg-muted px-1.5 py-px text-micro font-medium text-muted-foreground"
           >
-            {dispatchKindLabel(run)}
+            {t(dispatchKindLabel(run)!)}
           </span>
         ) : null}
         {/* Same handle as the table's Task cell (#1110) — the dispatched children are the cards
@@ -1522,7 +1532,7 @@ const TaskCard = React.memo(function TaskCard({
         {queuePosition !== null ? (
           <>
             <Sep />
-            <span data-slot="queue-note">#{queuePosition} in queue</span>
+            <span data-slot="queue-note">{t('#{n} in queue', { n: queuePosition })}</span>
           </>
         ) : (
           <>
@@ -1600,7 +1610,7 @@ function BranchSkeleton() {
     <Skeleton
       data-slot="branch-skeleton"
       role="status"
-      aria-label="naming branch"
+      aria-label={t('naming branch')}
       className="inline-block h-4 w-24 align-middle"
     />
   )

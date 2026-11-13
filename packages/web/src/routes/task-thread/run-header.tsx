@@ -22,6 +22,7 @@ import {
 import { ManagerBackLink } from '../manager/manager-back-link'
 import { cloneElement, Fragment, isValidElement, memo, useEffect, useId, useMemo, useReducer, useRef, useState, type ReactNode } from 'react'
 import { Link } from '@/lib/project-router'
+import { t, useLocale } from '@/lib/i18n'
 
 import {
   useHealth,
@@ -418,7 +419,7 @@ function RunProgress({
  *  controls stay in place either way — a row whose icons come and go with the run's status is a
  *  row where the reader's muscle memory clicks the wrong one. */
 function liveRunReason(run: ApiRun): string | undefined {
-  return isRunActive(run.status) ? 'Stop the task first' : undefined
+  return isRunActive(run.status) ? t('Stop the task first') : undefined
 }
 
 /**
@@ -439,12 +440,13 @@ function TaskItemActions({
   showRunControls: boolean
 }) {
   const flags = runActionFlags(run)
+  useLocale()
   const live = liveRunReason(run)
   const moreStop = showRunControls && flags.cancel
   // "End session" for a waiting run, on the tabs whose composer is not there to carry it.
   const moreEnd = showRunControls && run.status === 'waiting' && flags.finish
   // A worktree operation owns the task until it is resolved (#1358), live or not.
-  const gatedReason = run.worktreeLifecycle?.activeOperationId ? 'Resolve the worktree operation first' : undefined
+  const gatedReason = run.worktreeLifecycle?.activeOperationId ? t('Resolve the worktree operation first') : undefined
   return (
     <span data-slot="task-item-actions" className="mx-1 flex items-center gap-0.5">
       {/* The three state toggles — read, pinned, archived — share ONE on-state (TOGGLE_ON_CLASS:
@@ -454,8 +456,8 @@ function TaskItemActions({
       {flags.markRead || flags.markUnread ? (
         <IconAction
           slot="unread-toggle"
-          label={flags.markRead ? 'Mark read' : 'Mark unread'}
-          title={flags.markRead ? 'Unread — mark it read' : 'Mark unread — put it back in your unread list'}
+          label={flags.markRead ? t('Mark read') : t('Mark unread')}
+          title={flags.markRead ? t('Unread — mark it read') : t('Mark unread — put it back in your unread list')}
           pressed={flags.markRead}
           pending={actions.markRead.isPending || actions.markUnread.isPending}
           onClick={() => (flags.markRead ? actions.markRead.mutate() : actions.markUnread.mutate())}
@@ -466,14 +468,14 @@ function TaskItemActions({
       ) : null}
       <IconAction
         slot="pin-run"
-        label={run.pinned ? 'Unpin' : 'Pin'}
+        label={run.pinned ? t('Unpin') : t('Pin')}
         title={
           run.pinned
-            ? 'Pinned — unpin from the top of this project’s task list'
-            : 'Pin to the top of this project’s task list'
+            ? t('Pinned — unpin from the top of this project’s task list')
+            : t('Pin to the top of this project’s task list')
         }
         pressed={Boolean(run.pinned)}
-        unavailable={flags.pin ? undefined : 'Archived tasks can’t be pinned'}
+        unavailable={flags.pin ? undefined : t('Archived tasks can’t be pinned')}
         pending={actions.pin.isPending}
         onClick={() => actions.pin.mutate()}
         className={cn(run.pinned && TOGGLE_ON_CLASS)}
@@ -482,8 +484,8 @@ function TaskItemActions({
       </IconAction>
       <IconAction
         slot="archive-run"
-        label={run.archived ? 'Unarchive' : 'Archive'}
-        title={run.archived ? 'Archived — move it back to the active list' : 'Move to the archived list'}
+        label={run.archived ? t('Unarchive') : t('Archive')}
+        title={run.archived ? t('Archived — move it back to the active list') : t('Move to the archived list')}
         pressed={Boolean(run.archived)}
         unavailable={live}
         pending={actions.archive.isPending}
@@ -496,8 +498,8 @@ function TaskItemActions({
           icon at rest would shout louder than everything the reader actually came here to do. */}
       <IconAction
         slot="delete-run"
-        label="Delete"
-        title="Delete the task, its worktree and its branch"
+        label={t('Delete')}
+        title={t('Delete the task, its worktree and its branch')}
         unavailable={live ?? gatedReason}
         danger
         onClick={() => actions.setConfirming('delete')}
@@ -507,9 +509,9 @@ function TaskItemActions({
       </IconAction>
       {moreStop || moreEnd || canRemoveTaskWorktree(run) ? (
         <DropdownMenu>
-          <IconTooltip label="More actions">
+          <IconTooltip label={t('More actions')}>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="More actions">
+              <Button variant="ghost" size="icon-sm" aria-label={t('More actions')}>
                 <EllipsisIcon aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
@@ -517,17 +519,17 @@ function TaskItemActions({
           <DropdownMenuContent align="end" data-slot="run-more-menu">
             {canRemoveTaskWorktree(run) ? (
               <DropdownMenuItem disabled={actions.removeWorktree.isPending} onSelect={() => actions.setWorktreeRemovalOpen(true)}>
-                <FolderMinusIcon aria-hidden="true" /> Remove worktree…
+                <FolderMinusIcon aria-hidden="true" /> {t('Remove worktree…')}
               </DropdownMenuItem>
             ) : null}
             {moreEnd ? (
               <DropdownMenuItem onSelect={() => actions.finish.mutate()}>
-                <CheckIcon aria-hidden="true" /> End session
+                <CheckIcon aria-hidden="true" /> {t('End session')}
               </DropdownMenuItem>
             ) : null}
             {moreStop ? (
               <DropdownMenuItem variant="destructive" onSelect={() => actions.setConfirming('cancel')}>
-                <CircleStopIcon aria-hidden="true" /> Stop
+                <CircleStopIcon aria-hidden="true" /> {t('Stop')}
               </DropdownMenuItem>
             ) : null}
           </DropdownMenuContent>
@@ -1384,7 +1386,7 @@ function ActionsKebab({
             onSelect={() => command.perform()}
           >
             {command.pressed ? onIcon(command.icon) : command.icon}
-            {KEBAB_LABELS[command.id] ?? command.label}
+            {t(KEBAB_LABELS[command.id] ?? command.label)}
           </DropdownMenuItem>
         ))}
         {canRemoveTaskWorktree(run) ? (
@@ -1396,7 +1398,7 @@ function ActionsKebab({
         {[stop, remove].map((command) =>
           command ? (
             <DropdownMenuItem key={command.id} variant="destructive" onSelect={() => command.perform()}>
-              {command.icon} {KEBAB_LABELS[command.id] ?? command.label}
+              {command.icon} {t(KEBAB_LABELS[command.id] ?? command.label)}
             </DropdownMenuItem>
           ) : null,
         )}

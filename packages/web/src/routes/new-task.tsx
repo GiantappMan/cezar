@@ -18,6 +18,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link as GlobalLink, useParams, useSearchParams } from 'react-router'
 
 import { Link, useNavigate } from '@/lib/project-router'
+import { t, useLocale } from '@/lib/i18n'
 
 import { createRun, getLaunchKey, putConfig, putUiState } from '@/api/client'
 import { useProjectScope } from '@/api/project-scope-context'
@@ -152,6 +153,7 @@ export function NewTaskRoute() {
   const [search] = useSearchParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  useLocale()
 
   // The composer's project (multi-project spec, step 3.4). TWO ids, deliberately:
   //  - `urlProjectId` is what the URL names — always a real project, boot included. It is the
@@ -626,18 +628,18 @@ export function NewTaskRoute() {
         inPlaceByDefault,
       })
   }
-  const schedulingDisabledReason = images.length ? 'Remove attachments to schedule this task.' : deepLink.todo ? 'Tasks linked to a todo can only start now.' : health.data?.capabilities?.automations !== true ? 'Scheduling is disabled on this server.' : undefined
+  const schedulingDisabledReason = images.length ? t('Remove attachments to schedule this task.') : deepLink.todo ? t('Tasks linked to a todo can only start now.') : health.data?.capabilities?.automations !== true ? t('Scheduling is disabled on this server.') : undefined
   const previewTask = taskBody(draft.text, images)
   const scheduleReady = !schedulingDisabledReason && !!startChoice?.preview && Date.parse(startChoice.preview.notBefore) > Date.now() && startChoice.settingsKey === previewSettingsKey(previewTask)
   const submit = async (text: string, submitted: AttachmentEntry[]) => {
-    if (scheduleRequest.current) throw new Error('Recover the original schedule before starting another task.')
+    if (scheduleRequest.current) throw new Error(t('Recover the original schedule before starting another task.'))
     if (!providersReady || runner === null) {
       throw new Error(
         providers.isPending
-          ? 'Checking agent providers…'
+          ? t('Checking agent providers…')
           : providers.isError
-            ? 'Provider authentication could not be verified.'
-            : 'Connect an agent provider before starting a task.',
+            ? t('Provider authentication could not be verified.')
+            : t('Connect an agent provider before starting a task.'),
       )
     }
     if (accountCheck.blocked !== null) {
@@ -734,11 +736,11 @@ export function NewTaskRoute() {
 
         {scheduleRecovery && (
           <div role="alert" className="mb-4 rounded-lg border p-4 text-sm">
-            <p>The original task may already be scheduled. Recover it before starting another task.</p>
+            <p>{t('The original task may already be scheduled. Recover it before starting another task.')}</p>
             <p className="mt-2 whitespace-pre-wrap">{scheduleRecovery.task.task}</p>
-            <p className="mt-2">Recovery uses the original prompt, settings and start time. Your current edits will not be submitted. If scheduling is disabled, restore it on the server and retry recovery; the original request is kept to prevent duplicates. Once recovered, you can manage the task in Scheduled.</p>
+            <p className="mt-2">{t('Recovery uses the original prompt, settings and start time. Your current edits will not be submitted. If scheduling is disabled, restore it on the server and retry recovery; the original request is kept to prevent duplicates. Once recovered, you can manage the task in Scheduled.')}</p>
             <button type="button" className="mt-3 underline" disabled={recovering} onClick={() => void recoverSchedule()}>
-              {recovering ? 'Recovering original schedule…' : 'Recover original schedule'}
+              {recovering ? t('Recovering original schedule…') : t('Recover original schedule')}
             </button>
           </div>
         )}
@@ -751,18 +753,18 @@ export function NewTaskRoute() {
           images={images}
           onImagesChange={setImages}
           autoFocus
-          placeholder="Describe a task for the agent — / for skills…"
-          ariaLabel="Describe a task for the agent"
-          sendAriaLabel={startChoice ? 'Schedule task' : 'Start task'}
-          sendLabel={startChoice ? 'Schedule task' : undefined}
+          placeholder={t('Describe a task for the agent — / for skills…')}
+          ariaLabel={t('Describe a task for the agent')}
+          sendAriaLabel={startChoice ? t('Schedule task') : t('Start task')}
+          sendLabel={startChoice ? t('Schedule task') : undefined}
           submitDisabled={!!scheduleRecovery || recovering || !sourcesReady || (!!startChoice && !scheduleReady)}
           disabled={!providersReady}
           disabledReason={
             providers.isPending
-              ? 'Checking agent providers…'
+              ? t('Checking agent providers…')
               : providers.isError
-                ? 'Provider authentication could not be verified.'
-                : 'Connect an agent provider before starting a task.'
+                ? t('Provider authentication could not be verified.')
+                : t('Connect an agent provider before starting a task.')
           }
           autocompleteSkills
           sendShortcut="↵"

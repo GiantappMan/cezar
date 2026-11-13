@@ -17,6 +17,8 @@
  * Re-sorting here would silently override the sort the caller chose.
  */
 
+import { t } from '@/lib/i18n'
+
 /** What a dispatched task is for — the contract's `DispatchKind`, spelled structurally here. */
 export type DispatchKindLabel = 'implement' | 'review'
 
@@ -151,7 +153,7 @@ export function taskTreeRows<T extends TaskTreeInput>(
 /** "3 subtasks" — the count a parent row prints, or null when the run dispatched nothing. */
 export function subtaskLabel(childCount: number): string | null {
   if (childCount <= 0) return null
-  return `${childCount} subtask${childCount === 1 ? '' : 's'}`
+  return t(`{n} subtask${childCount === 1 ? '' : 's'}`, { n: childCount })
 }
 
 /**

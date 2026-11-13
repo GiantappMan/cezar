@@ -59,6 +59,7 @@ import { shortAge } from '@/lib/format'
 import { GithubRelatedTasks } from './related-tasks'
 import { githubTaskPrompt } from '@/lib/github-task'
 import { orderSkillsByUsage } from '@/lib/skills'
+import { t, useLocale } from '@/lib/i18n'
 import { cn, isHttpUrl } from '@/lib/utils'
 
 import { ImpactControl } from '../task-assets/impact-control'

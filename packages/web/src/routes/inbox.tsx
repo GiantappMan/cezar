@@ -18,6 +18,7 @@ import { shortAge } from '@/lib/format'
 import { availablePromptTemplates, insertTemplate, normalizePromptTemplates } from '@/lib/prompt-templates'
 import { isHttpUrl } from '@/lib/utils'
 import { trackMessageSent } from '@/lib/telemetry'
+import { t, useLocale } from '@/lib/i18n'
 
 /**
  * `/inbox` — the follow-up inbox rebuilt in React (R6 Step 1.2, spec §"Skills, Workflows,
@@ -62,6 +63,7 @@ export function isTodoRunnable(todo: TodoItem): boolean {
 }
 
 export function InboxRoute() {
+  useLocale()
   // The nav item is inbox-gated in the shell, but the route stays reachable so an old
   // bookmark still resolves (the forge routes' rule). "Inbox empty" would be a lie here —
   // the inbox is switched off, not empty — so say that instead, and park the query.
@@ -83,11 +85,11 @@ export function InboxRoute() {
     <div data-route="inbox" className="flex min-h-full flex-col">
       {/* Desktop header — below `md` the shell's top bar already says "Inbox". */}
       <header className="sticky top-0 z-10 hidden h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-5 md:flex">
-        <h1 className="text-base font-semibold">Inbox</h1>
+        <h1 className="text-base font-semibold">{t('Inbox')}</h1>
         <p className="text-ui text-soft-foreground">
           {inboxOff
-            ? 'Disabled for this server; per-task Notes still run.'
-            : 'Follow-ups agents suggested when they finished a task.'}
+            ? t('Disabled for this server; per-task Notes still run.')
+            : t('Follow-ups agents suggested when they finished a task.')}
         </p>
       </header>
 
@@ -96,8 +98,8 @@ export function InboxRoute() {
           <CenteredState
             icon={<InboxIcon />}
             tone="neutral"
-            title="The follow-up inbox is off"
-            subtitle="Agents are not asked to leave follow-ups. Set CEZ_FOLLOWUPS=1 and restart the service to turn the inbox on."
+            title={t('The follow-up inbox is off')}
+            subtitle={t('Agents are not asked to leave follow-ups. Set CEZ_FOLLOWUPS=1 and restart the service to turn the inbox on.')}
             heading="h2"
           />
         ) : todos === undefined ? (
@@ -105,7 +107,7 @@ export function InboxRoute() {
             <CenteredState
               icon={<TriangleAlertIcon />}
               tone="danger"
-              title="Could not load the inbox"
+              title={t('Could not load the inbox')}
               subtitle={todosQuery.error.message}
               heading="h2"
             />
@@ -120,8 +122,8 @@ export function InboxRoute() {
             <CenteredState
               icon={<InboxIcon />}
               tone="neutral"
-              title="Inbox empty"
-              subtitle="Agents drop follow-up suggestions here when they finish a task."
+              title={t('Inbox empty')}
+              subtitle={t('Agents drop follow-up suggestions here when they finish a task.')}
               heading="h2"
             />
           )
@@ -317,12 +319,12 @@ function TodoCard({
               variant="contrast"
               size="sm"
               data-action="todo-acknowledge"
-              title="Acknowledge and remove this note"
+              title={t('Acknowledge and remove this note')}
               disabled={busy}
               onClick={() => dismiss.mutate()}
             >
               <CheckIcon aria-hidden="true" className="size-3" />
-              Acknowledge
+              {t('Acknowledge')}
             </Button>
           )}
         </div>

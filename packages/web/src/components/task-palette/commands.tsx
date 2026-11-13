@@ -28,6 +28,7 @@ import type { TaskWorkspaceBridge } from '@/lib/task-workspace-bridge'
 import { isRunActive, resumeHint, runActionFlags } from '@/routes/task-thread/run-actions'
 import { GIT_ACTION_ICONS, GIT_ACTION_PENDING_LABELS } from '@/routes/task-git/git-toolbar'
 import { FIXED_VIEW_ORDER, VIEW_PATHS, viewAliases, viewLabel, type ViewId } from '@/routes/task-workspace/layout-state'
+import { t } from '@/lib/i18n'
 import { stripEntries, stripTabs, type StripEntry } from '@/routes/task-workspace/strip'
 import { VIEW_ICONS } from '@/routes/task-workspace/view-picker'
 
@@ -312,7 +313,7 @@ function tabCommands(entries: readonly StripEntry[], commands: readonly TaskComm
       {
         id: `tab:${index + 1}`,
         group: 'views' as const,
-        label: `Tab ${index + 1}: ${entry.label}`,
+        label: t('Tab {n}: {label}', { n: index + 1, label: entry.label }),
         icon: icon(LayoutGridIcon),
         hidden: true,
         perform: target.perform,

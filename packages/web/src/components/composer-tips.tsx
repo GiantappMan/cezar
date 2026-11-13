@@ -4,6 +4,7 @@ import * as React from 'react'
 import { quietLink } from '@/components/onboarding-kit'
 import { Button } from '@/components/ui/button'
 import { COMPOSER_TIPS, allTipsSeen, tipsForVisit, type ComposerTip, type TipPictureId } from '@/lib/composer-tips'
+import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /**
@@ -171,18 +172,18 @@ export function ComposerTips({
           style={{ top: anchor.top - 4, left: anchor.left - 4, width: anchor.width + 8, height: anchor.height + 8 }}
         />
       ) : null}
-      <div data-slot="composer-tip" data-tip={current.id} role="note" aria-label={`Tip: ${current.title}`} className="relative mt-3">
+      <div data-slot="composer-tip" data-tip={current.id} role="note" aria-label={t('Tip: {title}', { title: t(current.title) })} className="relative mt-3">
         {arrowLeft !== null ? <span aria-hidden="true" className="composer-tip-arrow z-10" style={{ left: arrowLeft }} /> : null}
         <div ref={cardRef} className="onboarding-announcement relative flex items-stretch overflow-hidden rounded-xl border text-left">
           <div className="flex min-w-0 flex-1 flex-col justify-center p-5 pr-10 sm:pr-5">
             <span className="eyebrow text-violet">
-              Tip {index + 1} of {visit.length}
+              {t('Tip {n} of {total}', { n: index + 1, total: visit.length })}
             </span>
-            <span className="mt-1 text-lg font-light tracking-tight text-foreground">{current.title}</span>
-            <p className="mt-1 max-w-md text-ui text-muted-foreground">{current.body}</p>
+            <span className="mt-1 text-lg font-light tracking-tight text-foreground">{t(current.title)}</span>
+            <p className="mt-1 max-w-md text-ui text-muted-foreground">{t(current.body)}</p>
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Button size="sm" className="font-normal" onClick={advance}>
-                {last ? 'Got it' : 'Next tip'}
+                {last ? t('Got it') : t('Next tip')}
               </Button>
               <button
                 type="button"
@@ -192,7 +193,7 @@ export function ComposerTips({
                   setIndex(visit.length)
                 }}
               >
-                Don’t show tips
+                {t('Don’t show tips')}
               </button>
             </div>
           </div>

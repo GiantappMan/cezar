@@ -7,6 +7,7 @@ import { locationToSave, readStoredLastLocation } from '@/lib/last-location'
 import { lastProjectIndex } from '@/lib/phone-app'
 import { noteManagerEntry } from '@/lib/manager-telemetry'
 import { MANAGER_ATTENTION_DOT, MANAGER_ATTENTION_TEXT, type ManagerAttention } from '@/lib/managers'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 const ITEM =
@@ -36,17 +37,18 @@ export function PhoneBottomBar({
   const health = useHealth()
   const projects = useProjects()
   const location = useLocation()
+  useLocale()
   if (keyboardOpen) return null
   const bootProject = projects.data?.bootProject ?? health.data?.bootProject
   return (
-    <nav aria-label="App" data-slot="phone-bottom-bar" className="flex border-t border-border bg-background md:hidden">
+    <nav aria-label={t('App')} data-slot="phone-bottom-bar" className="flex border-t border-border bg-background md:hidden">
       <Link to={!manager ? managerTo : location.pathname === '/manager' ? `/manager${location.search}` : '/manager?all=1'} aria-current={manager ? 'page' : undefined} onClick={() => { if (!manager) noteManagerEntry('bottom_bar') }} className={cn(ITEM, manager && CURRENT)}>
         <BotIcon className="size-5" aria-hidden="true" />
-        Manager
+        {t('Manager')}
         {attention ? (
           <span data-slot="bottom-bar-attention" className="absolute top-2 left-[calc(50%+8px)] flex">
             <span className={cn('size-1.5 rounded-full', MANAGER_ATTENTION_DOT[attention])} aria-hidden="true" />
-            <span className="sr-only">{MANAGER_ATTENTION_TEXT[attention]}</span>
+            <span className="sr-only">{t(MANAGER_ATTENTION_TEXT[attention])}</span>
           </span>
         ) : null}
       </Link>
@@ -57,13 +59,13 @@ export function PhoneBottomBar({
         className={cn(ITEM, !manager && CURRENT)}
       >
         <ListChecksIcon className="size-5" aria-hidden="true" />
-        Tasks
+        {t('Tasks')}
       </Link>
       {/* Not a SheetTrigger: Radix keeps one trigger ref, and this one unmounts with the keyboard,
           which would strand the top bar's focus return. */}
       <button type="button" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={onMore} className={ITEM}>
         <EllipsisIcon className="size-5" aria-hidden="true" />
-        More
+        {t('More')}
       </button>
     </nav>
   )

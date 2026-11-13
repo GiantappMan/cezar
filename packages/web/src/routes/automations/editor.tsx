@@ -18,6 +18,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useNavigate } from '@/lib/project-router'
 import { availablePromptTemplates, insertTemplate, normalizePromptTemplates } from '@/lib/prompt-templates'
+import { t, useLocale } from '@/lib/i18n'
 import { orderSkillsByUsage } from '@/lib/skills'
 import { cn } from '@/lib/utils'
 import { settingsSectionPath } from '@/routes/settings/settings-shell'
@@ -86,6 +87,7 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
   onSaved: () => void
   onLog?: () => void
 }) {
+  useLocale()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const health = useHealth()
@@ -218,8 +220,8 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
       setLinking(false)
     }
   }
-  const saveLabel = automation ? 'Save changes' : draft.enabled ? 'Save and enable' : 'Save paused'
-  const kindLocked = 'Change the kind by creating a new automation'
+  const saveLabel = automation ? t('Save changes') : draft.enabled ? t('Save and enable') : t('Save paused')
+  const kindLocked = t('Change the kind by creating a new automation')
   const editing = !!automation
   const setKind = (kind: EditorDraft['kind']) => {
     if (kind !== draft.kind) patch({ kind, ...(kind === 'tracker' ? { intervalSeconds: 1800, enabled: false } : {}) })
@@ -230,21 +232,21 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
       {/* The kit's 56px header. Below `md` it may wrap onto a second row: a phone cannot fit the
           title, the template toggle and both actions on one line, and Save must stay reachable. */}
       <header className="sticky top-0 z-10 flex min-h-14 shrink-0 flex-wrap items-center gap-3 border-b border-border bg-background px-5 max-md:py-2 md:h-14 md:flex-nowrap">
-        <Button variant="ghost" size="icon-sm" aria-label="Back" onClick={onBack}>
+        <Button variant="ghost" size="icon-sm" aria-label={t('Back')} onClick={onBack}>
           <ArrowLeftIcon aria-hidden="true" className="size-[15px]" />
         </Button>
-        <h1 className="truncate text-base font-semibold">{automation ? 'Edit automation' : 'New automation'}</h1>
+        <h1 className="truncate text-base font-semibold">{automation ? t('Edit automation') : t('New automation')}</h1>
         {automation ? (
-          <Pill dot={automation.enabled ? 'success' : 'neutral'}>{automation.enabled ? 'enabled' : 'paused'}</Pill>
+          <Pill dot={automation.enabled ? 'success' : 'neutral'}>{automation.enabled ? t('enabled') : t('paused')}</Pill>
         ) : null}
         <span className="flex-1" />
         {!automation ? (
-          <Button variant="ghost" size="sm" aria-expanded={showTemplates} aria-label={showTemplates ? 'Hide templates' : 'Start from a template'} onClick={() => setShowTemplates((open) => !open)}>
+          <Button variant="ghost" size="sm" aria-expanded={showTemplates} aria-label={showTemplates ? t('Hide templates') : t('Start from a template')} onClick={() => setShowTemplates((open) => !open)}>
             <LayoutTemplateIcon aria-hidden="true" className="size-3.5" />
-            <span className="max-md:hidden">{showTemplates ? 'Hide templates' : 'Start from a template'}</span>
+            <span className="max-md:hidden">{showTemplates ? t('Hide templates') : t('Start from a template')}</span>
           </Button>
         ) : null}
-        <Button variant="outline" className="font-normal" onClick={onBack}>Cancel</Button>
+        <Button variant="outline" className="font-normal" onClick={onBack}>{t('Cancel')}</Button>
         <Button className="font-normal" disabled={!canSave} onClick={() => void save()}>{saveLabel}</Button>
       </header>
 
@@ -260,10 +262,10 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
             {/* A plain form field, not a heading that happens to be editable: a borderless line
                 read as a title, and nobody typed into it. */}
             <div className="flex min-w-0 flex-1 items-center gap-3 max-md:basis-full">
-              <span className="shrink-0 text-ui text-muted-foreground" aria-hidden="true">Name</span>
+              <span className="shrink-0 text-ui text-muted-foreground" aria-hidden="true">{t('Name')}</span>
               <Input
-                aria-label="Name"
-                placeholder="Nightly dependency bump"
+                aria-label={t('Name')}
+                placeholder={t('Nightly dependency bump')}
                 value={draft.name}
                 onChange={(event) => patch({ name: event.target.value })}
                 className="h-9 w-full max-w-md text-lead md:text-lead"
@@ -276,15 +278,15 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
           <div className="mt-6 flex w-full flex-col gap-4">
             {conflict ? (
               <div role="alert" data-slot="editor-conflict" className="flex flex-wrap items-center gap-3 rounded-lg border border-danger/40 bg-danger/10 px-3.5 py-2.5 text-ui text-foreground">
-                Edited elsewhere — reload to see the latest version
-                <Button variant="outline" size="sm" className="ml-auto" onClick={reload}>Reload</Button>
+                {t('Edited elsewhere — reload to see the latest version')}
+                <Button variant="outline" size="sm" className="ml-auto" onClick={reload}>{t('Reload')}</Button>
               </div>
             ) : null}
             {error?.section === 'top' ? <InlineAlert>{error.message}</InlineAlert> : null}
 
             {showTemplates && !automation ? (
               <div className="flex flex-col gap-3">
-                <p className="m-0 text-center text-ui text-muted-foreground">Start from a template, or fill in the three parts below.</p>
+                <p className="m-0 text-center text-ui text-muted-foreground">{t('Start from a template, or fill in the three parts below.')}</p>
                 <TemplatePalette
                   onPick={(template) => {
                     // A template from another project may name a workflow or skill this repo does
@@ -302,14 +304,14 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
 
           <Section
             slot="when"
-            title="When"
-            why={editing ? 'The trigger is fixed once saved; change it by creating a new automation.' : 'What starts a run. Pick one, then say how often or on which change.'}
+            title={t('When')}
+            why={editing ? t('The trigger is fixed once saved; change it by creating a new automation.') : t('What starts a run. Pick one, then say how often or on which change.')}
           >
-            <div data-slot="editor-kind" role="group" aria-label="Trigger" className="grid gap-3 sm:grid-cols-3">
+            <div data-slot="editor-kind" role="group" aria-label={t('Trigger')} className="grid gap-3 sm:grid-cols-3">
               <SelectTile
                 value="schedule"
-                title="On a schedule"
-                description="At a time you set."
+                title={t('On a schedule')}
+                description={t('At a time you set.')}
                 selected={draft.kind === 'schedule'}
                 disabled={editing && draft.kind !== 'schedule'}
                 reason={editing && draft.kind !== 'schedule' ? kindLocked : undefined}
@@ -318,18 +320,18 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
               />
               <SelectTile
                 value="github"
-                title="When GitHub changes"
-                description="A pull request, an issue, a review."
+                title={t('When GitHub changes')}
+                description={t('A pull request, an issue, a review.')}
                 selected={draft.kind === 'github'}
                 disabled={!githubAvailable || (editing && draft.kind !== 'github')}
-                reason={!githubAvailable ? (data?.reason ?? 'GitHub is unavailable') : editing && draft.kind !== 'github' ? kindLocked : undefined}
+                reason={!githubAvailable ? (data?.reason ?? t('GitHub is unavailable')) : editing && draft.kind !== 'github' ? kindLocked : undefined}
                 onClick={() => setKind('github')}
                 picture={<GithubIcon className="size-7 text-muted-foreground" aria-hidden={true} />}
               />
               <SelectTile
                 value="tracker"
-                title="When Jira / Linear changes"
-                description="An issue is created or moves."
+                title={t('When Jira / Linear changes')}
+                description={t('An issue is created or moves.')}
                 selected={draft.kind === 'tracker'}
                 disabled={editing && draft.kind !== 'tracker'}
                 reason={editing && draft.kind !== 'tracker' ? kindLocked : undefined}
@@ -342,23 +344,23 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
                 <div className="flex flex-col gap-4">
                   {[draft.schedule, ...(draft.schedules?.slice(1) ?? [])].map((schedule, index, schedules) => (
                     <fieldset key={index} className="min-w-0 rounded-md border p-3">
-                      <legend className="px-1 text-xs text-muted-foreground">Schedule {index + 1}</legend>
+                      <legend className="px-1 text-xs text-muted-foreground">{t('Schedule {n}', { n: index + 1 })}</legend>
                       <EditorScheduleFields schedule={schedule} timeZone={timeZone} allowOnce={schedules.length === 1} onChange={(value) => {
                         const next = schedules.map((item, i) => i === index ? value : item)
                         const first = next[0]
                         if (first) patch({ schedule: first, schedules: next.length > 1 ? next : undefined })
                       }} />
-                      {schedules.length > 1 ? <Button variant="ghost" size="sm" aria-label={`Remove schedule ${index + 1}`} onClick={() => {
+                      {schedules.length > 1 ? <Button variant="ghost" size="sm" aria-label={t('Remove schedule {n}', { n: index + 1 })} onClick={() => {
                         const next = schedules.filter((_, i) => i !== index)
                         const first = next[0]
                         if (first) patch({ schedule: first, schedules: next.length > 1 ? next : undefined })
-                      }}>Remove schedule</Button> : null}
+                      }}>{t('Remove schedule')}</Button> : null}
                     </fieldset>
                   ))}
                   <Button variant="outline" size="sm" disabled={(draft.schedules?.length ?? 1) >= MAX_AUTOMATION_SCHEDULES || draft.schedule.type === 'once'} onClick={() => patch({
                     schedules: [draft.schedule, ...(draft.schedules?.slice(1) ?? []), { type: 'daily', hour: 4, minute: 0 }],
-                  })}>Add schedule</Button>
-                  <p className="text-xs text-muted-foreground">Times that coincide start one task. One-time schedules run on their own.</p>
+                  })}>{t('Add schedule')}</Button>
+                  <p className="text-xs text-muted-foreground">{t('Times that coincide start one task. One-time schedules run on their own.')}</p>
                 </div>
               ) : draft.kind === 'tracker' ? (
                 <EditorTrackerFields trigger={draft.trackerTrigger} intervalSeconds={draft.intervalSeconds} onChange={patch} onValid={setTrackerValid} />
@@ -380,27 +382,27 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
             {error?.section === 'when' ? <InlineAlert>{error.message}</InlineAlert> : null}
           </Section>
 
-          <Section slot="what" title="What the agent does" why="The same words you would type into New task. Placeholders fill in per run.">
+          <Section slot="what" title={t('What the agent does')} why={t('The same words you would type into New task. Placeholders fill in per run.')}>
             <div data-slot="editor-placeholders" className="flex flex-wrap items-center gap-1.5 text-xs text-soft-foreground">
-              Insert
+              {t('Insert')}
               {PLACEHOLDERS[draft.kind].map((token) => (
-                <Chip key={token} className="h-6 font-mono text-meta" title={`Insert ${token} at the caret`} onClick={() => insertPlaceholder(token)}>
+                <Chip key={token} className="h-6 font-mono text-meta" title={t('Insert {token} at the caret', { token })} onClick={() => insertPlaceholder(token)}>
                   {token}
                 </Chip>
               ))}
             </div>
             <Textarea
               ref={promptRef}
-              aria-label="Prompt"
+              aria-label={t('Prompt')}
               rows={5}
-              placeholder={PLACEHOLDER[draft.kind]}
+              placeholder={t(PLACEHOLDER[draft.kind])}
               value={draft.prompt}
               onChange={(event) => patch({ prompt: event.target.value })}
               className="mt-3 min-h-[120px] rounded-xl px-4 py-3 text-lead leading-[1.55] md:text-lead"
             />
             <div data-slot="editor-prompt-templates" className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-soft-foreground">
               <FileTextIcon aria-hidden="true" className="size-3" />
-              Prompt templates
+              {t('Prompt templates')}
               {promptTemplates.map((template) => (
                 <Chip key={template.id} className="h-6 text-meta" title={template.text} onClick={() => insertPrompt(template.text)}>
                   {template.label}
@@ -412,13 +414,13 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
                 icon={<Settings2Icon aria-hidden="true" className="size-3" />}
                 onClick={() => navigate(`${settingsSectionPath('project', 'instructions')}#prompt-templates`)}
               >
-                Manage…
+                {t('Manage…')}
               </Chip>
             </div>
             {unenforcedLogins.length > 0 ? (
               <div role="status" data-slot="editor-prompt-condition" className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-label text-foreground">
                 <span className="min-w-0 flex-1">
-                  The prompt names {unenforcedLogins.map(({ login }) => `@${login}`).join(', ')}, but prompt text does not decide what launches — without a filter every matching event starts a task.
+                  {t('The prompt names {logins}, but prompt text does not decide what launches — without a filter every matching event starts a task.', { logins: unenforcedLogins.map(({ login }) => `@${login}`).join(', ') })}
                 </span>
                 {(['authors', 'reviewers'] as const).map((field) =>
                   loginsFor(field).length > 0 ? (
@@ -428,7 +430,7 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
                       size="sm"
                       onClick={() => patch({ filters: { ...draft.filters, [field]: [...splitList(draft.filters[field]), ...loginsFor(field)].join(', ') } })}
                     >
-                      {field === 'authors' ? 'Add to Authors' : 'Add to Reviewers'}
+                      {field === 'authors' ? t('Add to Authors') : t('Add to Reviewers')}
                     </Button>
                   ) : null,
                 )}
@@ -450,7 +452,7 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
               />
             </div>
             <p className="mt-3 mb-0 text-xs leading-[1.5] text-soft-foreground">
-              Each run is an ordinary cezar task in its own worktree — it queues behind the parallel cap like anything else and never auto-merges.
+              {t('Each run is an ordinary cezar task in its own worktree — it queues behind the parallel cap like anything else and never auto-merges.')}
             </p>
             <div className="mt-3">
               <EditorDispatchRow
@@ -464,20 +466,20 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
             {error?.section === 'what' ? <InlineAlert>{error.message}</InlineAlert> : null}
           </Section>
 
-          <Section slot="live" title="Go live" why="Paused, it waits in the list where you can preview it. Enabled, it starts counting from now.">
+          <Section slot="live" title={t('Go live')} why={t('Paused, it waits in the list where you can preview it. Enabled, it starts counting from now.')}>
             <p data-slot="editor-summary" className="m-0 rounded-xl border border-violet/40 bg-violet/10 px-4 py-3 text-body text-foreground">
               {sentence}
             </p>
             <Label className="mt-4 flex items-start gap-3 text-ui font-normal">
-              <Switch aria-label="Enabled" checked={draft.enabled} onCheckedChange={(enabled) => patch({ enabled })} className="mt-0.5" />
+              <Switch aria-label={t('Enabled')} checked={draft.enabled} onCheckedChange={(enabled) => patch({ enabled })} className="mt-0.5" />
               <span className="flex flex-col gap-0.5">
-                <span className="text-body text-foreground">Enabled</span>
+                <span className="text-body text-foreground">{t('Enabled')}</span>
                 <span className="text-label text-muted-foreground">
                   {draft.kind !== 'schedule'
-                    ? 'Counts from a current-time baseline; existing matches will not launch.'
+                    ? t('Counts from a current-time baseline; existing matches will not launch.')
                     : draft.enabled
-                      ? 'Runs at the next time listed above.'
-                      : 'Saved paused. Enable it from the list, or Run now to try it once.'}
+                      ? t('Runs at the next time listed above.')
+                      : t('Saved paused. Enable it from the list, or Run now to try it once.')}
                 </span>
               </span>
             </Label>
@@ -485,7 +487,7 @@ export function AutomationEditor({ data, automation, actions, initialKind, onBac
               <CopyAsCliCard definition={cli} />
               {automation && automation.kind !== 'schedule' && actions ? (
                 <Button variant="outline" className="self-start font-normal" disabled={actions.busy} onClick={() => void actions.preview(automation)}>
-                  Preview saved matches
+                  {t('Preview saved matches')}
                 </Button>
               ) : null}
               {automation && (managersOn || automation.report) ? (

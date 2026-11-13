@@ -6,6 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { SkillPreviewDialog } from '@/components/skill-detail'
 import { isProjectSkill, partitionSkillsForDisplay, searchSkills, searchWorkflows, skillKeywords } from '@/lib/skills'
+import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /**
@@ -40,7 +41,7 @@ export function WorkflowPicker({
         <button
           type="button"
           data-slot={`${slotPrefix}-workflow-trigger`}
-          aria-label="Choose a workflow"
+          aria-label={t('Choose a workflow')}
           className={cn(chipClass, value && 'border-foreground/60 font-mono text-meta font-semibold text-foreground')}
         >
           <WorkflowIcon aria-hidden="true" className="size-3 shrink-0 text-violet" />
@@ -49,9 +50,9 @@ export function WorkflowPicker({
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" sideOffset={8} className="w-[320px] max-w-[calc(100vw-2rem)] p-0">
-        <Command label="Choose a workflow" shouldFilter={false}>
+        <Command label={t('Choose a workflow')} shouldFilter={false}>
           <CommandInput
-            placeholder="search workflows…"
+            placeholder={t('search workflows…')}
             value={search}
             onValueChange={setSearch}
             onInput={() => listRef.current?.scrollTo(0, 0)}

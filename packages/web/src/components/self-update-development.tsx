@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { shortAge } from '@/lib/format'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 import { offerWhenIdle, WhenIdleButton } from './self-update-when-idle'
@@ -43,6 +44,7 @@ export function DevelopmentPanel({
   // Most open PRs have no build (a fork waiting on CI approval): listing them by default buries
   // the few that can actually be installed.
   const [showUnbuilt, setShowUnbuilt] = useState(false)
+  useLocale()
   const jobBusy = data.job?.status === 'running' || data.job?.status === 'restarting'
   const active = data.installed.find((entry) => entry.active)
   const checkouts = dev.data?.checkouts ?? []
@@ -80,26 +82,29 @@ export function DevelopmentPanel({
   const unbuilt = (pulls?.items ?? []).filter((pull) => !pull.version).length
 
   const pickedCheckout = tab === 'worktrees' ? checkouts.find((checkout) => checkout.id === picked) : undefined
-  const pickedPull = tab === 'pulls' ? pulls?.items.find((pull) => pull.version && pull.version === picked) : undefined
+  const pickedPull =
+    tab === 'pulls'
+      ? pulls?.items.find((pull): pull is PullBuild & { version: string } => pull.version !== null && pull.version === picked)
+      : undefined
   const target = pickedCheckout?.id ?? pickedPull?.version ?? null
   // An unbuilt or stale worktree is built on the server before the switch — even the one that is
   // running, which is how "rebuild what I am on" is spelled.
   const needsBuild = !!pickedCheckout && (!pickedCheckout.built || pickedCheckout.stale)
   const targetIsActive = !!target && target === active?.id && !needsBuild
   const actionLabel = pickedPull && !pickedPull.installed
-    ? 'Install & restart'
+    ? t('Install & restart')
     : needsBuild
-      ? `${pickedCheckout!.built ? 'Rebuild' : 'Build'} & ${pickedCheckout!.id === active?.id ? 'restart' : 'switch'}`
-      : 'Switch & restart'
+      ? `${pickedCheckout!.built ? t('Rebuild') : t('Build')} & ${pickedCheckout!.id === active?.id ? t('restart') : t('switch')}`
+      : t('Switch & restart')
 
   return (
     <div data-slot="self-update-development" className="flex min-w-0 flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <div role="tablist" aria-label="Development builds" className="flex rounded-md border border-border bg-muted/40 p-0.5">
+        <div role="tablist" aria-label={t('Development builds')} className="flex rounded-md border border-border bg-muted/40 p-0.5">
           {(
             [
-              ...(hasWorktrees ? [{ value: 'worktrees', label: 'Worktrees', count: checkouts.length } as const] : []),
-              { value: 'pulls', label: 'Pull requests', count: (pulls?.items.length ?? 0) - unbuilt } as const,
+              ...(hasWorktrees ? [{ value: 'worktrees', label: t('Worktrees'), count: checkouts.length } as const] : []),
+              { value: 'pulls', label: t('Pull requests'), count: (pulls?.items.length ?? 0) - unbuilt } as const,
             ]
           ).map((entry) => (
             <button
@@ -122,15 +127,15 @@ export function DevelopmentPanel({
           ))}
         </div>
         <Button variant="ghost" size="sm" onClick={() => refresh.mutate()} disabled={refresh.isPending || dev.isFetching}>
-          {refresh.isPending ? 'Refreshing…' : 'Refresh'}
+          {refresh.isPending ? t('Refreshing…') : t('Refresh')}
         </Button>
       </div>
 
       <Input
-        aria-label="Filter"
+        aria-label={t('Filter')}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder={tab === 'worktrees' ? 'Filter by task, branch, commit or #PR' : 'Filter by #number, title, branch or author'}
+        placeholder={tab === 'worktrees' ? t('Filter by task, branch, commit or #PR') : t('Filter by #number, title, branch or author')}
         className="h-8 text-ui"
       />
 
@@ -138,13 +143,13 @@ export function DevelopmentPanel({
           may only hold options. */}
       <div className="max-h-72 min-h-24 overflow-y-auto rounded-md border border-border">
         {dev.isPending ? (
-          <p className="px-3 py-3 text-label text-muted-foreground">Looking for worktrees and pull requests…</p>
+          <p className="px-3 py-3 text-label text-muted-foreground">{t('Looking for worktrees and pull requests…')}</p>
         ) : dev.error ? (
           <p className="px-3 py-3 text-label text-danger">{dev.error.message}</p>
         ) : tab === 'worktrees' ? (
           <>
-            {shownCheckouts.length === 0 ? <p className="px-3 py-3 text-label text-muted-foreground">Nothing matches.</p> : null}
-            <div role="listbox" aria-label="Worktrees">
+            {shownCheckouts.length === 0 ? <p className="px-3 py-3 text-label text-muted-foreground">{t('Nothing matches.')}</p> : null}
+            <div role="listbox" aria-label={t('Worktrees')}>
               {shownCheckouts.map((checkout) => (
                 <CheckoutRow
                   key={checkout.worktree}
@@ -162,13 +167,13 @@ export function DevelopmentPanel({
             {pulls?.available && shownPulls.length === 0 ? (
               <p className="px-3 py-3 text-label text-muted-foreground">
                 {pulls.items.length === 0
-                  ? `No open pull requests on ${pulls.repo}.`
+                  ? t('No open pull requests on {repo}.', { repo: pulls.repo })
                   : needle
-                    ? 'Nothing matches.'
-                    : 'No open pull request has a preview build.'}
+                    ? t('Nothing matches.')
+                    : t('No open pull request has a preview build.')}
               </p>
             ) : null}
-            <div role="listbox" aria-label="Pull requests">
+            <div role="listbox" aria-label={t('Pull requests')}>
               {shownPulls.map((pull) => (
                 <PullRow
                   key={pull.number}
@@ -186,8 +191,8 @@ export function DevelopmentPanel({
                 className="w-full border-t border-border px-3 py-2 text-left text-label text-muted-foreground hover:text-foreground"
               >
                 {showUnbuilt
-                  ? `Hide the ${unbuilt} without a preview build`
-                  : `${unbuilt} more without a preview build (forks, CI not green yet) — show`}
+                  ? t('Hide the {count} without a preview build', { count: unbuilt })
+                  : t('{count} more without a preview build (forks, CI not green yet) — show', { count: unbuilt })}
               </button>
             ) : null}
           </>
@@ -198,17 +203,17 @@ export function DevelopmentPanel({
         <p className="min-w-0 flex-1 truncate text-meta text-muted-foreground" title={pickedCheckout?.worktree}>
           {pickedCheckout
             ? needsBuild
-              ? `${pickedCheckout.built ? 'Built before its last commit' : 'Not built yet'} — runs npm run build in ${pickedCheckout.worktree} first (about a minute).`
+              ? t('{state} — runs npm run build in {worktree} first (about a minute).', { state: pickedCheckout.built ? t('Built before its last commit') : t('Not built yet'), worktree: pickedCheckout.worktree })
               : pickedCheckout.worktree
             : pickedPull
-              ? `Installs ${pickedPull.version} from npm.`
+              ? t('Installs {version} from npm.', { version: pickedPull.version })
               : tab === 'worktrees'
-                ? 'Linked, not copied: a worktree that is not built, or built before its last commit, is built before the switch.'
-                : 'Preview builds CI publishes for green same-repo pull requests.'}
+                ? t('Linked, not copied: a worktree that is not built, or built before its last commit, is built before the switch.')
+                : t('Preview builds CI publishes for green same-repo pull requests.')}
         </p>
         {!targetIsActive && offerWhenIdle(data, target) ? (
           <WhenIdleButton
-            label="When idle"
+            label={t('When idle')}
             doing={
               pickedPull
                 ? `${pickedPull.installed ? 'switches to' : 'installs'} PR #${pickedPull.number}'s build`

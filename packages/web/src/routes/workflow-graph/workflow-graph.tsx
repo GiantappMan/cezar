@@ -62,6 +62,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/toaster'
 import { useNavigate } from '@/lib/project-router'
+import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import {
   advance,
@@ -643,8 +644,8 @@ function WorkflowGraphEditor() {
       <CenteredState
         icon={<AlertTriangleIcon />}
         tone="neutral"
-        title="The node catalog did not load"
-        subtitle={catalog.error instanceof Error ? catalog.error.message : 'Try again in a moment.'}
+        title={t('The node catalog did not load')}
+        subtitle={catalog.error instanceof Error ? catalog.error.message : t('Try again in a moment.')}
       />
     )
   }
@@ -664,7 +665,7 @@ function WorkflowGraphEditor() {
     <div data-route="workflows" className="flex h-full min-h-0 flex-col">
       <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-background px-3">
         <select
-          aria-label="Open workflow"
+          aria-label={t('Open workflow')}
           className="h-8 max-w-44 rounded-md border border-transparent bg-transparent px-1.5 text-ui font-medium outline-none hover:border-border focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           value={routeName ?? ''}
           onChange={(e) => {
@@ -673,8 +674,8 @@ function WorkflowGraphEditor() {
             else void navigate(to)
           }}
         >
-          <option value="">New workflow</option>
-          <optgroup label="This repo">
+          <option value="">{t('New workflow')}</option>
+          <optgroup label={t('This repo')}>
             {workflows.data?.workflows
               .filter((w) => w.source === 'file')
               .map((w) => (
@@ -684,7 +685,7 @@ function WorkflowGraphEditor() {
                 </option>
               ))}
           </optgroup>
-          <optgroup label="Built-in templates">
+          <optgroup label={t('Built-in templates')}>
             {workflows.data?.workflows
               .filter((w) => w.source === 'built-in')
               .map((w) => (
@@ -696,8 +697,8 @@ function WorkflowGraphEditor() {
         </select>
         <span className="text-muted-foreground/60">/</span>
         <Input
-          aria-label="Workflow name"
-          placeholder="name this workflow"
+          aria-label={t('Workflow name')}
+          placeholder={t('name this workflow')}
           value={name}
           onChange={(e) => {
             setName(e.target.value)
@@ -705,19 +706,19 @@ function WorkflowGraphEditor() {
           }}
           className="h-8 w-52 border-transparent bg-transparent text-ui shadow-none hover:border-border"
         />
-        {dirty && <span className="size-1.5 rounded-full bg-primary" title="Unsaved changes" aria-label="Unsaved changes" />}
+        {dirty && <span className="size-1.5 rounded-full bg-primary" title={t('Unsaved changes')} aria-label={t('Unsaved changes')} />}
         <button
           type="button"
           className="flex items-center gap-1 rounded-md px-1.5 py-1 text-label hover:bg-accent"
           style={{ color: issues.length ? TONE.failure : 'var(--muted-foreground)' }}
-          title={issues.join('\n') || 'The server validated this workflow'}
+          title={issues.join('\n') || t('The server validated this workflow')}
           onClick={() => {
             setSelectedId(null)
             setWorkflowPanel(true)
           }}
         >
           {issues.length ? <AlertTriangleIcon className="size-3.5" /> : <CheckCircle2Icon className="size-3.5" />}
-          {issues.length ? `${issues.length} issue${issues.length > 1 ? 's' : ''}` : 'valid'}
+          {issues.length ? t('{n} issue{s}', { n: issues.length, s: issues.length > 1 ? 's' : '' }) : t('valid')}
         </button>
         <div className="ml-auto flex items-center gap-1">
           <Button
@@ -728,13 +729,13 @@ function WorkflowGraphEditor() {
               setPaletteOpen((o) => !o)
             }}
           >
-            <PlusIcon /> Add node
+            <PlusIcon /> {t('Add node')}
           </Button>
           <Button
             size="sm"
             variant="ghost"
-            title="Tidy up the layout"
-            aria-label="Tidy up"
+            title={t('Tidy up the layout')}
+            aria-label={t('Tidy up')}
             onClick={() => {
               edit((g) => ({ ...g, layout: autoLayout(g) }))
               pendingFit.current = true
@@ -743,13 +744,13 @@ function WorkflowGraphEditor() {
             <LayoutGridIcon />
           </Button>
           <Button size="sm" variant={sim ? 'primary' : 'ghost'} onClick={() => setSim((s) => (s ? null : startSim(graph)))}>
-            {sim ? <SquareIcon /> : <PlayIcon />} {sim ? 'Stop' : 'Simulate'}
+            {sim ? <SquareIcon /> : <PlayIcon />} {sim ? t('Stop') : t('Simulate')}
           </Button>
           <Button
             size="sm"
             variant={workflowPanel ? 'primary' : 'ghost'}
-            title="Workflow settings, YAML and import"
-            aria-label="Workflow settings"
+            title={t('Workflow settings, YAML and import')}
+            aria-label={t('Workflow settings')}
             onClick={() => {
               setSelectedId(null)
               setWorkflowPanel((o) => !o)
@@ -757,7 +758,7 @@ function WorkflowGraphEditor() {
           >
             <Settings2Icon />
           </Button>
-          <Button size="sm" variant="ghost" title="Export as a .yaml file" aria-label="Export YAML" onClick={exportYaml}>
+          <Button size="sm" variant="ghost" title={t('Export as a .yaml file')} aria-label={t('Export YAML')} onClick={exportYaml}>
             <DownloadIcon />
           </Button>
           <Button
@@ -766,7 +767,7 @@ function WorkflowGraphEditor() {
             disabled={!canSave}
             onClick={() => (shadowsBuiltIn ? setConfirm({ kind: 'shadow' }) : save.mutate(savingOwnFile))}
           >
-            <SaveIcon /> Save
+            <SaveIcon /> {t('Save')}
           </Button>
         </div>
       </header>
@@ -801,7 +802,7 @@ function WorkflowGraphEditor() {
         {paletteOpen && (
           <FloatingPanel
             side="left"
-            label="Node palette"
+            label={t('Node palette')}
             title={
               attach ? (
                 <span>

@@ -2,6 +2,7 @@ import { useState, type RefObject } from 'react'
 import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { t, useLocale } from '@/lib/i18n'
 import { collectDashboardExport, dashboardCsv, printableDashboard } from './export'
 
 export function DashboardExportMenu({
@@ -13,6 +14,7 @@ export function DashboardExportMenu({
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [title, setTitle] = useState('')
+  useLocale()
   const exportView = (format: 'csv' | 'pdf') => {
     setError('')
     try {
@@ -90,7 +92,7 @@ export function DashboardExportMenu({
       <PopoverTrigger asChild>
         <Button variant="outline" className="min-h-11" disabled={busy}>
           <Download className="size-4" />
-          {busy ? 'Preparing report…' : 'Export'}
+          {busy ? 'Preparing report…' : t('Export')}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="max-w-[calc(100vw-2rem)] space-y-3">

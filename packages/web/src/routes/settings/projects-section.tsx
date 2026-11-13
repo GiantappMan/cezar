@@ -26,6 +26,7 @@ import { toast } from '@/components/ui/toaster'
 import { LoadingState, SettingsSkeleton } from '@/components/loading-state'
 import { allProjectTags, suggestTags } from '@/lib/project-tags'
 import { cn } from '@/lib/utils'
+import { t, useLocale } from '@/lib/i18n'
 import { RemoveProjectDialog, useProjectRemoval } from './remove-project'
 import { SettingsField } from './settings-field'
 
@@ -80,12 +81,13 @@ function shortDate(iso: string): string {
 }
 
 export function ProjectsSection() {
+  useLocale()
   const config = useWorkspaceConfig()
   const projects = useProjects()
 
   if (config.isPending || projects.isPending) {
     return (
-      <LoadingState label="Loading projects…" data-slot="projects-loading"><SettingsSkeleton /></LoadingState>
+      <LoadingState label={t('Loading projects…')} data-slot="projects-loading"><SettingsSkeleton /></LoadingState>
     )
   }
   if (config.isError || projects.isError) {
@@ -93,7 +95,7 @@ export function ProjectsSection() {
       <CenteredState
         icon={<FoldersIcon />}
         tone="danger"
-        title="Project settings did not load"
+        title={t('Project settings did not load')}
         subtitle={(config.error ?? projects.error)?.message}
         heading="h2"
       />
@@ -109,6 +111,7 @@ function ProjectsPane({
   config: WorkspaceConfigResponse
   registry: ProjectsResponse
 }) {
+  useLocale()
   return (
     <div
       data-slot="projects-section"
@@ -121,22 +124,22 @@ function ProjectsPane({
       <WorkspaceRootField
         configKey="browseRoot"
         value={config.browseRoot}
-        title="Default browse folder"
-        hint="Where “Open local folder…” starts. The picker cannot navigate above this folder."
+        title={t('Default browse folder')}
+        hint={t('Where “Open local folder…” starts. The picker cannot navigate above this folder.')}
         placeholder="~/"
         slot="browse"
-        savedLabel="Browse folder"
-        footer="Only affects folder browsing; GitHub checkouts use the separate checkout folder."
+        savedLabel={t('Browse folder')}
+        footer={t('Only affects folder browsing; GitHub checkouts use the separate checkout folder.')}
       />
       <WorkspaceRootField
         configKey="projectsDir"
         value={config.projectsDir}
-        title="Default checkout folder"
-        hint="Where “Clone from GitHub” and “New project” put new projects: <folder>/<project name>."
+        title={t('Default checkout folder')}
+        hint={t('Where “Clone from GitHub” and “New project” put new projects: <folder>/<project name>.')}
         placeholder="~/cezar/projects"
         slot="checkout"
-        savedLabel="Checkout folder"
-        footer="Only affects new checkouts; projects already registered keep their location."
+        savedLabel={t('Checkout folder')}
+        footer={t('Only affects new checkouts; projects already registered keep their location.')}
         refreshProjects
       />
       <RegistryTable registry={registry} workspaceMax={config.resources.maxParallel} />
@@ -166,6 +169,7 @@ function WorkspaceRootField({
   footer: string
   refreshProjects?: boolean
 }) {
+  useLocale()
   const queryClient = useQueryClient()
   // The merged config the PUT answers with lands straight in the workspace-config query. The
   // projects response carries projectsDir for the clone dialog, while every fs-browse result is
@@ -196,8 +200,8 @@ function WorkspaceRootField({
       title={title}
       hint={`${hint} ${
         configKey === 'browseRoot'
-          ? 'Choose an existing folder; it is verified writable before saving.'
-          : 'The folder is created recursively if needed, then verified writable before saving.'
+          ? t('Choose an existing folder; it is verified writable before saving.')
+          : t('The folder is created recursively if needed, then verified writable before saving.')
       }`}
     >
       <div className="flex items-center gap-2">
@@ -225,17 +229,17 @@ function WorkspaceRootField({
           data-action={`projects-save-${slot}-root`}
           disabled={unchanged || trimmed === '' || save.isPending}
           onClick={() =>
-            save.mutate(trimmed, { onSuccess: () => toast(`${savedLabel} set to ${trimmed}`) })
+            save.mutate(trimmed, { onSuccess: () => toast(t('{label} set to {value}', { label: savedLabel, value: trimmed })) })
           }
         >
-          Save
+          {t('Save')}
         </Button>
       </div>
       {serverError !== null ? (
         // The mockup's error line: the reason, then what did NOT happen — a failed probe
         // persists nothing, and saying so stops the reader wondering which value is live.
         <p data-slot={`projects-${slot}-root-error`} role="alert" className="text-meta text-danger">
-          {serverError} — setting unchanged
+          {t('{error} — setting unchanged', { error: serverError })}
         </p>
       ) : (
         <p className="text-meta text-soft-foreground">
@@ -253,6 +257,7 @@ function RegistryTable({
   registry: ProjectsResponse
   workspaceMax: number
 }) {
+  useLocale()
   const [confirming, setConfirming] = useState<Confirming>(null)
   const remove = useProjectRemoval()
   // One computation for the whole table: the vocabulary is a property of the WORKSPACE, and
@@ -268,8 +273,8 @@ function RegistryTable({
 
   return (
     <SettingsField
-      title="Registered projects"
-      hint={`The folders you have added. While this list is empty the folder cezar is serving is listed as “not registered” with an Add button; once you have projects, starting cezar somewhere new neither registers nor lists that folder — use “Add project” when you want to keep it. “Tags” group connected repositories — give the API, the web app and the design system a shared “storefront” tag and the global Tasks page can show all three as one piece of work. “Max parallel” caps how many of that project's tasks run at once (leave it empty to inherit the workspace limit); the workspace limit (${workspaceMax}) still applies as an overall ceiling, so a per-project value above it has no extra effect until the workspace limit is raised. Removing a project only unregisters it — no files on disk are deleted.`}
+      title={t('Registered projects')}
+      hint={t('The folders you have added. While this list is empty the folder cezar is serving is listed as “not registered” with an Add button; once you have projects, starting cezar somewhere new neither registers nor lists that folder — use “Add project” when you want to keep it. “Tags” group connected repositories — give the API, the web app and the design system a shared “storefront” tag and the global Tasks page can show all three as one piece of work. “Max parallel” caps how many of that project\'s tasks run at once (leave it empty to inherit the workspace limit); the workspace limit ({max}) still applies as an overall ceiling, so a per-project value above it has no extra effect until the workspace limit is raised. Removing a project only unregisters it — no files on disk are deleted.', { max: workspaceMax })}
     >
       {/* Defensive: `GET /api/v1/projects` names at least the folder this server is serving
           whenever the registry is empty (the unregistered row), and the registry's own rows
@@ -277,7 +282,7 @@ function RegistryTable({
           headers and no rows would be a worse answer than a sentence if that ever changes. */}
       {registry.projects.length === 0 ? (
         <p data-slot="projects-empty" className="text-ui text-soft-foreground">
-          No projects registered yet.
+          {t('No projects registered yet.')}
         </p>
       ) : (
         <div className="overflow-x-auto rounded-md border border-border">
@@ -285,7 +290,7 @@ function RegistryTable({
             {/* Not "registered": this table also renders the folder cezar is serving without
                 having saved it, whose only action is Add project. A screen-reader user was told
                 the list was registered projects and then met a row that is the opposite. */}
-            <caption className="sr-only">Projects in this workspace</caption>
+            <caption className="sr-only">{t('Projects in this workspace')}</caption>
             {/* Explicit widths rather than letting the browser distribute them by content: Tags
                 is the one cell whose content GROWS with use, and auto-layout kept giving it
                 whatever the fixed-size controls left over — which was not enough for one chip. */}
@@ -299,12 +304,12 @@ function RegistryTable({
             </colgroup>
             <thead>
               <tr className="border-b border-border text-left text-label text-soft-foreground">
-                <th scope="col" className="px-3 py-2 font-medium">Project</th>
-                <th scope="col" className="px-3 py-2 font-medium">Status</th>
-                <th scope="col" className="px-3 py-2 font-medium">Tags</th>
-                <th scope="col" className="px-3 py-2 font-medium">Max parallel</th>
-                <th scope="col" className="px-3 py-2 font-medium">Added</th>
-                <th scope="col" className="px-3 py-2 font-medium text-right">Actions</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('Project')}</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('Status')}</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('Tags')}</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('Max parallel')}</th>
+                <th scope="col" className="px-3 py-2 font-medium">{t('Added')}</th>
+                <th scope="col" className="px-3 py-2 font-medium text-right">{t('Actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -348,6 +353,7 @@ function ProjectRow({
   disabled: boolean
   onRemove: () => void
 }) {
+  useLocale()
   return (
     <tr data-slot="project-row" data-project={project.id} className="border-b border-border last:border-0">
       <th scope="row" className="max-w-0 px-3 py-2 text-left font-normal">
@@ -361,13 +367,13 @@ function ProjectRow({
           data-slot="project-status"
           className={project.status === 'missing' ? 'text-label text-danger' : 'text-label text-soft-foreground'}
         >
-          {STATUS_LABEL[project.status]}
+          {t(STATUS_LABEL[project.status])}
         </span>
         {project.unregistered ? (
           // Where `source` (how it got into the registry) would go — it is not in the registry,
           // and this is the row's whole story, so it says that instead.
           <span data-slot="project-unregistered" className="ml-1 text-meta text-soft-foreground">
-            · not registered
+            {t('· not registered')}
           </span>
         ) : project.status !== 'missing' ? (
           <span className="ml-1 text-meta text-soft-foreground">· {project.source}</span>
@@ -403,9 +409,9 @@ function ProjectRow({
             <RouterLink
               to={`/p/${encodeURIComponent(project.id)}/settings`}
               data-action="project-settings"
-              aria-label={`Settings for ${project.name}`}
+              aria-label={t('Settings for {name}', { name: project.name })}
             >
-              Settings
+              {t('Settings')}
             </RouterLink>
           </Button>
         ) : null}
@@ -426,14 +432,14 @@ function ProjectRow({
             // bare "Remove" safe-sounding isn't read out with it — but LEADS with the button's own
             // word, so the accessible name contains the visible one (WCAG 2.5.3 Label in Name) and
             // speech input still reaches the control. Same shape as the General page's button.
-            aria-label={`Remove ${project.name} from the workspace — unregisters it, no files are deleted`}
+            aria-label={t('Remove {name} from the workspace — unregisters it, no files are deleted', { name: project.name })}
             // The boot project is refused server-side too (this server runs out of it);
             // disabling here means the user gets the explanation before the click, not after.
-            title={isBoot ? 'cezar is serving this project — stop it and use `cezar projects remove`' : undefined}
+            title={isBoot ? t('cezar is serving this project — stop it and use `cezar projects remove`') : undefined}
             disabled={disabled || isBoot}
             onClick={onRemove}
           >
-            Remove
+            {t('Remove')}
           </Button>
         )}
       </td>
@@ -463,6 +469,7 @@ export function AddBootProjectButton({
   /** The server refuses this folder (`$HOME`, a task worktree): explain instead of 400-ing. */
   notAddable?: boolean
 }) {
+  useLocale()
   const register = useRegisterProject()
   return (
     <Button
@@ -470,21 +477,21 @@ export function AddBootProjectButton({
       variant="outline"
       size="sm"
       data-action="project-add-boot"
-      aria-label={`Add ${name} to your projects`}
+      aria-label={t('Add {name} to your projects', { name })}
       title={
         notAddable
-          ? 'Your home directory or a cezar task worktree cannot be a project — start cezar in a project folder, or use Open local folder'
-          : 'cezar is serving this folder — save it to your projects'
+          ? t('Your home directory or a cezar task worktree cannot be a project — start cezar in a project folder, or use Open local folder')
+          : t('cezar is serving this folder — save it to your projects')
       }
       disabled={disabled || notAddable || register.isPending}
       onClick={() =>
         register.mutate(root, {
-          onSuccess: () => toast(`${name} added to your projects`),
+          onSuccess: () => toast(t('{name} added to your projects', { name })),
           onError: (error: Error) => toast(error.message, { tone: 'danger' }),
         })
       }
     >
-      Add project
+      {t('Add project')}
     </Button>
   )
 }
@@ -523,6 +530,7 @@ export function ProjectTagsEditor({
    *  rather than derived here so all rows share one computation of the workspace's vocabulary. */
   vocabulary: readonly string[]
 }) {
+  useLocale()
   const update = useUpdateProject()
   const [draft, setDraft] = useState('')
   const [open, setOpen] = useState(false)
@@ -554,17 +562,17 @@ export function ProjectTagsEditor({
       return
     }
     if (tags.length >= PROJECT_TAGS_MAX) {
-      toast(`${project.name} already has the maximum of ${PROJECT_TAGS_MAX} tags`, { tone: 'danger' })
+      toast(t('{name} already has the maximum of {n} tags', { name: project.name, n: PROJECT_TAGS_MAX }), { tone: 'danger' })
       return
     }
     setDraft('')
-    save([...tags, tag], `${project.name} tagged \u201c${tag}\u201d`)
+    save([...tags, tag], t('{name} tagged “{tag}”', { name: project.name, tag }))
   }
 
   const remove = (tag: string) => {
     save(
       tags.filter((existing) => existing !== tag),
-      `\u201c${tag}\u201d removed from ${project.name}`,
+      t('“{tag}” removed from {name}', { tag, name: project.name }),
     )
   }
 
@@ -586,7 +594,7 @@ export function ProjectTagsEditor({
             data-action="project-tag-remove"
             // Names the project as well as the tag: in a table of rows that all offer a bare
             // "\u00d7", the row context a sighted reader has is not read out with the control.
-            aria-label={`Remove tag ${tag} from ${project.name}`}
+            aria-label={t('Remove tag {tag} from {name}', { tag, name: project.name })}
             disabled={update.isPending}
             onClick={() => remove(tag)}
             className="rounded-full p-0.5 hover:bg-violet/25 disabled:opacity-50"
@@ -604,7 +612,7 @@ export function ProjectTagsEditor({
             ref={inputRef}
             type="text"
             data-slot="project-tag-input"
-            aria-label={`Add a tag to ${project.name}`}
+            aria-label={t('Add a tag to {name}', { name: project.name })}
             // Combobox semantics, hand-wired because the listbox is a sibling rather than a
             // child: a screen reader needs to know this input owns a list and which row is active.
             role="combobox"
@@ -614,7 +622,7 @@ export function ProjectTagsEditor({
             aria-activedescendant={
               listOpen && highlight >= 0 ? `${listId}-${highlight}` : undefined
             }
-            placeholder={tags.length === 0 ? 'Add tag\u2026' : '+'}
+            placeholder={tags.length === 0 ? t('Add tag…') : '+'}
             value={draft}
             maxLength={PROJECT_TAG_MAX_LENGTH}
             disabled={update.isPending}
@@ -702,7 +710,7 @@ export function ProjectTagsEditor({
           onInteractOutside={(event) => event.preventDefault()}
         >
           <p className="px-2 pt-1 pb-1.5 text-micro text-soft-foreground">
-            Tags used in this workspace
+            {t('Tags used in this workspace')}
           </p>
           {suggestions.map((tag, index) => (
             <button
@@ -751,17 +759,18 @@ export function MaxParallelStepper({
   project: ProjectListEntry
   workspaceMax: number
 }) {
+  useLocale()
   const update = useUpdateProject()
   return (
     <IntegerStepper
-      aria-label={`Max parallel tasks for ${project.name}`}
+      aria-label={t('Max parallel tasks for {name}', { name: project.name })}
       data-slot="project-max-parallel"
       value={project.maxParallel ?? null}
       min={MAX_PARALLEL_MIN}
       max={MAX_PARALLEL_MAX}
       allowEmpty
       emptyStepFrom={Math.min(MAX_PARALLEL_MAX, Math.max(MAX_PARALLEL_MIN, workspaceMax))}
-      placeholder={`Inherit (${workspaceMax})`}
+      placeholder={t('Inherit ({n})', { n: workspaceMax })}
       className="w-40"
       onCommit={(next) =>
         update.mutateAsync(
@@ -770,8 +779,10 @@ export function MaxParallelStepper({
             onSuccess: () =>
               toast(
                 next === null
-                  ? `${project.name} inherits the workspace limit (${workspaceMax})`
-                  : `${project.name} runs at most ${next} task${next === 1 ? '' : 's'} at a time`,
+                  ? t('{name} inherits the workspace limit ({n})', { name: project.name, n: workspaceMax })
+                  : next === 1
+                    ? t('{name} runs at most {n} task at a time', { name: project.name, n: next })
+                    : t('{name} runs at most {n} tasks at a time', { name: project.name, n: next }),
               ),
             onError: (error: Error) => toast(error.message, { tone: 'danger' }),
           },

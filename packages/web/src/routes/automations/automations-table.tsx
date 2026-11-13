@@ -11,6 +11,7 @@ import { StatusDot } from '@/components/status-dot'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { dayTime, statusLabel, statusTone, triggerLabel, usd, AUTOMATION_COST_VISIBLE } from '@/lib/automation-format'
+import { t, useLocale } from '@/lib/i18n'
 import { shortAge } from '@/lib/format'
 import { Link, useNavigate } from '@/lib/project-router'
 import { cn } from '@/lib/utils'
@@ -46,6 +47,7 @@ export function AutomationsTable({
   automations?: readonly AutomationListEntry[]
   reorder?: Reorder
 }) {
+  useLocale()
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -54,14 +56,14 @@ export function AutomationsTable({
   const describe = (id: string | number) => {
     const index = automations.findIndex((entry) => entry.id === id)
     const entry = automations[index]
-    return entry ? `${entry.name}, position ${index + 1} of ${automations.length}` : 'automation'
+    return entry ? t('{name}, position {a} of {b}', { name: entry.name, a: index + 1, b: automations.length }) : t('automation')
   }
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} accessibility={{ announcements: {
-      onDragStart: ({ active }) => `Picked up ${describe(active.id)}.`,
-      onDragOver: ({ active, over }) => over ? `${describe(active.id)} moved to ${describe(over.id)}.` : 'No drop position.',
-      onDragEnd: ({ active, over }) => over ? `${describe(active.id)} dropped at ${describe(over.id)}.` : 'Order unchanged.',
-      onDragCancel: () => 'Reordering cancelled. The order is unchanged.',
+      onDragStart: ({ active }) => t('Picked up {x}.', { x: describe(active.id) }),
+      onDragOver: ({ active, over }) => over ? t('{a} moved to {b}.', { a: describe(active.id), b: describe(over.id) }) : t('No drop position.'),
+      onDragEnd: ({ active, over }) => over ? t('{a} dropped at {b}.', { a: describe(active.id), b: describe(over.id) }) : t('Order unchanged.'),
+      onDragCancel: () => t('Reordering cancelled. The order is unchanged.'),
     } }} onDragEnd={({ active, over }) => {
       if (!reorder?.enabled || over === null) return
       const from = automations.findIndex((entry) => entry.id === active.id)
@@ -72,15 +74,15 @@ export function AutomationsTable({
         <table className="w-full border-collapse [&_tbody_tr:last-child>td]:border-b-0">
           <thead>
             <tr>
-              {reorder ? <th className={TH}>Order</th> : null}
-              <th className={cn(TH, 'pl-4')}>State</th>
-              <th className={TH}>Automation</th>
-              <th className={TH}>Trigger</th>
-              <th className={cn(TH, WIDE)}>Runs as</th>
-              <th className={TH}>Next run</th>
-              <th className={TH}>Last run</th>
-              <th className={cn(TH, WIDE, 'text-right')}>Runs 7d</th>
-              {showCost ? <th className={cn(TH, WIDE, 'text-right')}>Cost 7d</th> : null}
+              {reorder ? <th className={TH}>{t('Order')}</th> : null}
+              <th className={cn(TH, 'pl-4')}>{t('State')}</th>
+              <th className={TH}>{t('Automation')}</th>
+              <th className={TH}>{t('Trigger')}</th>
+              <th className={cn(TH, WIDE)}>{t('Runs as')}</th>
+              <th className={TH}>{t('Next run')}</th>
+              <th className={TH}>{t('Last run')}</th>
+              <th className={cn(TH, WIDE, 'text-right')}>{t('Runs 7d')}</th>
+              {showCost ? <th className={cn(TH, WIDE, 'text-right')}>{t('Cost 7d')}</th> : null}
               <th className={cn(TH, 'pr-4')} />
             </tr>
           </thead>
@@ -130,6 +132,7 @@ function AutomationRow({
   total: number
   reorder?: Reorder
 }) {
+  useLocale()
   const navigate = useNavigate()
   const sortable = useSortable({ id: automation.id, disabled: !reorder?.enabled })
   const github = automation.kind === 'github'
@@ -156,13 +159,13 @@ function AutomationRow({
               variant="ghost" size="icon-sm" className="touch-none cursor-grab"
               ref={sortable.setActivatorNodeRef}
               {...sortable.attributes} {...sortable.listeners}
-              aria-label={`Reorder ${automation.name}`}
+              aria-label={t('Reorder {name}', { name: automation.name })}
               disabled={!reorder.enabled}
             ><GripVerticalIcon className="size-3.5" /></Button>
-            <Button variant="ghost" size="icon-sm" aria-label={`Move ${automation.name} up`}
+            <Button variant="ghost" size="icon-sm" aria-label={t('Move {name} up', { name: automation.name })}
               disabled={!reorder.enabled || position === 0} onClick={() => reorder.onMove(position, position - 1)}
             ><ArrowUpIcon className="size-3.5" /></Button>
-            <Button variant="ghost" size="icon-sm" aria-label={`Move ${automation.name} down`}
+            <Button variant="ghost" size="icon-sm" aria-label={t('Move {name} down', { name: automation.name })}
               disabled={!reorder.enabled || position === total - 1} onClick={() => reorder.onMove(position, position + 1)}
             ><ArrowDownIcon className="size-3.5" /></Button>
           </span>
@@ -170,10 +173,10 @@ function AutomationRow({
       ) : null}
       <td className={cn(TD, 'pl-4')}>
         {capabilityPaused ? (
-          <Pill dot="neutral">paused by capability</Pill>
+          <Pill dot="neutral">{t('paused by capability')}</Pill>
         ) : (
           <Pill dot={automation.enabled ? 'success' : 'neutral'} pulse={automation.enabled && github}>
-            {automation.enabled ? 'enabled' : 'paused'}
+            {automation.enabled ? t('enabled') : t('paused')}
           </Pill>
         )}
       </td>
@@ -184,7 +187,7 @@ function AutomationRow({
           {dispatch ? (
             <span
               data-slot="dispatch-badge"
-              title={`dispatch · up to ${dispatch.maxSubtasks ?? 1} subtasks`}
+              title={t('dispatch · up to {n} subtasks', { n: dispatch.maxSubtasks ?? 1 })}
               className="inline-flex shrink-0 items-center gap-[3px] rounded-full bg-muted px-1.5 py-px text-micro font-medium text-muted-foreground"
             >
               <GitForkIcon className="size-2.5" />×{dispatch.maxSubtasks ?? 1}
@@ -194,10 +197,10 @@ function AutomationRow({
             // Pre-mediation tracker automations stop polling until their access is reviewed.
             <span
               data-slot="needs-review-badge"
-              title="Tracker access changed: open this automation and review its access before it can run again"
+              title={t('Tracker access changed: open this automation and review its access before it can run again')}
               className="inline-flex shrink-0 items-center rounded-full bg-warning/15 px-1.5 py-px text-micro font-medium text-warning"
             >
-              Needs review
+              {t('Needs review')}
             </span>
           ) : null}
         </span>
@@ -217,7 +220,7 @@ function AutomationRow({
             {automation.task.autonomous ? (
               <>
                 <span className="text-soft-foreground">·</span>
-                <span title="autonomous" data-slot="autonomous-mark" className="inline-flex">
+                <span title={t('autonomous')} data-slot="autonomous-mark" className="inline-flex">
                   <ZapIcon aria-hidden="true" className="size-[11px] text-soft-foreground" />
                 </span>
               </>
@@ -245,7 +248,7 @@ function AutomationRow({
               onClick={stop}
               className="inline-flex items-center gap-0.5 rounded-full border border-violet/40 px-1.5 py-px font-mono text-micro font-semibold text-violet"
             >
-              task
+              {t('task')}
               <ArrowUpRightIcon className="size-[9px]" />
             </Link>
           </span>
@@ -269,7 +272,7 @@ function AutomationRow({
 /** `continuous` for a poll; the next instant (server-reported, else computed) for a schedule; `—` paused. */
 function nextRunText(automation: AutomationListEntry, timeZone: string, now: number): string {
   if (!automation.enabled) return '—'
-  if (automation.kind !== 'schedule') return 'continuous'
+  if (automation.kind !== 'schedule') return t('continuous')
   const next = nextAutomationRun(automation, timeZone, now)
   return next === null ? '—' : dayTime(next, timeZone) || '—'
 }

@@ -1,6 +1,7 @@
 import type { HealthResponse, ProviderId, ProviderStatusResponse, RunRecord, WorkspaceUiState } from '@open-mercato/cezar-api-client'
 
 import { isAwaitingAnswer, isNeedsYouStatus } from '@/lib/attention'
+import { t } from '@/lib/i18n'
 import { PROVIDER_LABELS } from '@/lib/provider-auth-alert'
 
 /**
@@ -41,11 +42,11 @@ export function pendingSetupSteps(input: {
 }): SetupStep[] {
   const steps: SetupStep[] = []
   if (input.worktreeSetupConfigured === false) {
-    steps.push({ id: 'worktrees', label: 'Prepare worktrees', description: 'Install dependencies and copy env files into every task worktree.', action: 'Set up', to: '/settings/worktrees' })
+    steps.push({ id: 'worktrees', label: t('Prepare worktrees'), description: t('Install dependencies and copy env files into every task worktree.'), action: t('Set up'), to: '/settings/worktrees' })
   }
   // Only a GitHub-hosted project needs `gh`, and only a probe that has answered says it is missing.
   if (input.forge?.available === false) {
-    steps.push({ id: 'github', label: 'Connect GitHub', description: 'Pull requests and issues need the GitHub CLI.', action: 'Connect', to: '/github' })
+    steps.push({ id: 'github', label: t('Connect GitHub'), description: t('Pull requests and issues need the GitHub CLI.'), action: t('Connect'), to: '/github' })
   }
   return steps
 }
@@ -262,15 +263,15 @@ export function welcomeBackSentence(
   const tasks = !first
     ? null
     : waiting.length > 1
-      ? `${waiting.length} tasks are waiting for you`
+      ? t('{count} tasks are waiting for you', { count: waiting.length })
       : first.status === 'review'
-        ? 'One task is ready for your review'
+        ? t('One task is ready for your review')
         : first.status === 'waiting' || isAwaitingAnswer(first)
-          ? 'One task is waiting for your answer'
-          : 'One task needs a look'
-  const news = newFeatures === 0 ? null : newFeatures === 1 ? 'there is a new feature to try' : `there are ${newFeatures} new features to try`
-  if (tasks && news) return `${tasks}, and ${news}.`
-  if (tasks) return `${tasks}.`
+          ? t('One task is waiting for your answer')
+          : t('One task needs a look')
+  const news = newFeatures === 0 ? null : newFeatures === 1 ? t('there is a new feature to try') : t('there are {count} new features to try', { count: newFeatures })
+  if (tasks && news) return t('{tasks}, and {news}.', { tasks, news })
+  if (tasks) return t('{tasks}.', { tasks })
   if (news) return `${news.charAt(0).toUpperCase()}${news.slice(1)}.`
   return null
 }

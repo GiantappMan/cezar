@@ -6,6 +6,7 @@ import { useRepoFile, useRunFile } from '@/api/queries'
 import type { WorktreeEntry } from '@open-mercato/cezar-api-client'
 import { CenteredState } from '@/components/centered-state'
 import { highlight, highlightSync, langForPath, type SynToken } from '@/lib/highlighter'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 import { Markdown } from '../task-thread/markdown'
@@ -57,6 +58,7 @@ export function FilePreview({
   headerActions?: ReactNode
 }) {
   const entry = useFileEntry(source, path ?? undefined)
+  useLocale()
 
   if (path === null) {
     return (
@@ -65,8 +67,8 @@ export function FilePreview({
           icon={<MousePointerClickIcon />}
           tone="neutral"
           heading="h2"
-          title="Select a file"
-          subtitle="Pick a file from the tree to preview it here."
+          title={t('Select a file')}
+          subtitle={t('Pick a file from the tree to preview it here.')}
         />
       </Pane>
     )
@@ -75,7 +77,7 @@ export function FilePreview({
     return (
       <Pane className={className}>
         <p data-slot="file-preview-loading" className="px-4 py-6 text-center text-xs text-soft-foreground">
-          Loading {path}…
+          {t('Loading {path}…', { path })}
         </p>
       </Pane>
     )
@@ -90,7 +92,7 @@ export function FilePreview({
           icon={refused ? <FileXIcon /> : <TriangleAlertIcon />}
           tone={refused ? 'neutral' : 'danger'}
           heading="h2"
-          title={refused ? 'Cannot preview this file' : 'Could not load this file'}
+          title={refused ? t('Cannot preview this file') : t('Could not load this file')}
           subtitle={entry.error.message}
         />
       </Pane>
@@ -128,6 +130,7 @@ function FileEntryView({
 }) {
   const kind = previewKind(entry)
   const markdown = kind === 'text' && isMarkdownPath(entry.path)
+  useLocale()
   const [mode, setMode] = useState(markdownViewMode)
   const pick = (next: 'rendered' | 'source') => {
     markdownViewMode = next
@@ -155,11 +158,11 @@ function FileEntryView({
                 aria-pressed={mode === value}
                 onClick={() => pick(value)}
                 className={cn(
-                  'px-2 py-0.5 capitalize',
+                  'px-2 py-0.5',
                   mode === value ? 'bg-muted font-medium text-foreground' : 'text-soft-foreground hover:bg-muted',
                 )}
               >
-                {value}
+                {t(value === 'rendered' ? 'Rendered' : 'Source')}
               </button>
             ))}
           </div>
@@ -188,16 +191,16 @@ function FileEntryView({
           icon={<FileWarningIcon />}
           tone="neutral"
           heading="h2"
-          title="Too large to preview"
-          subtitle={`${formatFileSize(entry.size)} — past the preview cap. Open it in your editor instead.`}
+          title={t('Too large to preview')}
+          subtitle={t('{size} — past the preview cap. Open it in your editor instead.', { size: formatFileSize(entry.size) })}
         />
       ) : kind === 'binary' ? (
         <CenteredState
           icon={<FileQuestionIcon />}
           tone="neutral"
           heading="h2"
-          title="Binary file"
-          subtitle={`${formatFileSize(entry.size)} of binary data — no text preview.`}
+          title={t('Binary file')}
+          subtitle={t('{size} of binary data — no text preview.', { size: formatFileSize(entry.size) })}
         />
       ) : markdown && mode === 'rendered' ? (
         // The thread's own Markdown component: the same single Shiki for fences and the same

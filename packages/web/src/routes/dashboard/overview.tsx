@@ -25,7 +25,7 @@ import { Coverage } from './rows'
 import { ExportRows } from './export-rows'
 import { OutcomeInsights } from './insights'
 import { useDashboardFilter } from './url-filter'
-import { t } from '@/lib/i18n'
+import { t, useLocale } from '@/lib/i18n'
 
 const labels = {
   running: 'Running now',
@@ -62,6 +62,7 @@ export function Overview({
   children: (modules: { overview?: ReactNode; portfolio?: ReactNode }) => ReactNode
 }) {
   const [period, setPeriod] = useDashboardFilter('period', ['7d', '30d'] as const, '7d')
+  useLocale()
   const trigger = useSheetTrigger('outcome', '[data-outcome-trigger]')
   const projects = useProjects().data?.projects
   const projectName = (id: string) => projects?.find((p) => p.id === id)?.name ?? id
@@ -84,9 +85,9 @@ export function Overview({
   const overview = (
     <Card className="gap-0 py-0">
       <div className={widgetHeader}>
-        <h2 className={widgetHeading}>Workspace overview</h2>
+        <h2 className={widgetHeading}>{t('Workspace overview')}</h2>
         <label className={filterLabel}>
-          Outcomes period
+          {t('Outcomes period')}
           <FilterSelect
             value={period}
             onChange={(e) => {
@@ -94,8 +95,8 @@ export function Overview({
               setSelection(null)
             }}
           >
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
+            <option value="7d">{t('Last 7 days')}</option>
+            <option value="30d">{t('Last 30 days')}</option>
           </FilterSelect>
         </label>
       </div>
@@ -117,12 +118,14 @@ export function Overview({
           <>
             <p className="text-sm text-muted-foreground">
               {data.metrics.needsYou
-                ? `${data.metrics.needsYou} tasks require your input or review.`
-                : complete && live.connected && !query.isError
-                  ? 'No tasks currently require your input or review.'
-                  : 'No waiting tasks found in the available data.'}{' '}
-              {data.metrics.failed} failed {data.metrics.failed === 1 ? 'outcome' : 'outcomes'}{' '}
-              in this period. Includes subtasks; completed does not mean accepted or deployed.
+                ? t('{n} tasks require your input or review.', { n: data.metrics.needsYou })
+                  : complete && live.connected && !query.isError
+                  ? t('No tasks currently require your input or review.')
+                  : t('No waiting tasks found in the available data.')}{' '}
+              {t('{n} failed {s} in this period. Includes subtasks; completed does not mean accepted or deployed.', {
+                n: data.metrics.failed,
+                s: data.metrics.failed === 1 ? t('outcome') : t('outcomes'),
+              })}
             </p>
             <Coverage coverage={data.coverage} retry={() => void query.refetch()} />
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -169,23 +172,26 @@ export function Overview({
             <OutcomeInsights period={period} active={active} />
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t pt-3">
               <p className="text-sm text-muted-foreground">
-                Median cycle time{' '}
+                {t('Median cycle time')}{' '}
                 <strong className="font-mono font-semibold text-foreground">
                   {hours(data.metrics.medianCycleHours)}
                 </strong>{' '}
-                · {data.metrics.timedTasks}/{data.metrics.completed} completed tasks have valid
-                timings.{' '}
+                ·{' '}
+                {t('{timed}/{total} completed tasks have valid timings.', {
+                  timed: data.metrics.timedTasks,
+                  total: data.metrics.completed,
+                })}{' '}
                 <Button
                   variant="ghost"
                   className="h-auto px-1.5 py-1 text-sm text-foreground underline-offset-4 hover:underline"
                   onClick={() => open('completed')}
                 >
-                  Inspect completed tasks
+                  {t('Inspect completed tasks')}
                 </Button>
               </p>
               <p className="font-mono text-meta text-soft-foreground">
                 <time dateTime={data.asOf} title={new Date(data.asOf).toLocaleString()}>
-                  Updated {shortAge(data.asOf)} ago
+                  {t('Updated {age} ago', { age: shortAge(data.asOf) })}
                 </time>
               </p>
             </div>
@@ -195,7 +201,7 @@ export function Overview({
                 className={`${disclosureSummary} py-1`}
               >
                 <DisclosureChevron />
-                How these metrics work
+                {t('How these metrics work')}
               </summary>
               <p className="mt-1 max-w-prose pl-5 leading-relaxed">
                 Outcomes use finish dates, including archived tasks. Scheduled retries are
@@ -281,12 +287,12 @@ export function Overview({
                           data-export-keep
                           variant="ghost"
                           className="min-h-11 tabular-nums"
-                          aria-label={`${projectName(project.projectId)}: ${labels[group]}: ${source?.state === 'unavailable' ? 'Unavailable' : project[group === 'needs-you' ? 'needsYou' : group]}`}
+                          aria-label={`${projectName(project.projectId)}: ${labels[group]}: ${source?.state === 'unavailable' ? t('Unavailable') : project[group === 'needs-you' ? 'needsYou' : group]}`}
                           disabled={source?.state === 'unavailable'}
                           onClick={() => open(group, project.projectId)}
                         >
                           {source?.state === 'unavailable'
-                            ? 'Unavailable'
+                            ? t('Unavailable')
                             : project[group === 'needs-you' ? 'needsYou' : group]}
                         </Button>
                       </td>

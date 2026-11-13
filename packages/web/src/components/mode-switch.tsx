@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router'
 import { useManagers } from '@/api/managers'
 import { noteManagerEntry } from '@/lib/manager-telemetry'
 import { MANAGER_ATTENTION_DOT, MANAGER_ATTENTION_TEXT, managersAttention, type ManagerAttention } from '@/lib/managers'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 const SEGMENT =
@@ -52,7 +53,7 @@ function AttentionDot({ kind }: { kind: ManagerAttention }) {
   return (
     <span data-slot="manager-attention" data-attention={kind} className="absolute top-1.5 right-2 flex">
       <span className={cn('size-1.5 rounded-full', MANAGER_ATTENTION_DOT[kind])} aria-hidden="true" />
-      <span className="sr-only">{MANAGER_ATTENTION_TEXT[kind]}</span>
+      <span className="sr-only">{t(MANAGER_ATTENTION_TEXT[kind])}</span>
     </span>
   )
 }
@@ -74,15 +75,16 @@ export function ModeSwitch({
 }) {
   const { pathname, search } = useLocation()
   const hasQueryClient = useContext(QueryClientContext) !== undefined
+  useLocale()
   return (
-    <nav aria-label="Mode" data-slot="mode-switch" className="mx-2.5 mb-2 flex gap-0.5 rounded-md bg-muted-foreground/20 p-[3px]">
+    <nav aria-label={t('Mode')} data-slot="mode-switch" className="mx-2.5 mb-2 flex gap-0.5 rounded-md bg-muted-foreground/20 p-[3px]">
       <Link
         to={manager ? '/' : `${pathname}${search}`}
         aria-current={manager ? undefined : 'page'}
         onClick={onNavigate}
         className={cn(SEGMENT, manager ? IDLE : ACTIVE)}
       >
-        Tasks
+        {t('Tasks')}
       </Link>
       <Link
         to={manager ? `${pathname}${search}` : managerTo}
@@ -93,7 +95,7 @@ export function ModeSwitch({
         }}
         className={cn(SEGMENT, manager ? ACTIVE : IDLE)}
       >
-        Manager
+        {t('Manager')}
         {/* No query client (a bare shell test): the stronger reading. */}
         {attention ? (hasQueryClient ? <CachedAttentionDot /> : <AttentionDot kind="needs-you" />) : null}
       </Link>

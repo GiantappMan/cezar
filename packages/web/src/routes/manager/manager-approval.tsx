@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from '@/components/ui/toaster'
 import { actionConfirms, actionTitle } from '@/lib/managers'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import type { ManagerActionRequest, ManagerActionStatus, ManagerMessage } from '@open-mercato/cezar-api-client'
 
@@ -49,11 +50,12 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function MergeFacts({ action }: { action: Extract<ManagerActionRequest, { type: 'merge-pr' }> }) {
+  useLocale()
   const project = useProjects().data?.projects.find((entry) => entry.id === action.projectId)
   return (
     <>
-      <Fact label="Project">{project?.name ?? action.projectId}</Fact>
-      <Fact label="Pull request">
+      <Fact label={t('Project')}>{project?.name ?? action.projectId}</Fact>
+      <Fact label={t('Pull request')}>
         {project?.repoUrl ? (
           <a href={`${project.repoUrl}/pull/${action.number}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline">
             #{action.number}
@@ -61,10 +63,10 @@ function MergeFacts({ action }: { action: Extract<ManagerActionRequest, { type: 
           </a>
         ) : `#${action.number}`}
       </Fact>
-      {action.title ? <Fact label="Title">{action.title}</Fact> : null}
-      <Fact label="Method">{action.method ?? 'Repository default'}</Fact>
-      <Fact label="Head">
-        {action.headSha ? <code title={action.headSha} className="font-mono text-xs">{action.headSha.slice(0, SHORT_SHA)}</code> : 'Latest at merge'}
+      {action.title ? <Fact label={t('Title')}>{action.title}</Fact> : null}
+      <Fact label={t('Method')}>{action.method ?? t('Repository default')}</Fact>
+      <Fact label={t('Head')}>
+        {action.headSha ? <code title={action.headSha} className="font-mono text-xs">{action.headSha.slice(0, SHORT_SHA)}</code> : t('Latest at merge')}
       </Fact>
     </>
   )
@@ -72,20 +74,21 @@ function MergeFacts({ action }: { action: Extract<ManagerActionRequest, { type: 
 
 /** What the user reads before approving: the pinned facts, by type (mobile spec, Approval cards). */
 function ActionFacts({ action }: { action: ManagerActionRequest }) {
+  useLocale()
   if (action.type === 'merge-pr') return <MergeFacts action={action} />
   if (action.type === 'add-job') {
     return (
       <>
-        <Fact label="Name">{action.name}</Fact>
-        <Fact label="Interval">Every {action.everyMinutes} min</Fact>
+        <Fact label={t('Name')}>{action.name}</Fact>
+        <Fact label={t('Interval')}>{t('Every {n} min', { n: action.everyMinutes })}</Fact>
       </>
     )
   }
   if (action.type !== 'enable-automation') return null
   return (
     <>
-      <Fact label="Name">{action.name ?? action.automationId}</Fact>
-      {action.revision === undefined ? null : <Fact label="Revision">{action.revision}</Fact>}
+      <Fact label={t('Name')}>{action.name ?? action.automationId}</Fact>
+      {action.revision === undefined ? null : <Fact label={t('Revision')}>{action.revision}</Fact>}
     </>
   )
 }
@@ -120,6 +123,7 @@ function ActionSheet({
   onApprove: () => void
   onCloseAutoFocus: (event: Event) => void
 }) {
+  useLocale()
   const { action, status } = message
   const copy = SHEET_COPY[action.type] ?? UNKNOWN_ACTION_COPY
   const detail = actionDetail(action)
@@ -129,8 +133,8 @@ function ActionSheet({
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose() }}>
       <SheetContent onCloseAutoFocus={onCloseAutoFocus} data-slot="manager-action-sheet">
         <DialogHeader className="text-left">
-          <DialogTitle>{pending ? copy.title : actionTitle(action)}</DialogTitle>
-          <DialogDescription>{pending ? copy.effect : ACTION_STATUS[status].label}</DialogDescription>
+          <DialogTitle>{pending ? t(copy.title) : t(actionTitle(action))}</DialogTitle>
+          <DialogDescription>{pending ? t(copy.effect) : t(ACTION_STATUS[status].label)}</DialogDescription>
         </DialogHeader>
         <div className="min-h-0 overflow-y-auto overscroll-contain">
           <dl className="flex flex-col gap-2">
@@ -141,8 +145,8 @@ function ActionSheet({
           ) : null}
         </div>
         <DialogFooter className="flex-row">
-          <Button variant="outline" className="h-11 flex-1 md:flex-none" onClick={onClose}>{pending ? 'Cancel' : 'Close'}</Button>
-          {pending ? <Button className="h-11 flex-1 md:flex-none" onClick={onApprove}>{copy.confirm}</Button> : null}
+          <Button variant="outline" className="h-11 flex-1 md:flex-none" onClick={onClose}>{pending ? t('Cancel') : t('Close')}</Button>
+          {pending ? <Button className="h-11 flex-1 md:flex-none" onClick={onApprove}>{t(copy.confirm)}</Button> : null}
         </DialogFooter>
       </SheetContent>
     </Dialog>
@@ -150,6 +154,7 @@ function ActionSheet({
 }
 
 export function ActionCard({ message, onDecide }: { message: ActionMessage; onDecide: DecideAction }) {
+  useLocale()
   const { action } = message
   const status = ACTION_STATUS[message.status]
   const detail = actionDetail(action)
@@ -203,14 +208,14 @@ export function ActionCard({ message, onDecide }: { message: ActionMessage; onDe
       data-slot="manager-action"
       data-status={message.status}
       data-action-id={message.id}
-      aria-label={actionTitle(action)}
+      aria-label={t(actionTitle(action))}
       ref={card}
       tabIndex={-1}
       className="w-full rounded-xl border border-border bg-card p-4 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
     >
-      <p className="text-sm font-semibold break-words">{actionTitle(action)}</p>
+      <p className="text-sm font-semibold break-words">{t(actionTitle(action))}</p>
       <p className="mt-0.5 text-xs break-words text-muted-foreground">
-        {action.type === 'add-job' ? `Every ${action.everyMinutes} min` : projectName}
+        {action.type === 'add-job' ? t('Every {n} min', { n: action.everyMinutes }) : projectName}
         {action.type === 'merge-pr' && action.method ? ` · ${action.method}` : ''}
         {action.type === 'merge-pr' && action.headSha ? ` · ${action.headSha.slice(0, 7)}` : ''}
       </p>
@@ -224,7 +229,7 @@ export function ActionCard({ message, onDecide }: { message: ActionMessage; onDe
             className="mt-1 rounded-sm text-xs text-muted-foreground underline outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 pointer-coarse:min-h-11"
             onClick={openSheet}
           >
-            Show all
+            {t('Show all')}
           </button>
         </div>
       ) : null}
@@ -234,7 +239,7 @@ export function ActionCard({ message, onDecide }: { message: ActionMessage; onDe
         {message.status === 'pending' ? null : (
           <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
             <StatusDot tone={status.tone} pulse={message.status === 'running'} />
-            {message.result ?? status.label}
+            {message.result ?? t(status.label)}
           </p>
         )}
       </div>
@@ -247,14 +252,14 @@ export function ActionCard({ message, onDecide }: { message: ActionMessage; onDe
             </p>
           ) : null}
           <div className="mt-3 flex gap-2">
-            <Button variant="outline" className="h-11 flex-1" disabled={deciding} onClick={() => void decide('reject')}>Reject</Button>
+            <Button variant="outline" className="h-11 flex-1" disabled={deciding} onClick={() => void decide('reject')}>{t('Reject')}</Button>
             <Button
               ref={approveButton}
               className="h-11 flex-1"
               disabled={deciding}
               onClick={() => (actionConfirms(setting, action.type) ? openSheet() : void decide('approve'))}
             >
-              Approve
+              {t('Approve')}
             </Button>
           </div>
         </>

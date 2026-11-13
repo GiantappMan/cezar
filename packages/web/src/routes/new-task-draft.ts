@@ -5,6 +5,7 @@ import {
   type Runner,
 } from '@open-mercato/cezar-api-client'
 import type { PendingAttachment } from '@/components/composer/composer-attachments'
+import { t } from '@/lib/i18n'
 import { RUNNERS, type TaskSource } from './new-task-form'
 
 /**
@@ -156,24 +157,24 @@ export function composerRunModeNote(input: {
   autoLand?: boolean
 }): string {
   if (input.readOnly === true && input.hasGit) {
-    return 'Asks a read-only question about the current checkout — no branch, nothing to clean up.'
+    return t('Asks a read-only question about the current checkout — no branch, nothing to clean up.')
   }
   if (input.dispatch === true) {
     return input.autonomous === true
-      ? 'Runs on its own and fans work out to subtasks — it will not pause for you.'
-      : 'Fans work out to subtasks in isolated worktrees.'
+      ? t('Runs on its own and fans work out to subtasks — it will not pause for you.')
+      : t('Fans work out to subtasks in isolated worktrees.')
   }
-  if (input.worktree) return 'Runs in an isolated worktree — review everything before it lands.'
+  if (input.worktree) return t('Runs in an isolated worktree — review everything before it lands.')
   if (input.hasGit && input.newBranch) {
-    return 'Runs in the repo working tree on a new branch from base — your checkout switches to it.'
+    return t('Runs in the repo working tree on a new branch from base — your checkout switches to it.')
   }
   if (input.hasGit && input.autoLand) {
     return input.autonomous === true
-      ? 'Runs in the repo working tree, one write task at a time — finished work is checked and lands on the base branch.'
-      : 'Runs in the repo working tree, one write task at a time — review the changes, then Commit lands them on the base branch.'
+      ? t('Runs in the repo working tree, one write task at a time — finished work is checked and lands on the base branch.')
+      : t('Runs in the repo working tree, one write task at a time — review the changes, then Commit lands them on the base branch.')
   }
-  if (input.hasGit) return 'Runs in the repo working tree — your checkout is modified directly.'
-  return 'Runs in place — no git repository detected, so there is no worktree to isolate in.'
+  if (input.hasGit) return t('Runs in the repo working tree — your checkout is modified directly.')
+  return t('Runs in place — no git repository detected, so there is no worktree to isolate in.')
 }
 
 const EMPTY: NewTaskDraft = {

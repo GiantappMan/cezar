@@ -15,6 +15,7 @@ import {
   writeStoredSidebarWidth,
 } from '@/lib/sidebar-width'
 import { formatChord, isApplePlatform } from '@/lib/keybindings'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /**
@@ -159,15 +160,16 @@ export const FOLD_ARIA_KEYS = isApplePlatform() ? 'Meta+B' : 'Control+B'
 
 /** The header button that folds the desktop column away. */
 export function SidebarFoldButton({ onFold, ref }: { onFold: () => void; ref?: React.Ref<HTMLButtonElement> }) {
+  useLocale()
   return (
     <Button
       ref={ref}
       variant="ghost"
       size="icon-sm"
       data-slot="sidebar-fold"
-      aria-label="Hide sidebar"
+      aria-label={t('Hide sidebar')}
       aria-keyshortcuts={FOLD_ARIA_KEYS}
-      title={`Hide sidebar (${formatChord('Mod+B')})`}
+      title={t('Hide sidebar ({chord})', { chord: formatChord('Mod+B') })}
       onClick={onFold}
       className="-mr-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
     >
@@ -233,6 +235,7 @@ export function SidebarFrame({
  * column's height without a second element having to track it.
  */
 function SidebarResizeHandle({ width, onWidthChange }: SidebarResize) {
+  useLocale()
   // The width the drag started from, plus the pointer x it started at. Refs, not state: they
   // change on every pointermove and nothing renders from them.
   const origin = React.useRef<{ x: number; width: number } | null>(null)
@@ -286,7 +289,7 @@ function SidebarResizeHandle({ width, onWidthChange }: SidebarResize) {
       data-slot="sidebar-resize-handle"
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize the sidebar"
+      aria-label={t('Resize the sidebar')}
       aria-valuenow={width}
       aria-valuemin={MIN_SIDEBAR_WIDTH}
       aria-valuemax={MAX_SIDEBAR_WIDTH}
@@ -297,7 +300,7 @@ function SidebarResizeHandle({ width, onWidthChange }: SidebarResize) {
       onPointerCancel={endDrag}
       onKeyDown={onKeyDown}
       onDoubleClick={() => onWidthChange(DEFAULT_SIDEBAR_WIDTH)}
-      title="Drag to resize the sidebar — double-click to reset"
+      title={t('Drag to resize the sidebar — double-click to reset')}
       // A 5px grab strip straddling the border, invisible until you reach for it. `touch-none`
       // is load-bearing rather than decorative: without it a touch drag is claimed by the
       // browser's own panning and scrolls the page instead of resizing the column.
@@ -327,9 +330,10 @@ export function SidebarDrawer({ slot, title, children }: {
    *  drawer closes the same way (size-11: the ≥44px touch target the mobile rules require). */
   children: (closeButton: ReactNode) => ReactNode
 }) {
+  useLocale()
   const closeButton = (
     <SheetClose asChild>
-      <Button variant="ghost" size="icon" aria-label="Close menu" className="-mr-2 size-11">
+      <Button variant="ghost" size="icon" aria-label={t('Close menu')} className="-mr-2 size-11">
         <XIcon className="size-[17px]" aria-hidden="true" />
       </Button>
     </SheetClose>

@@ -29,6 +29,7 @@ import {
   searchWorkflows,
   skillKeywords,
 } from '@/lib/skills'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { QUICK_TASK, type TaskSource } from '@/lib/task-source'
 
@@ -70,6 +71,7 @@ export function SourcePill({
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [preview, setPreview] = useState<Skill | null>(null)
+  useLocale()
   const listRef = useRef<HTMLDivElement>(null)
   // #484: rank in JS (cmdk's own score-sort does not re-order reliably here), then split the
   // ranked matches into the #519 display tiers so each group stays match-ordered.
@@ -148,11 +150,11 @@ export function SourcePill({
       type="button"
       data-slot="source-pill"
       data-source-kind={source?.source ?? 'none'}
-      aria-label="Choose a skill or workflow"
+      aria-label={t('Choose a skill or workflow')}
       title={
         source === null
-          ? 'No skill — the task runs as one plain agent step. Pick a skill or workflow to change that.'
-          : `Runs the ${source.source} "${source.ref}" — pick it again, or press ✕, to run without it`
+          ? t('No skill — the task runs as one plain agent step. Pick a skill or workflow to change that.')
+          : t('Runs the {kind} "{ref}" — pick it again, or press ✕, to run without it', { kind: source.source, ref: source.ref })
       }
       disabled={!ready}
       onKeyDown={(event) => {
@@ -175,7 +177,7 @@ export function SourcePill({
         aria-hidden="true"
         className={cn('size-3 shrink-0', source === null ? 'text-soft-foreground' : 'text-violet')}
       />
-      <span className="max-w-44 truncate">{!ready ? '…' : (source?.ref ?? 'Skill')}</span>
+      <span className="max-w-44 truncate">{!ready ? '…' : (source?.ref ?? t('Skill'))}</span>
       {chevron}
     </button>
   )

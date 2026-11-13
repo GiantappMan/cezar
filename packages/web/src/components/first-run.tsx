@@ -83,6 +83,7 @@ import { Link, useNavigate } from '@/lib/project-router'
 import { newTaskPrefillHref } from '@/routes/new-task-params'
 import { shortAge } from '@/lib/format'
 import { githubTaskRef } from '@/lib/github-task'
+import { t, useLocale } from '@/lib/i18n'
 import { labelChipStyle } from '@/routes/github/github-filter'
 import { trackAddProjectOpened } from '@/lib/telemetry'
 import { cn } from '@/lib/utils'
@@ -132,6 +133,7 @@ const STEPS: ReadonlyArray<{ id: StepId; label: string }> = [
 /** The thread through the first run: three steps, the ones behind the current one ticked. Derived
  *  from the same state that picks the page, so it can never disagree with it. */
 function StepRail({ current }: { current: StepId }) {
+  useLocale()
   const index = STEPS.findIndex((step) => step.id === current)
   return (
     <ol data-slot="step-rail" className="flex items-center gap-2 text-label">
@@ -157,8 +159,8 @@ function StepRail({ current }: { current: StepId }) {
               >
                 {state === 'done' ? <CheckIcon className="size-3" /> : i + 1}
               </span>
-              {step.label}
-              {state === 'current' ? <span className="sr-only">(current step)</span> : null}
+              {t(step.label)}
+              {state === 'current' ? <span className="sr-only">{t('(current step)')}</span> : null}
             </span>
           </li>
         )
@@ -199,11 +201,11 @@ type GithubSignIn = ReturnType<typeof useGithubSignIn>
 
 function githubSignInLine(signIn: GithubSignIn): string {
   const state = signIn.state
-  if (signIn.start.error) return signInErrorMissing(signIn.start.error) ? 'The GitHub CLI is not installed.' : 'Sign-in did not finish.'
-  if (state?.status === 'pending') return 'Enter this code on GitHub. It opened in your browser.'
-  if (state?.status === 'failed') return 'Sign-in did not finish.'
-  if (state?.status === 'done') return 'Signed in.'
-  return 'Signing in through your browser.'
+  if (signIn.start.error) return signInErrorMissing(signIn.start.error) ? t('The GitHub CLI is not installed.') : t('Sign-in did not finish.')
+  if (state?.status === 'pending') return t('Enter this code on GitHub. It opened in your browser.')
+  if (state?.status === 'failed') return t('Sign-in did not finish.')
+  if (state?.status === 'done') return t('Signed in.')
+  return t('Signing in through your browser.')
 }
 
 function signInErrorMissing(error: Error): boolean {
@@ -218,7 +220,7 @@ function copyText(text: string, fallback: string) {
     return
   }
   void write.then(
-    () => toast('Copied'),
+    () => toast(t('Copied')),
     () => toast(fallback),
   )
 }
@@ -233,6 +235,7 @@ function SignInProgress({ children }: { children: React.ReactNode }) {
 }
 
 function GithubSignInBody({ signIn }: { signIn: GithubSignIn }) {
+  useLocale()
   const state = signIn.state
   if (signIn.start.error) {
     if (signInErrorMissing(signIn.start.error)) {
@@ -240,10 +243,10 @@ function GithubSignInBody({ signIn }: { signIn: GithubSignIn }) {
         <Steps>
           <li>
             <a href={GH_INSTALL_URL} target="_blank" rel="noopener noreferrer" className="text-violet hover:underline">
-              Install the GitHub CLI
+              {t('Install the GitHub CLI')}
             </a>
           </li>
-          <li>Come back and press Try again.</li>
+          <li>{t('Come back and press Try again.')}</li>
         </Steps>
       )
     }
@@ -260,44 +263,45 @@ function GithubSignInBody({ signIn }: { signIn: GithubSignIn }) {
       </p>
     )
   }
-  if (state?.status === 'done') return <SignInProgress>{state.login ? `Signed in as ${state.login}.` : 'Signed in.'}</SignInProgress>
+  if (state?.status === 'done') return <SignInProgress>{state.login ? t('Signed in as {login}.', { login: state.login }) : t('Signed in.')}</SignInProgress>
   if (state?.status === 'pending') {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background py-3 pr-2 pl-5">
-          <span data-testid="github-login-code" aria-label="One-time code" className="font-mono text-2xl tracking-widest text-foreground select-all">
+          <span data-testid="github-login-code" aria-label={t('One-time code')} className="font-mono text-2xl tracking-widest text-foreground select-all">
             {state.code}
           </span>
           <Button
             variant="ghost"
             size="icon"
             className="size-8 shrink-0"
-            aria-label="Copy code"
-            onClick={() => copyText(state.code, 'Select the code and copy it')}
+            aria-label={t('Copy code')}
+            onClick={() => copyText(state.code, t('Select the code and copy it'))}
           >
             <CopyIcon aria-hidden="true" />
           </Button>
         </div>
-        <SignInProgress>Waiting for GitHub…</SignInProgress>
+        <SignInProgress>{t('Waiting for GitHub…')}</SignInProgress>
       </div>
     )
   }
-  return <SignInProgress>Starting…</SignInProgress>
+  return <SignInProgress>{t('Starting…')}</SignInProgress>
 }
 
 /** Cancel while waiting (kills the login), Try again after a failure, and the GitHub page as the
  *  primary action while a code is showing — for when the browser did not open on its own. */
 function GithubSignInFooter({ signIn, onClose }: { signIn: GithubSignIn; onClose: () => void }) {
+  useLocale()
   const state = signIn.state
   const failed = signIn.start.error !== null || state?.status === 'failed'
   if (failed) {
     return (
       <>
         <Button variant="outline" className="font-normal" onClick={onClose}>
-          Close
+          {t('Close')}
         </Button>
         <Button className="font-normal" onClick={() => signIn.start.mutate()} disabled={signIn.start.isPending}>
-          Try again
+          {t('Try again')}
         </Button>
       </>
     )
@@ -312,12 +316,12 @@ function GithubSignInFooter({ signIn, onClose }: { signIn: GithubSignIn; onClose
           onClose()
         }}
       >
-        {state?.status === 'done' ? 'Close' : 'Cancel'}
+        {state?.status === 'done' ? t('Close') : t('Cancel')}
       </Button>
       {state?.status === 'pending' ? (
         <Button asChild className="font-normal">
           <a href={state.url} target="_blank" rel="noopener noreferrer">
-            Open GitHub
+            {t('Open GitHub')}
           </a>
         </Button>
       ) : null}
@@ -327,6 +331,7 @@ function GithubSignInFooter({ signIn, onClose }: { signIn: GithubSignIn; onClose
 
 /** `$ command` with a copy button — the one shape every "run this in a terminal" step uses. */
 function CommandBox({ command }: { command: string }) {
+  useLocale()
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border bg-background px-3 py-2.5">
       <code className="min-w-0 flex-1 truncate font-mono text-ui text-foreground select-all">
@@ -337,8 +342,8 @@ function CommandBox({ command }: { command: string }) {
         variant="ghost"
         size="icon"
         className="size-7 shrink-0"
-        aria-label={`Copy ${command}`}
-        onClick={() => copyText(command, 'Select the command and copy it')}
+        aria-label={t('Copy {command}', { command })}
+        onClick={() => copyText(command, t('Select the command and copy it'))}
       >
         <CopyIcon aria-hidden="true" />
       </Button>
@@ -365,6 +370,7 @@ const FRESH_SUGGESTIONS = [
 ]
 
 function Welcome() {
+  useLocale()
   const navigate = useNavigate()
   const health = useHealth()
   const repo = useRepo()
@@ -377,7 +383,7 @@ function Welcome() {
   const fresh = repo.data?.info !== undefined && repo.data.info !== null && repo.data.log.length <= 1 && issues.length === 0 && !github.isFetching
   const suggestions = fresh ? FRESH_SUGGESTIONS : SUGGESTIONS
   return (
-    <Page title="What should we build?" slot="welcome" banner={<AnnouncementCard />}>
+    <Page title={t('What should we build?')} slot="welcome" banner={<AnnouncementCard />}>
       <form
         className={cn(input, 'mt-7')}
         onSubmit={(event) => {
@@ -388,11 +394,11 @@ function Welcome() {
         <input
           value={task}
           onChange={(event) => setTask(event.target.value)}
-          placeholder="Describe a task for the agent…"
-          aria-label="Describe a task for the agent"
+          placeholder={t('Describe a task for the agent…')}
+          aria-label={t('Describe a task for the agent')}
           className="h-full min-w-0 flex-1 bg-transparent text-lead text-foreground outline-none placeholder:text-soft-foreground"
         />
-        <Button type="submit" size="icon" variant="ghost" aria-label="Continue to the composer" className="size-9 shrink-0">
+        <Button type="submit" size="icon" variant="ghost" aria-label={t('Continue to the composer')} className="size-9 shrink-0">
           <ArrowRightIcon aria-hidden="true" />
         </Button>
       </form>
@@ -405,7 +411,7 @@ function Welcome() {
             className="inline-flex h-8 items-center gap-2 rounded-full px-3 text-ui text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <Icon className="size-3.5" aria-hidden="true" />
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
@@ -419,6 +425,7 @@ function Welcome() {
  *  is a small picture of the feature built from plain boxes: an app frame, a picked element, a
  *  note — nothing to load, correct in both themes. */
 function AnnouncementCard() {
+  useLocale()
   const health = useHealth()
   const uiState = useWorkspaceUiState()
   const write = useOnboardingWrite()
@@ -430,9 +437,9 @@ function AnnouncementCard() {
   return (
     <div data-slot="announcement" className="onboarding-announcement relative mb-14 flex w-full items-stretch overflow-hidden rounded-xl border text-left">
       <div className="flex min-w-0 flex-1 flex-col justify-center p-6">
-        <span className="eyebrow text-violet">New</span>
-        <span className="mt-1 text-2xl font-light tracking-tight text-foreground">{item.title}</span>
-        <p className="mt-2 max-w-sm text-ui text-muted-foreground">{item.description}</p>
+        <span className="eyebrow text-violet">{t('New')}</span>
+        <span className="mt-1 text-2xl font-light tracking-tight text-foreground">{t(item.title)}</span>
+        <p className="mt-2 max-w-sm text-ui text-muted-foreground">{t(item.description)}</p>
         <Button
           size="sm"
           className="mt-5 self-start font-normal"
@@ -441,7 +448,7 @@ function AnnouncementCard() {
             navigate(newTaskPrefillHref({ ref: item.hero.task }))
           }}
         >
-          {item.hero.action}
+          {t(item.hero.action)}
           <ArrowRightIcon aria-hidden="true" />
         </Button>
       </div>
@@ -449,7 +456,7 @@ function AnnouncementCard() {
       <button
         type="button"
         onClick={close}
-        aria-label={`Close ${item.title} announcement`}
+        aria-label={t('Close {title} announcement', { title: t(item.title) })}
         className="absolute top-3 right-3 grid size-7 place-items-center rounded-full text-soft-foreground hover:text-foreground"
       >
         <XIcon className="size-3.5" aria-hidden="true" />
@@ -479,7 +486,7 @@ function DesignModePicture() {
           </span>
           <span className="h-6 w-10 rounded-md bg-muted" />
           <span className="absolute top-7 left-6 rounded-md rounded-tl-sm border border-border bg-card px-2 py-1 text-micro whitespace-nowrap text-foreground shadow-md">
-            Make this button larger
+            {t('Make this button larger')}
           </span>
         </div>
         <div className="mt-9 h-2 w-3/4 rounded bg-muted" />
@@ -520,6 +527,7 @@ const ACTIVITY_MAX_SQUARES = 6
 /** Tasks per day over the last month — the project's pulse. Shown only once there is history
  *  (an empty month of bars would say "nothing happens here"), so a brand-new project never sees it. */
 function ActivityStrip() {
+  useLocale()
   const runs = useRuns()
   const days = React.useMemo(() => {
     const today = new Date()
@@ -548,13 +556,19 @@ function ActivityStrip() {
   return (
     <div data-slot="activity-strip" className="mt-12 w-full">
       <div className="mb-3 flex items-baseline justify-between text-ui">
-        <span className="text-soft-foreground">Activity</span>
+        <span className="text-soft-foreground">{t('Activity')}</span>
         <span className="text-soft-foreground">
-          {total} {total === 1 ? 'task' : 'tasks'} in the last {ACTIVITY_DAYS} days
+          {total === 1
+            ? t('1 task in the last {days} days', { days: ACTIVITY_DAYS })
+            : t('{total} tasks in the last {days} days', { total, days: ACTIVITY_DAYS })}
         </span>
       </div>
       <TooltipProvider delayDuration={100}>
-        <div className="flex items-end justify-between" role="img" aria-label={`${total} tasks in the last ${ACTIVITY_DAYS} days`}>
+        <div
+          className="flex items-end justify-between"
+          role="img"
+          aria-label={total === 1 ? t('1 task in the last {days} days', { days: ACTIVITY_DAYS }) : t('{total} tasks in the last {days} days', { total, days: ACTIVITY_DAYS })}
+        >
           {days.map((day) => (
             <Tooltip key={day.date.toISOString()}>
               <TooltipTrigger asChild>
@@ -564,7 +578,7 @@ function ActivityStrip() {
                   ))}
                 </span>
               </TooltipTrigger>
-              <TooltipContent>{`${label(day.date)}: ${day.count} ${day.count === 1 ? 'task' : 'tasks'}`}</TooltipContent>
+              <TooltipContent>{t('{date}: {count} tasks', { date: label(day.date), count: day.count })}</TooltipContent>
             </Tooltip>
           ))}
         </div>
@@ -581,13 +595,14 @@ function ActivityStrip() {
 /** Something real to start from: the repository's open issues when GitHub answers, else the
  *  project's skills. Both are one click into the composer; nothing is stored. */
 function StartFrom({ fresh, issues, colors }: { fresh: boolean; issues: GithubItem[]; colors: Record<string, string> }) {
+  useLocale()
   const repo = useRepo()
   const commits = repo.data?.info && !fresh ? repo.data.log.slice(0, 3) : []
   const skills = useSkills(issues.length === 0 && commits.length === 0)
   const picks = pickSkills(skills.data ?? [])
   if (issues.length > 0) {
     return (
-      <StartSection label="Or pick up an issue" slot="issues">
+      <StartSection label={t('Or pick up an issue')} slot="issues">
         <ul className="w-full divide-y divide-border rounded-xl border border-border bg-card p-1.5 text-left">
           {issues.map((item) => (
             <li key={item.number} className="first:[&>a]:rounded-t-lg last:[&>a]:rounded-b-lg">
@@ -602,7 +617,7 @@ function StartFrom({ fresh, issues, colors }: { fresh: boolean; issues: GithubIt
                 <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-meta text-soft-foreground">
                   <span className="font-mono">#{item.number}</span>
                   <span>{item.author}</span>
-                  <span>{shortAge(item.createdAt)} ago</span>
+                  <span>{t('{age} ago', { age: shortAge(item.createdAt) })}</span>
                   {item.comments > 0 ? (
                     <span className="inline-flex items-center gap-1">
                       <MessageSquareIcon className="size-3" aria-hidden="true" />
@@ -624,7 +639,7 @@ function StartFrom({ fresh, issues, colors }: { fresh: boolean; issues: GithubIt
   }
   if (commits.length > 0) {
     return (
-      <StartSection label="Or continue recent work" slot="commits">
+      <StartSection label={t('Or continue recent work')} slot="commits">
         <ul className="w-full divide-y divide-border rounded-xl border border-border bg-card p-1.5 text-left">
           {commits.map((commit) => (
             <li key={commit.hash} className="first:[&>a]:rounded-t-lg last:[&>a]:rounded-b-lg">
@@ -650,7 +665,7 @@ function StartFrom({ fresh, issues, colors }: { fresh: boolean; issues: GithubIt
   }
   if (picks.length > 0) {
     return (
-      <StartSection label="Or start with a skill" slot="skills">
+      <StartSection label={t('Or start with a skill')} slot="skills">
         <div className="flex flex-wrap justify-center gap-2">
           {picks.map((skill) => (
             <Link key={skill.name} to={newTaskPrefillHref({ skill: skill.name })} className={chip} title={skill.description}>
@@ -682,6 +697,7 @@ function pickSkills<T extends { name: string; source: string }>(skills: readonly
 
 /** Publish a local repository to a new PRIVATE GitHub repository. */
 export function PublishGithubDialog({ folder, onOpenChange }: { folder: string; onOpenChange: (open: boolean) => void }) {
+  useLocale()
   const { projectId } = useProjectScope()
   const owners = useGithubOwners()
   const publish = usePublishProjectGithub()
@@ -696,7 +712,7 @@ export function PublishGithubDialog({ folder, onOpenChange }: { folder: string; 
       {
         onSuccess: ({ slug }) => {
           onOpenChange(false)
-          toast(`Published to ${slug}`)
+          toast(t('Published to {slug}', { slug }))
         },
       },
     )
@@ -710,9 +726,13 @@ export function PublishGithubDialog({ folder, onOpenChange }: { folder: string; 
     signIn.state?.status === 'done' && !owners.isFetching && owners.data?.available === false ? owners.data.reason : null
   return (
     <OnboardingDialog
-      title="Publish to GitHub"
+      title={t('Publish to GitHub')}
       description={
-        connected ? 'A new private repository. You can make it public on GitHub later.' : noOwnersReason ? 'Signed in, but GitHub listed no accounts.' : githubSignInLine(signIn)
+        connected
+          ? t('A new private repository. You can make it public on GitHub later.')
+          : noOwnersReason
+            ? t('Signed in, but GitHub listed no accounts.')
+            : githubSignInLine(signIn)
       }
       onOpenChange={onOpenChange}
       onSubmit={connected ? submit : undefined}
@@ -720,19 +740,19 @@ export function PublishGithubDialog({ folder, onOpenChange }: { folder: string; 
         noOwnersReason ? (
           <>
             <Button variant="outline" className="font-normal" onClick={() => onOpenChange(false)}>
-              Close
+              {t('Close')}
             </Button>
             <Button className="font-normal" onClick={() => void owners.refetch()}>
-              Check again
+              {t('Check again')}
             </Button>
           </>
         ) : connected ? (
           <>
             <Button variant="outline" className="font-normal" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button className="font-normal" onClick={submit} disabled={publish.isPending || !chosen || !name.trim()}>
-              {publish.isPending ? 'Publishing…' : 'Publish'}
+              {publish.isPending ? t('Publishing…') : t('Publish')}
             </Button>
           </>
         ) : (
@@ -741,7 +761,7 @@ export function PublishGithubDialog({ folder, onOpenChange }: { folder: string; 
       }
     >
       {owners.isPending ? (
-        <p className="text-ui text-soft-foreground">Checking GitHub…</p>
+        <p className="text-ui text-soft-foreground">{t('Checking GitHub…')}</p>
       ) : noOwnersReason ? (
         <p role="alert" className="text-ui text-danger">
           {noOwnersReason}
@@ -750,7 +770,7 @@ export function PublishGithubDialog({ folder, onOpenChange }: { folder: string; 
         <GithubSignInBody signIn={signIn} />
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Owner">
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t('Owner')}>
             {available.map((entry) => (
               <button
                 key={entry.login}
@@ -772,7 +792,7 @@ export function PublishGithubDialog({ folder, onOpenChange }: { folder: string; 
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              aria-label="Repository name"
+              aria-label={t('Repository name')}
               className="h-9 min-w-0 flex-1 bg-transparent text-foreground outline-none"
             />
           </label>
@@ -789,6 +809,7 @@ export function PublishGithubDialog({ folder, onOpenChange }: { folder: string; 
 
 /** After the first task, what is left of setup is one small pill above the table. */
 export function SetupPill() {
+  useLocale()
   const { steps, unpublished, folder, dismissed, dismiss } = useOnboardingSetup()
   const [publishing, setPublishing] = React.useState(false)
   const next = steps[0]
@@ -797,7 +818,7 @@ export function SetupPill() {
   const inner = (
     <>
       <Icon className="size-3.5 text-muted-foreground" aria-hidden={true} />
-      {next ? next.label : 'Publish to GitHub'}
+      {next ? t(next.label) : t('Publish to GitHub')}
       <ArrowRightIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
     </>
   )
@@ -808,7 +829,7 @@ export function SetupPill() {
       data-slot="setup-pill"
       className="mb-3 inline-flex items-center gap-2 self-start rounded-full border border-border bg-card py-1 pr-1 pl-3 text-ui"
     >
-      <span className="text-soft-foreground">Setup</span>
+      <span className="text-soft-foreground">{t('Setup')}</span>
       {next ? (
         <Link to={next.to} className={action}>
           {inner}
@@ -818,7 +839,7 @@ export function SetupPill() {
           {inner}
         </button>
       )}
-      <button type="button" onClick={dismiss} aria-label="Hide setup" className="grid size-7 place-items-center rounded-full text-soft-foreground hover:text-foreground">
+      <button type="button" onClick={dismiss} aria-label={t('Hide setup')} className="grid size-7 place-items-center rounded-full text-soft-foreground hover:text-foreground">
         <XIcon className="size-3.5" aria-hidden="true" />
       </button>
       {publishing ? <PublishGithubDialog folder={folder} onOpenChange={setPublishing} /> : null}
@@ -837,22 +858,23 @@ function AgentStep() {
 }
 
 function SetUpAgentHere({ setup }: { setup: Extract<AgentSetupState, { available: true }> }) {
+  useLocale()
   const providers = useProviderStatus()
   const refresh = useRefreshProviderStatus()
   const write = useOnboardingWrite()
   const nothingToOffer = agentSetupListRows(setup, providers.data).length === 0
   return (
     <Page
-      title={agentSetupHeading(setup, providers.data)}
+      title={t(agentSetupHeading(setup, providers.data))}
       slot="sign-in"
       step="agent"
-      why="cezar installs the coding agent and signs you in, right here. No API key needed."
+      why={t('cezar installs the coding agent and signs you in, right here. No API key needed.')}
     >
       {nothingToOffer ? (
         <div data-slot="agents-off" className="mt-7 flex w-full flex-col gap-3 rounded-xl border border-border bg-card p-4 text-left sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-body text-foreground">All agents are turned off.</span>
+          <span className="text-body text-foreground">{t('All agents are turned off.')}</span>
           <Button asChild size="sm" className="font-normal">
-            <Link to="/settings/agents#providers">Turn one on</Link>
+            <Link to="/settings/agents#providers">{t('Turn one on')}</Link>
           </Button>
         </div>
       ) : (
@@ -860,13 +882,13 @@ function SetUpAgentHere({ setup }: { setup: Extract<AgentSetupState, { available
       )}
       <div className="mt-7 flex flex-wrap justify-center gap-5">
         <button type="button" onClick={() => refresh.mutate()} disabled={refresh.isPending} className={quiet}>
-          {refresh.isPending ? 'Checking…' : 'Check again'}
+          {refresh.isPending ? t('Checking…') : t('Check again')}
         </button>
         <Link to="/settings/agents" className={quiet}>
-          Other agents
+          {t('Other agents')}
         </Link>
         <button type="button" onClick={() => write({ agentCheckSkipped: true })} className={quiet}>
-          Continue anyway
+          {t('Continue anyway')}
         </button>
       </div>
     </Page>
@@ -874,6 +896,7 @@ function SetUpAgentHere({ setup }: { setup: Extract<AgentSetupState, { available
 }
 
 function SignInToAgent() {
+  useLocale()
   const providers = useProviderStatus()
   const refresh = useRefreshProviderStatus()
   const connect = useConnectAgentAccount()
@@ -918,14 +941,14 @@ function SignInToAgent() {
     )
   }
   return (
-    <Page title="Sign in to an agent" slot="sign-in" step="agent" why="cezar runs the coding agent you already use. No API key needed.">
+    <Page title={t('Sign in to an agent')} slot="sign-in" step="agent" why={t('cezar runs the coding agent you already use. No API key needed.')}>
       <div className="mt-7 flex w-full flex-col gap-3 text-left">
         {/* Every agent switched off leaves no row to sign in to: say so, and where to turn one on. */}
         {rows.length === 0 ? (
           <div data-slot="agents-off" className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-body text-foreground">All agents are turned off.</span>
+            <span className="text-body text-foreground">{t('All agents are turned off.')}</span>
             <Button asChild size="sm" className="font-normal">
-              <Link to="/settings/agents#providers">Turn one on</Link>
+              <Link to="/settings/agents#providers">{t('Turn one on')}</Link>
             </Button>
           </div>
         ) : null}
@@ -938,34 +961,34 @@ function SignInToAgent() {
                 <div className="min-w-0 flex-1">
                   <div className="text-lead text-foreground">{row.label}</div>
                   <div className="text-ui text-muted-foreground">
-                    {waiting ? 'Finish in Terminal' : row.state === 'missing' ? 'Not installed' : 'Installed, not signed in'}
+                    {waiting ? t('Finish in Terminal') : row.state === 'missing' ? t('Not installed') : t('Installed, not signed in')}
                   </div>
                 </div>
                 {row.state === 'signed-out' ? (
                   waiting ? (
-                    <LoaderCircleIcon className="size-4 shrink-0 text-violet motion-safe:animate-spin" aria-label="Waiting for sign-in" />
+                    <LoaderCircleIcon className="size-4 shrink-0 text-violet motion-safe:animate-spin" aria-label={t('Waiting for sign-in')} />
                   ) : (
                     <Button className="font-normal" onClick={() => signIn(row.provider)} disabled={connect.isPending}>
-                      Sign in
+                      {t('Sign in')}
                     </Button>
                   )
                 ) : null}
               </div>
               {row.state === 'signed-out' && !waiting && !failed ? (
-                <p className="mt-3 text-ui text-soft-foreground">Opens the login in Terminal.</p>
+                <p className="mt-3 text-ui text-soft-foreground">{t('Opens the login in Terminal.')}</p>
               ) : null}
-              {waiting ? <p className="mt-3 text-ui text-soft-foreground">This page continues by itself.</p> : null}
+              {waiting ? <p className="mt-3 text-ui text-soft-foreground">{t('This page continues by itself.')}</p> : null}
               {failed ? (
                 <div className="mt-3 flex flex-col gap-3">
                   <p className="text-ui text-muted-foreground">{failed}</p>
                   <Steps>
                     <li>
-                      <span className="text-foreground">Open Terminal and paste:</span>
+                      <span className="text-foreground">{t('Open Terminal and paste:')}</span>
                       <div className="mt-2">
                         <CommandBox command={row.command} />
                       </div>
                     </li>
-                    <li>Come back. cezar checks by itself.</li>
+                    <li>{t('Come back. cezar checks by itself.')}</li>
                   </Steps>
                 </div>
               ) : null}
@@ -973,23 +996,23 @@ function SignInToAgent() {
                 <div className="mt-3 flex flex-col gap-3">
                   <Steps>
                     <li>
-                      <span className="text-foreground">Open Terminal and paste:</span>
+                      <span className="text-foreground">{t('Open Terminal and paste:')}</span>
                       <div className="mt-2">
                         <CommandBox command={row.command} />
                       </div>
                     </li>
                     <li>
-                      <span className="text-foreground">Then sign in:</span>
+                      <span className="text-foreground">{t('Then sign in:')}</span>
                       <div className="mt-2">
                         <CommandBox command={row.login} />
                       </div>
                     </li>
-                    <li>Come back. cezar checks by itself.</li>
+                    <li>{t('Come back. cezar checks by itself.')}</li>
                   </Steps>
                   <p className="text-label text-soft-foreground">
-                    Needs Node.js.{' '}
+                    {t('Needs Node.js.')}{' '}
                     <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer" className="text-violet hover:underline">
-                      Get it
+                      {t('Get it')}
                     </a>
                   </p>
                 </div>
@@ -1000,13 +1023,13 @@ function SignInToAgent() {
       </div>
       <div className="mt-7 flex flex-wrap justify-center gap-5">
         <button type="button" onClick={() => refreshMutate()} disabled={refresh.isPending} className={quiet}>
-          {refresh.isPending ? 'Checking…' : 'Check again'}
+          {refresh.isPending ? t('Checking…') : t('Check again')}
         </button>
         <Link to="/settings/agents" className={quiet}>
-          Other agents
+          {t('Other agents')}
         </Link>
         <button type="button" onClick={() => write({ agentCheckSkipped: true })} className={quiet}>
-          Continue anyway
+          {t('Continue anyway')}
         </button>
       </div>
     </Page>
@@ -1035,26 +1058,27 @@ function useScopedProjectRoot(): string | undefined {
 }
 
 function PickProject() {
+  useLocale()
   const health = useHealth()
   const singleProject = health.data?.capabilities.singleProject === true
   const root = useScopedProjectRoot()
-  const folder = root ? folderName(root) : 'This folder'
+  const folder = root ? folderName(root) : t('This folder')
   const [initOpen, setInitOpen] = React.useState(false)
   return (
     <Page
-      title="Pick a project"
+      title={t('Pick a project')}
       slot="pick-project"
       step="project"
-      why="Tasks run inside a git repository, each in its own worktree."
+      why={t('Tasks run inside a git repository, each in its own worktree.')}
       subtitle={
         <>
-          <span className="font-mono">{folder}</span> isn’t a git repository.
+          <span className="font-mono">{folder}</span> {t('isn’t a git repository.')}
           {/* A single-project workspace changes no project, so the server refuses git-init. */}
           {singleProject ? null : (
             <>
               {' '}
               <button type="button" onClick={() => setInitOpen(true)} className="text-violet hover:underline">
-                Initialize git here
+                {t('Initialize git here')}
               </button>
             </>
           )}
@@ -1068,6 +1092,7 @@ function PickProject() {
 }
 
 function ProjectChoices() {
+  useLocale()
   const suggestions = useRepoSuggestions()
   const owners = useGithubOwners()
   const register = useRegisterProject()
@@ -1104,8 +1129,8 @@ function ProjectChoices() {
       {nothingFound ? (
         <div data-slot="no-repos" className="mt-8 grid w-full gap-3 sm:grid-cols-3">
           <ChoiceTile
-            title="New project"
-            description="An empty repository here, or a new private one on GitHub."
+            title={t('New project')}
+            description={t('An empty repository here, or a new private one on GitHub.')}
             recommended={githubMissing}
             onClick={() => openDialog('new')}
             picture={
@@ -1119,15 +1144,15 @@ function ProjectChoices() {
           />
           {githubMissing ? (
             <ChoiceTile
-              title="Connect GitHub"
-              description="Sign in to the GitHub CLI to clone and publish."
+              title={t('Connect GitHub')}
+              description={t('Sign in to the GitHub CLI to clone and publish.')}
               onClick={() => setDialog('connect')}
               picture={<GithubIcon className="size-9 text-muted-foreground" aria-hidden={true} />}
             />
           ) : (
             <ChoiceTile
-              title="Clone from GitHub"
-              description="Any repository you can read, by URL or owner/name."
+              title={t('Clone from GitHub')}
+              description={t('Any repository you can read, by URL or owner/name.')}
               recommended
               onClick={() => openDialog('clone')}
               picture={
@@ -1140,8 +1165,8 @@ function ProjectChoices() {
             />
           )}
           <ChoiceTile
-            title="Open a folder"
-            description="A repository that already lives on this disk."
+            title={t('Open a folder')}
+            description={t('A repository that already lives on this disk.')}
             onClick={() => openDialog('folder')}
             picture={
               <span className="flex w-16 flex-col gap-1.5">
@@ -1176,16 +1201,16 @@ function ProjectChoices() {
                   if (repo) open(repo)
                 }
               }}
-              placeholder="Search repositories"
-              aria-label="Search repositories"
+              placeholder={t('Search repositories')}
+              aria-label={t('Search repositories')}
               className="min-w-0 flex-1 bg-transparent text-lead text-foreground outline-none placeholder:text-soft-foreground"
             />
           </label>
-          <ul role="listbox" aria-label="Repositories" className="mt-1">
+          <ul role="listbox" aria-label={t('Repositories')} className="mt-1">
             {suggestions.isPending ? (
-              <li className="px-3 py-2.5 text-ui text-soft-foreground">Looking for repositories…</li>
+              <li className="px-3 py-2.5 text-ui text-soft-foreground">{t('Looking for repositories…')}</li>
             ) : shown.length === 0 ? (
-              <li className="px-3 py-2.5 text-ui text-soft-foreground">No repositories found</li>
+              <li className="px-3 py-2.5 text-ui text-soft-foreground">{t('No repositories found')}</li>
             ) : (
               shown.map((repo, index) => (
                 <li key={repo.path} role="option" aria-selected={index === active}>
@@ -1207,39 +1232,39 @@ function ProjectChoices() {
         <div className="mt-5 flex flex-wrap justify-center gap-6">
           <button type="button" className={quiet} onClick={() => openDialog('new')}>
             <PlusIcon className="size-3.5" aria-hidden="true" />
-            New project
+            {t('New project')}
           </button>
           {githubMissing ? (
             <button type="button" className={quiet} onClick={() => setDialog('connect')} data-slot="connect-github">
               <GithubIcon className="size-3.5" aria-hidden={true} />
-              Connect GitHub
+              {t('Connect GitHub')}
             </button>
           ) : (
             <button type="button" className={quiet} onClick={() => openDialog('clone')}>
               <GithubIcon className="size-3.5" aria-hidden={true} />
-              Clone from GitHub
+              {t('Clone from GitHub')}
             </button>
           )}
           <button type="button" className={quiet} onClick={() => openDialog('folder')}>
             <FolderIcon className="size-3.5" aria-hidden="true" />
-            Browse…
+            {t('Browse…')}
           </button>
         </div>
 
         </>
       )}
       {dialog === 'new' ? (
-        <DialogErrorBoundary label="New project" onError={() => setDialog(null)}>
+        <DialogErrorBoundary label={t('New project')} onError={() => setDialog(null)}>
           <CreateProjectDialog open onOpenChange={(next) => !next && setDialog(null)} />
         </DialogErrorBoundary>
       ) : null}
       {dialog === 'clone' ? (
-        <DialogErrorBoundary label="Clone from GitHub" onError={() => setDialog(null)}>
+        <DialogErrorBoundary label={t('Clone from GitHub')} onError={() => setDialog(null)}>
           <CloneProjectDialog open onOpenChange={(next) => !next && setDialog(null)} />
         </DialogErrorBoundary>
       ) : null}
       {dialog === 'folder' ? (
-        <DialogErrorBoundary label="Open local folder" onError={() => setDialog(null)}>
+        <DialogErrorBoundary label={t('Open local folder')} onError={() => setDialog(null)}>
           <AddProjectDialog open onOpenChange={(next) => !next && setDialog(null)} />
         </DialogErrorBoundary>
       ) : null}
@@ -1250,14 +1275,15 @@ function ProjectChoices() {
 
 /** Cloning needs a signed-in `gh`. cezar signs it in; the dialog closes itself when GitHub approves. */
 export function ConnectGithubDialog({ onOpenChange }: { onOpenChange: (open: boolean) => void }) {
+  useLocale()
   const close = React.useCallback(() => onOpenChange(false), [onOpenChange])
   const signIn = useGithubSignIn(true, (login) => {
-    toast(login ? `GitHub connected as ${login}` : 'GitHub connected')
+    toast(login ? t('GitHub connected as {login}', { login }) : t('GitHub connected'))
     close()
   })
   return (
     <OnboardingDialog
-      title="Connect GitHub"
+      title={t('Connect GitHub')}
       description={githubSignInLine(signIn)}
       onOpenChange={onOpenChange}
       footer={<GithubSignInFooter signIn={signIn} onClose={close} />}
@@ -1269,6 +1295,7 @@ export function ConnectGithubDialog({ onOpenChange }: { onOpenChange: (open: boo
 
 /** cezar runs the commands itself; the dialog only says which. */
 function InitGitDialog({ folder, onOpenChange }: { folder: string; onOpenChange: (open: boolean) => void }) {
+  useLocale()
   const { projectId } = useProjectScope()
   const init = useInitProjectGit()
   const initialize = () => {
@@ -1276,23 +1303,23 @@ function InitGitDialog({ folder, onOpenChange }: { folder: string; onOpenChange:
     init.mutate(projectId ?? 'default', {
       onSuccess: () => {
         onOpenChange(false)
-        toast(`Initialized git in ${folder}`)
+        toast(t('Initialized git in {folder}', { folder }))
       },
     })
   }
   return (
     <OnboardingDialog
-      title={`Initialize git in ${folder}`}
-      description="Git keeps a history of your files. cezar runs this for you and uploads nothing. node_modules and .env files stay out."
+      title={t('Initialize git in {folder}', { folder })}
+      description={t('Git keeps a history of your files. cezar runs this for you and uploads nothing. node_modules and .env files stay out.')}
       onOpenChange={onOpenChange}
       onSubmit={initialize}
       footer={
         <>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="font-normal">
-            Cancel
+            {t('Cancel')}
           </Button>
           <Button onClick={initialize} disabled={init.isPending} className="font-normal">
-            {init.isPending ? 'Initializing…' : 'Initialize'}
+            {init.isPending ? t('Initializing…') : t('Initialize')}
           </Button>
         </>
       }
@@ -1367,6 +1394,7 @@ export function useFeatureNews(pathname: string): ReadonlySet<string> {
  * them; what changed sits behind one pill that opens "What's new".
  */
 export function WelcomeBack({ runs }: { runs: readonly RunRecord[] }) {
+  useLocale()
   const uiState = useWorkspaceUiState()
   const health = useHealth()
   const write = useOnboardingWrite()
@@ -1387,11 +1415,11 @@ export function WelcomeBack({ runs }: { runs: readonly RunRecord[] }) {
     <section
       data-onboarding=""
       data-slot="welcome-back"
-      aria-label="Welcome back"
+      aria-label={t('Welcome back')}
       className="onboarding-announcement relative mb-4 flex flex-col gap-4 rounded-xl border py-5 pr-14 pl-6 sm:flex-row sm:items-center sm:gap-8 sm:pr-20"
     >
       <div className="min-w-0 sm:flex-1">
-        <h2 className="text-xl font-light tracking-tight text-foreground">Welcome back</h2>
+        <h2 className="text-xl font-light tracking-tight text-foreground">{t('Welcome back')}</h2>
         <p className="mt-1 text-body text-muted-foreground">{sentence}</p>
       </div>
       {/* One column per button, all as wide as the widest: the pair reads as one choice. */}
@@ -1399,7 +1427,7 @@ export function WelcomeBack({ runs }: { runs: readonly RunRecord[] }) {
         {first ? (
           <Button asChild size="sm" className="w-full font-normal">
             <Link to={`/tasks/${first.id}`} data-slot="welcome-back-waiting">
-              {waiting.length > 1 ? 'Open tasks' : first.status === 'review' ? 'Review task' : 'Open task'}
+              {waiting.length > 1 ? t('Open tasks') : first.status === 'review' ? t('Review task') : t('Open task')}
             </Link>
           </Button>
         ) : null}
@@ -1414,14 +1442,14 @@ export function WelcomeBack({ runs }: { runs: readonly RunRecord[] }) {
               write({ whatsNewSeenAt: new Date().toISOString() })
             }}
           >
-            See what’s new
+            {t('See what’s new')}
           </Button>
         ) : null}
       </div>
       <button
         type="button"
         onClick={() => write({ welcomeBackClosedAt: new Date().toISOString() })}
-        aria-label="Close welcome back"
+        aria-label={t('Close welcome back')}
         className="absolute top-3 right-3 grid size-8 place-items-center rounded-full text-soft-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         <XIcon className="size-4" aria-hidden="true" />
@@ -1429,7 +1457,7 @@ export function WelcomeBack({ runs }: { runs: readonly RunRecord[] }) {
       {showNews ? (
         <WhatsNewDialog
           items={news}
-          description={`${news.length} ${news.length === 1 ? 'change' : 'changes'} since ${month}.`}
+          description={t('{count} changes since {month}.', { count: news.length, month })}
           onOpenChange={setShowNews}
         />
       ) : null}
@@ -1442,6 +1470,7 @@ export function WelcomeBack({ runs }: { runs: readonly RunRecord[] }) {
  * footer, with a dot while something shipped since the user last opened it.
  */
 export function WhatsNewNavItem() {
+  useLocale()
   const uiState = useWorkspaceUiState()
   const health = useHealth()
   const write = useOnboardingWrite()
@@ -1463,15 +1492,15 @@ export function WhatsNewNavItem() {
         className="flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-ui text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         <GiftIcon className="size-4 shrink-0" aria-hidden="true" />
-        What’s new
+        {t('What’s new')}
         {unseen ? (
           <span className="ml-auto flex items-center">
             <span className="size-1.5 rounded-full bg-violet" aria-hidden="true" />
-            <span className="sr-only">Unread</span>
+            <span className="sr-only">{t('Unread')}</span>
           </span>
         ) : null}
       </button>
-      {open ? <WhatsNewDialog items={items} description="Recent changes in cezar." onOpenChange={setOpen} /> : null}
+      {open ? <WhatsNewDialog items={items} description={t('Recent changes in cezar.')} onOpenChange={setOpen} /> : null}
     </>
   )
 }
@@ -1489,6 +1518,7 @@ function WhatsNewDialog({
   description: string
   onOpenChange: (open: boolean) => void
 }) {
+  useLocale()
   const navigate = useNavigate()
   const [index, setIndex] = React.useState(0)
   const item = items[Math.min(index, items.length - 1)]
@@ -1504,7 +1534,7 @@ function WhatsNewDialog({
   return (
     <OnboardingDialog
       wide
-      title="What’s new"
+      title={t('What’s new')}
       description={description}
       onOpenChange={onOpenChange}
       onSubmit={next}
@@ -1517,11 +1547,11 @@ function WhatsNewDialog({
           </span>
           {index > 0 ? (
             <Button variant="outline" className="font-normal" onClick={() => setIndex(index - 1)}>
-              Back
+              {t('Back')}
             </Button>
           ) : null}
           <Button className="font-normal" onClick={next}>
-            {last ? 'Done' : 'Next'}
+            {last ? t('Done') : t('Next')}
           </Button>
         </div>
       }
@@ -1537,14 +1567,14 @@ function WhatsNewDialog({
         <FeaturePreview id={item.preview} />
         <div className="mt-5 flex min-h-32 flex-col">
           <div className="flex items-center gap-2 text-label">
-            <span className="rounded-full bg-violet/15 px-2 py-0.5 text-violet">New</span>
+            <span className="rounded-full bg-violet/15 px-2 py-0.5 text-violet">{t('New')}</span>
             <span className="text-soft-foreground">{new Date(item.releasedAt).toLocaleDateString('en', { month: 'short', day: 'numeric' })}</span>
           </div>
-          <h3 className="mt-2 text-lg font-light tracking-tight text-foreground">{item.title}</h3>
-          <p className="mt-1 text-ui text-muted-foreground">{item.description}</p>
+          <h3 className="mt-2 text-lg font-light tracking-tight text-foreground">{t(item.title)}</h3>
+          <p className="mt-1 text-ui text-muted-foreground">{t(item.description)}</p>
           {actionLabel ? (
             <button type="button" onClick={go} className="mt-3 inline-flex items-center gap-1 text-ui text-violet hover:underline">
-              {actionLabel}
+              {t(actionLabel)}
               <ArrowRightIcon className="size-3.5" aria-hidden="true" />
             </button>
           ) : null}
@@ -1575,7 +1605,7 @@ function TabsPreview() {
         <span className="ml-3 flex gap-3 text-micro">
           {['Chat', 'Changes', 'Preview', 'Terminal'].map((tab) => (
             <span key={tab} className={tab === 'Preview' ? 'text-foreground underline decoration-violet decoration-2 underline-offset-[9px]' : 'text-soft-foreground'}>
-              {tab}
+              {t(tab)}
             </span>
           ))}
         </span>
@@ -1593,11 +1623,11 @@ function PalettePreview() {
     <div className="w-full max-w-xs self-center rounded-lg border border-border bg-background p-2 shadow-[0_18px_40px_-20px_var(--violet)]">
       <div className="flex items-center gap-2 border-b border-border px-1 pb-2 text-meta text-soft-foreground">
         <span className="rounded border border-border px-1 font-mono text-micro text-muted-foreground">⌘P</span>
-        Jump to a task or run an action
+        {t('Jump to a task or run an action')}
       </div>
       {['Fix the login redirect', 'Open Changes', 'Terminal in a column'].map((row, at) => (
         <div key={row} className={cn('mt-1 rounded px-2 py-1.5 text-meta', at === 0 ? 'bg-violet/15 text-foreground' : 'text-muted-foreground')}>
-          {row}
+          {t(row)}
         </div>
       ))}
     </div>
@@ -1617,7 +1647,7 @@ function DesignPreview() {
         </span>
         <span className="h-6 w-10 rounded-md bg-muted" />
         <span className="absolute top-7 left-6 rounded-md rounded-tl-sm border border-border bg-card px-2 py-1 text-micro whitespace-nowrap text-foreground shadow-md">
-          Make this button larger
+          {t('Make this button larger')}
         </span>
       </div>
       <div className={cn(previewLine, 'mt-10 w-3/4')} />
@@ -1627,12 +1657,12 @@ function DesignPreview() {
 
 function ScriptsPreview() {
   return (
-    <PreviewWindow bar={<span className="ml-3 text-micro text-soft-foreground">After worktree creation</span>}>
+    <PreviewWindow bar={<span className="ml-3 text-micro text-soft-foreground">{t('After worktree creation')}</span>}>
       {['npm install', 'cp .env.example .env'].map((command) => (
         <div key={command} className="flex items-center gap-2 py-1 font-mono text-meta">
           <span className="text-soft-foreground">$</span>
           <span className="flex-1 text-foreground">{command}</span>
-          <span className="text-success">done</span>
+          <span className="text-success">{t('done')}</span>
         </div>
       ))}
       <div className="mt-2 flex items-center gap-2 font-mono text-meta text-soft-foreground">
@@ -1655,7 +1685,7 @@ function WorkflowPreview() {
               at === 1 ? 'border-violet text-foreground shadow-[0_10px_30px_-14px_var(--violet)]' : 'border-border text-muted-foreground',
             )}
           >
-            {step}
+            {t(step)}
           </span>
         </React.Fragment>
       ))}
@@ -1668,7 +1698,7 @@ function AutomationsPreview() {
     <PreviewWindow>
       {['Every weekday at 9:00', 'When a pull request is merged'].map((trigger) => (
         <div key={trigger} className="flex items-center gap-3 py-1.5 text-meta text-foreground">
-          <span className="flex-1">{trigger}</span>
+          <span className="flex-1">{t(trigger)}</span>
           <span className="flex h-3.5 w-6 items-center justify-end rounded-full bg-violet px-0.5">
             <span className="size-2.5 rounded-full bg-violet-foreground" />
           </span>

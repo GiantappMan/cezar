@@ -4,6 +4,7 @@ import type { RunRecord } from '@open-mercato/cezar-api-client'
 import { Button } from '@/components/ui/button'
 import { canBeUnread, isDoneItem, isUnread } from '@/lib/read-state'
 import { runTitle } from '@/lib/task-groups'
+import { t, useLocale } from '@/lib/i18n'
 
 export type TasksOverviewAction = 'archive' | 'restore' | 'read' | 'unread'
 export type TasksOverviewActionHandler = (run: RunRecord, action: TasksOverviewAction) => Promise<void>
@@ -64,7 +65,13 @@ export function useTasksOverviewSelection(
       }
     }
     setIds((current) => new Set([...current].filter((id) => !succeeded.has(id))))
-    setMessage(`${labels[action]}: ${succeeded.size} succeeded, ${targets.length - eligible.length} skipped, ${failures.length} failed.${failures.length ? ` ${failures.join('; ')}` : ''}`)
+    setMessage(t('{action}: {ok} succeeded, {skipped} skipped, {failed} failed.{detail}', {
+      action: t(labels[action]),
+      ok: succeeded.size,
+      skipped: targets.length - eligible.length,
+      failed: failures.length,
+      detail: failures.length ? ` ${t('Failures: {list}', { list: failures.join('; ') })}` : '',
+    }))
     locked.current = false
     setBusy(false)
   }, [onAction])
@@ -90,21 +97,22 @@ export function TasksSelectionToolbar({ displayed, selection, archived }: {
   archived: boolean
 }) {
   const { selected, busy } = selection
+  useLocale()
   const actions: TasksOverviewAction[] = [archived ? 'restore' : 'archive', 'read', 'unread']
   return <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm">
-    <TaskSelectionCheckbox label="Select displayed tasks" checked={displayed.length > 0 && selected.length === displayed.length}
+    <TaskSelectionCheckbox label={t('Select displayed tasks')} checked={displayed.length > 0 && selected.length === displayed.length}
       mixed={selected.length > 0 && selected.length < displayed.length} disabled={busy || displayed.length === 0} onChange={selection.toggleAll} />
-    <span>{selected.length > 0 ? `${selected.length} selected` : 'Select tasks'}</span>
+    <span>{selected.length > 0 ? t('{n} selected', { n: selected.length }) : t('Select tasks')}</span>
     {selected.length > 0 ? <>
       {actions.map((action) => {
         const count = selected.filter((run) => taskActionEligible(run, action)).length
         return <Button key={action} type="button" size="sm" variant="outline" disabled={busy || count === 0}
-          onClick={() => void selection.apply(action, selected)}>{labels[action]} ({count})</Button>
+          onClick={() => void selection.apply(action, selected)}>{t(labels[action])} ({count})</Button>
       })}
-      <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={selection.clear}>Clear selection</Button>
-      <span className="text-xs text-muted-foreground">Only eligible selected tasks are changed; others are skipped.</span>
+      <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={selection.clear}>{t('Clear selection')}</Button>
+      <span className="text-xs text-muted-foreground">{t('Only eligible selected tasks are changed; others are skipped.')}</span>
     </> : null}
-    <p role="status" aria-label="Task action status" aria-live="polite" className="w-full empty:hidden text-xs text-muted-foreground">{selection.message}</p>
+    <p role="status" aria-label={t('Task action status')} aria-live="polite" className="w-full empty:hidden text-xs text-muted-foreground">{selection.message}</p>
   </div>
 }
 

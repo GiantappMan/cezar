@@ -716,7 +716,7 @@ export function NewTaskRoute() {
       <div ref={tipsRoot} className="relative w-full max-w-[720px]">
         <header className="mb-7 text-center max-md:mb-5">
           <h1 className="text-4xl font-light tracking-tight text-balance text-foreground max-md:text-3xl">
-            What should the agent work on?
+            {t('What should the agent work on?')}
           </h1>
           {/* Follows the resolved run mode (#793). Printing the isolation promise
               unconditionally made this line false for every run the user opted out of — and
@@ -1066,6 +1066,7 @@ function WorktreeToggle({
   disabledReason?: string
   onChange: (on: boolean) => void
 }) {
+  useLocale()
   return (
     <button
       type="button"
@@ -1088,7 +1089,7 @@ function WorktreeToggle({
       ) : (
         <SquareIcon aria-hidden="true" className="size-3 shrink-0 text-soft-foreground" />
       )}
-      Worktree
+      {t('Worktree')}
     </button>
   )
 }
@@ -1153,6 +1154,7 @@ function AutonomousToggle({
   disabled?: boolean
   onChange: (on: boolean) => void
 }) {
+  useLocale()
   return (
     <button
       type="button"
@@ -1175,7 +1177,7 @@ function AutonomousToggle({
       ) : (
         <SquareIcon aria-hidden="true" className="size-3 shrink-0 text-soft-foreground" />
       )}
-      Autonomous
+      {t('Autonomous')}
     </button>
   )
 }
@@ -1350,6 +1352,7 @@ function ProjectPill({
  *  (`PUT /api/config`, exactly the legacy Repo tab's picker), not a per-run flag — so it
  *  mutates the server and refetches, rather than living in the draft. Hidden without git. */
 function BaseBranchPill({ repo }: { repo: RepoResponse }) {
+  useLocale()
   const queryClient = useQueryClient()
   const mutation = useMutation({
     mutationFn: (baseBranch: string | null) => putConfig({ baseBranch }),
@@ -1369,7 +1372,7 @@ function BaseBranchPill({ repo }: { repo: RepoResponse }) {
     <PickerPill
       slot="base-pill"
       ariaLabel="Base branch"
-      label={<span className="text-meta">base: {current}</span>}
+      label={<span className="text-meta">{t('base: {branch}', { branch: current })}</span>}
       value={repo.baseBranch ?? ''}
       onPick={(value) => mutation.mutate(value === '' ? null : value)}
       searchPlaceholder="Search branches…"
@@ -1395,7 +1398,7 @@ function SuggestedChips({ onPick }: { onPick: (text: string) => void }) {
       {SUGGESTIONS.map(({ icon: Icon, label, task }) => (
         <button key={label} type="button" data-slot="suggested-chip" onClick={() => onPick(task)} className={ghostChip}>
           <Icon aria-hidden="true" className="size-3.5" />
-          {label}
+          {t(label)}
         </button>
       ))}
     </div>

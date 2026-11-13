@@ -9,6 +9,7 @@ import {
 } from '@/api/host-usage'
 import { StatusDot } from '@/components/status-dot'
 import { effectiveHostView, formatCpuCores } from '@/lib/host-effective'
+import { t, useLocale } from '@/lib/i18n'
 import { formatMem } from '@/lib/tasks-table'
 import { useIsDesktop } from '@/lib/use-desktop'
 import { cn } from '@/lib/utils'
@@ -51,6 +52,7 @@ export function MachineCard() {
   const sample = useHostUsage()
   const history = useHostHistory()
   const ageSeconds = useHostSampleAgeSeconds()
+  useLocale()
 
   const view = sample === undefined ? undefined : effectiveHostView(sample)
   const cpuPct = view?.cpuPct
@@ -109,16 +111,16 @@ export function MachineCard() {
       <header className="flex min-w-0 items-center gap-2">
         <StatusDot tone={live ? 'success' : 'neutral'} pulse={live} />
         <h2 id="machine-card-title" className="text-sm font-semibold">
-          Machine
+          {t('Machine')}
         </h2>
         <span data-slot="machine-card-mode" className="text-meta text-soft-foreground">
-          {live ? 'live' : 'last known'}
+          {live ? t('live') : t('last known')}
         </span>
         <span
           data-slot="machine-card-freshness"
           className="ml-auto shrink-0 text-meta tabular-nums text-soft-foreground"
         >
-          {ageSeconds === undefined ? 'waiting…' : `updated ${ageSeconds} s ago`}
+          {ageSeconds === undefined ? 'waiting…' : t('updated {n} s ago', { n: ageSeconds })}
         </span>
       </header>
 
@@ -144,7 +146,7 @@ export function MachineCard() {
       <div className="mt-3 grid gap-3">
         <div data-slot="machine-card-cpu" className="grid grid-cols-[86px_1fr] items-start gap-3">
           <span className="pt-0.5 text-label text-soft-foreground">
-            CPU{view?.cpuIsEffective === true ? ' (effective)' : ''}
+            CPU{view?.cpuIsEffective === true ? t(' (effective)') : ''}
           </span>
           <div className="min-w-0">
             <div className="flex items-center gap-3">
@@ -192,7 +194,7 @@ export function MachineCard() {
               className="grid grid-cols-[86px_1fr] items-center gap-3"
             >
               <span className="text-label text-soft-foreground">
-                Memory{view.memIsEffective ? ' (effective)' : ''}
+                {t('Memory')}{view.memIsEffective ? t(' (effective)') : ''}
               </span>
               <div className="flex min-w-0 items-center gap-3">
                 <span
@@ -260,10 +262,10 @@ export function MachineCard() {
         className="mt-3 border-t border-border pt-2 text-meta text-soft-foreground"
       >
         {view?.hasContainer === true
-          ? 'Effective values come from this process\u2019s own cgroup; host totals are labelled.'
+          ? t('Effective values come from this process\u2019s own cgroup; host totals are labelled.')
           : view?.cgroupUnknown === true
-            ? 'No cgroup information available for this process - host totals only.'
-            : 'Host totals - no cgroup limit tighter than the host detected for this process.'}
+            ? t('No cgroup information available for this process - host totals only.')
+            : t('Host totals - no cgroup limit tighter than the host detected for this process.')}
       </p>
     </section>
   )

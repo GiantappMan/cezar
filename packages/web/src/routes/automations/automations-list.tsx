@@ -5,6 +5,7 @@ import { AUTOMATION_ORDER_LIMIT, type AutomationsResponse } from '@open-mercato/
 import { Segmented, type SegmentedOption } from '@/components/segmented'
 import { StatusDot } from '@/components/status-dot'
 import { Button } from '@/components/ui/button'
+import { t, useLocale } from '@/lib/i18n'
 import { Link } from '@/lib/project-router'
 
 import { AutomationsGuideButton, AutomationsOnboarding } from './automations-onboarding'
@@ -21,9 +22,9 @@ import { WeekView } from './week-view'
 
 function viewOptions(count: number | undefined): SegmentedOption<AutomationsView>[] {
   return [
-    { value: 'list', label: 'List', ...(count === undefined ? {} : { count }) },
-    { value: 'week', label: 'Week' },
-    { value: 'day', label: 'Day' },
+    { value: 'list', label: t('List'), ...(count === undefined ? {} : { count }) },
+    { value: 'week', label: t('Week') },
+    { value: 'day', label: t('Day') },
   ]
 }
 
@@ -47,6 +48,7 @@ export function AutomationsList({
   onViewChange: (view: AutomationsView) => void
 }) {
   const [railOpen, setRailOpen] = useState(false)
+  useLocale()
   const { preferences, canSave, loadError, retry, setSort, setOrder } = useAutomationOrder()
   const now = Date.now()
   const upcoming = data ? nextRuns(data.automations, now, data.timeZone, 12) : []
@@ -59,7 +61,7 @@ export function AutomationsList({
       {/* Below `md` the header may wrap onto a second row (the editor's rule): a phone cannot fit
           the title, the view switch, How it works and New automation on one line. */}
       <header className="sticky top-0 z-10 flex min-h-14 shrink-0 flex-wrap items-center gap-3 border-b border-border bg-background px-5 max-md:py-2 md:h-14 md:flex-nowrap">
-        <h1 className="text-base font-semibold">Automations</h1>
+        <h1 className="text-base font-semibold">{t('Automations')}</h1>
         <Segmented<AutomationsView>
           slot="automations-view"
           label="View"
@@ -74,7 +76,7 @@ export function AutomationsList({
             className="inline-flex min-w-0 items-center gap-2 overflow-hidden text-label text-ellipsis whitespace-nowrap text-muted-foreground max-[1280px]:hidden"
           >
             <StatusDot tone={data.scheduler.state === 'scheduled' ? 'success' : 'neutral'} />
-            {data.scheduler.state === 'scheduled' ? 'Scheduler running' : 'Scheduler idle'}
+            {data.scheduler.state === 'scheduled' ? t('Scheduler running') : t('Scheduler idle')}
             <span className="text-soft-foreground">·</span>
             {data.available ? 'GitHub available' : `GitHub unavailable${data.reason ? ` · ${data.reason}` : ''}`}
             <span className="text-soft-foreground">·</span>
@@ -87,7 +89,7 @@ export function AutomationsList({
         <Button asChild className="shrink-0">
           <Link to="/automations/new">
             <PlusIcon className="size-[15px]" />
-            New automation
+            {t('New automation')}
           </Link>
         </Button>
       </header>

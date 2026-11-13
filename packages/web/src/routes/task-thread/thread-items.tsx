@@ -30,6 +30,7 @@ import { toast } from '@/components/ui/toaster'
 import { ZoomableImage } from '@/components/zoomable-image'
 import { Link } from '@/lib/project-router'
 import { isImageAttachmentName, type FileDiff, type ToolKind, type UiToolItem } from '@open-mercato/cezar-api-client'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 import { parseReviewMessage } from './diff-comments'
@@ -107,6 +108,7 @@ export function UserBubble({
   const [draft, setDraft] = useState(text)
   const [busy, setBusy] = useState(false)
   const [actionError, setActionError] = useState<string>()
+  useLocale()
   // Called unconditionally (hooks are not optional) and inert unless this bubble is one of the
   // editable ones with a surface to write to.
   const store = useDraft(draftRunId ?? '', draftSurface ?? '', {
@@ -161,7 +163,7 @@ export function UserBubble({
       await store.submit(() => onEdit?.(next) ?? Promise.resolve())
       setEditing(false)
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : 'Could not save the message')
+      setActionError(error instanceof Error ? error.message : t('Could not save the message'))
     } finally {
       setBusy(false)
     }
@@ -196,7 +198,7 @@ export function UserBubble({
       >
         <textarea
           autoFocus
-          aria-label="Edit the message"
+          aria-label={t('Edit the message')}
           value={draft}
           onChange={(e) => edit(e.target.value)}
           onKeyDown={(e) => {
@@ -219,7 +221,7 @@ export function UserBubble({
             disabled={busy}
             className="rounded-sm px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-background hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
           >
-            Cancel
+            {t('Cancel')}
           </button>
           <button
             type="button"
@@ -227,7 +229,7 @@ export function UserBubble({
             disabled={busy}
             className="rounded-sm bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground hover:brightness-[0.96] focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
           >
-            {busy ? <LoaderCircleIcon className="size-3.5 animate-spin" /> : 'Save'}
+            {busy ? <LoaderCircleIcon className="size-3.5 animate-spin" /> : t('Save')}
           </button>
         </span>
         {actionError ? <p role="alert" className="mt-1.5 text-xs text-danger">{actionError}</p> : null}
@@ -251,7 +253,7 @@ export function UserBubble({
               {onEdit ? (
                 <button
                   type="button"
-                  aria-label={editLabel}
+                  aria-label={t(editLabel)}
                   onClick={startEditing}
                   disabled={busy}
                   className="rounded-sm p-1 text-soft-foreground hover:bg-background hover:text-foreground focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
@@ -262,7 +264,7 @@ export function UserBubble({
               {onRemove ? (
                 <button
                   type="button"
-                  aria-label={removeLabel}
+                  aria-label={t(removeLabel)}
                   onClick={() => void remove()}
                   disabled={busy}
                   className="rounded-sm p-1 text-soft-foreground hover:bg-background hover:text-danger focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
@@ -353,6 +355,7 @@ export function AssistantMessage({ text }: { text: string }) {
  * rejected writes become honest, non-throwing feedback.
  */
 export function CopyMessageButton({ text }: { text: string }) {
+  useLocale()
   const [feedback, setFeedback] = useState<'idle' | 'success' | 'failure'>('idle')
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -374,12 +377,12 @@ export function CopyMessageButton({ text }: { text: string }) {
   }
 
   const label =
-    feedback === 'success' ? 'Message copied' : feedback === 'failure' ? 'Could not copy message' : 'Copy message'
+    feedback === 'success' ? t('Message copied') : feedback === 'failure' ? t('Could not copy message') : t('Copy message')
   return (
     <span className="inline-flex items-center gap-1">
       <button
         type="button"
-        aria-label="Copy message"
+        aria-label={t('Copy message')}
         onClick={() => void copy()}
         className="rounded-sm p-1 text-soft-foreground hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
       >
@@ -575,6 +578,7 @@ export function AgentUpdateRequiredCard({ incident }: { incident: ThreadAgentUpd
  */
 export function ReasoningItem({ text }: { text: string }) {
   const previewId = useId()
+  useLocale()
   // A mapper regression that mints an empty reasoning item should degrade
   // quietly rather than render a bare, un-expandable "Thinking —" row (#528).
   if (text.trim() === '') return null
@@ -590,7 +594,7 @@ export function ReasoningItem({ text }: { text: string }) {
           aria-hidden
           className="size-3.5 shrink-0 transition-transform group-data-[state=open]/reasoning:rotate-90"
         />
-        <span className="shrink-0">Thinking — </span>
+        <span className="shrink-0">{t('Thinking — ')}</span>
         <div className="min-w-0 truncate text-muted-foreground">
           <Markdown inline>{firstLine}</Markdown>
         </div>
@@ -624,6 +628,7 @@ export function ReasoningItem({ text }: { text: string }) {
  * same at 5s and at 20m. Either stamp missing or unparseable drops just its part.
  */
 export function WorkingIndicator({ since, lastActivityAt }: { since?: string; lastActivityAt?: string } = {}) {
+  useLocale()
   const now = useNow()
   const elapsed = elapsedSince(since, now)
   const quiet = elapsedSince(lastActivityAt, now)
@@ -634,8 +639,8 @@ export function WorkingIndicator({ since, lastActivityAt }: { since?: string; la
       // Wraps rather than overflows: with both stamps the line outgrows a 320px phone column.
       className="flex flex-wrap items-center gap-x-2 gap-y-0.5 py-1 text-ui text-soft-foreground"
     >
-      <LoaderCircleIcon role="status" aria-label="Working" className="size-3.5 shrink-0 animate-spin" />
-      <span className="shimmer font-medium">Working…</span>
+      <LoaderCircleIcon role="status" aria-label={t('Working')} className="size-3.5 shrink-0 animate-spin" />
+      <span className="shimmer font-medium">{t('Working…')}</span>
       {elapsed !== undefined ? (
         <span data-slot="working-elapsed" title={`Started ${exactLabel(since)}`} className="font-mono text-xs tabular-nums">
           {elapsed}
@@ -811,17 +816,18 @@ export function toolCommand(item: UiToolItem): string | undefined {
  *  row stays quiet; touch screens always show it. */
 function CopyCommandButton({ command, reveal = false }: { command: string; reveal?: boolean }) {
   const [copied, setCopied] = useState(false)
+  useLocale()
   return (
     <button
       type="button"
-      aria-label={copied ? 'Copied' : 'Copy command'}
+      aria-label={copied ? t('Copied') : t('Copy command')}
       onClick={() => {
         void writeClipboard(command)
           .then(() => {
             setCopied(true)
             setTimeout(() => setCopied(false), 1500)
           })
-          .catch(() => toast('Copy failed — the browser blocked clipboard access.', { tone: 'danger' }))
+          .catch(() => toast(t('Copy failed — the browser blocked clipboard access.'), { tone: 'danger' }))
       }}
       className={cn(
         'mt-[3px] mr-1.5 shrink-0 rounded p-1 text-soft-foreground hover:bg-muted hover:text-foreground',
@@ -868,6 +874,7 @@ export function ToolCard({
   const [userOpen, setUserOpenState] = useState<boolean | null>(
     () => (cacheKey !== undefined ? (cache?.get(cacheKey) ?? null) : null),
   )
+  useLocale()
   const setUserOpen = (open: boolean) => {
     if (cacheKey !== undefined) cache?.set(cacheKey, open)
     setUserOpenState(open)
@@ -943,7 +950,7 @@ export function ToolCard({
         ) : null}
         <span className="ml-auto flex shrink-0 items-center gap-2 pl-2">
           {busy ? (
-            <LoaderCircleIcon role="status" aria-label="Running" className="size-3.5 animate-spin text-soft-foreground" />
+            <LoaderCircleIcon role="status" aria-label={t('Running')} className="size-3.5 animate-spin text-soft-foreground" />
           ) : null}
           {item.status === 'failed' ? <span className="text-xs text-muted-foreground">failed</span> : null}
           {item.status === 'declined' ? <span className="text-xs text-soft-foreground">declined</span> : null}

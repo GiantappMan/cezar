@@ -18,6 +18,7 @@ import { isFirstLocation, isPhone, phoneLanding, rememberFirstLocation } from '.
 import { noteManagerEntry } from './lib/manager-telemetry'
 import { Navigate as ScopedNavigate, stripProjectPrefix } from './lib/project-router'
 import { ScreenLoading } from './components/loading-state'
+import { t } from './lib/i18n'
 import { AutomationsLoading } from './routes/automations/automations-loading'
 import { CompareLoading } from './routes/compare-loading'
 import { GithubLoading } from './routes/github/github-loading'
@@ -398,7 +399,8 @@ export function pageTitleContext(pathname: string): PageTitleContext {
   const route = PAGE_TITLE_ROUTES.find(({ pattern }) =>
     matchPath({ path: pattern, end: true }, projectPath),
   )
-  return { pageLabel: route?.pageLabel ?? null, taskId: null }
+  // Wrapped here, at the title-building site, so the browser tab translates too.
+  return { pageLabel: route ? t(route.pageLabel) : null, taskId: null }
 }
 
 /** `CEZ_MANAGERS=0`: a pasted `/manager` link lands on the cockpit instead of a page of 409s. The

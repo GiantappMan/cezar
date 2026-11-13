@@ -18,6 +18,7 @@ import { exportConfigBundle, importConfigBundle, MAX_BUNDLE_BYTES, parseConfigBu
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/toaster'
+import { t, useLocale } from '@/lib/i18n'
 import { SettingsField } from './settings-field'
 
 /**
@@ -52,6 +53,7 @@ export function TransferSection() {
 // ---- export -----------------------------------------------------------------------------------
 
 function ExportPanel() {
+  useLocale()
   const projects = useProjects()
   const available = (projects.data?.projects ?? []).filter((p) => p.status !== 'missing')
   // Ids the user UNticked, so a project registered meanwhile is included by default.
@@ -69,7 +71,7 @@ function ExportPanel() {
       link.click()
       link.remove()
       URL.revokeObjectURL(url)
-      toast(`Downloaded ${filename}`)
+      toast(t('Downloaded {name}', { name: filename }))
     },
     onError: (error: Error) => toast(error.message, { tone: 'danger' }),
   })
@@ -84,17 +86,17 @@ function ExportPanel() {
 
   return (
     <SettingsField
-      title="Export"
-      hint="Download this machine's portable settings — workspace preferences and, per project, its config, prompt templates and automations — as one JSON file."
+      title={t('Export')}
+      hint={t('Download this machine\'s portable settings — workspace preferences and, per project, its config, prompt templates and automations — as one JSON file.')}
     >
       <div data-slot="transfer-export" className="flex flex-col gap-3">
         {projects.isPending ? (
-          <p className="text-ui text-soft-foreground">Loading projects…</p>
+          <p className="text-ui text-soft-foreground">{t('Loading projects…')}</p>
         ) : available.length === 0 ? (
-          <p className="text-ui text-soft-foreground">No projects registered — the file will carry workspace settings only.</p>
+          <p className="text-ui text-soft-foreground">{t('No projects registered — the file will carry workspace settings only.')}</p>
         ) : (
           <fieldset className="flex flex-col gap-1.5">
-            <legend className="mb-1 text-meta text-soft-foreground">Projects to include</legend>
+            <legend className="mb-1 text-meta text-soft-foreground">{t('Projects to include')}</legend>
             {available.map((project) => (
               <label key={project.id} className="flex items-center gap-2 text-sm">
                 <input
@@ -109,7 +111,7 @@ function ExportPanel() {
           </fieldset>
         )}
         <p data-slot="transfer-excluded" className="text-meta text-soft-foreground">
-          Not included: {EXCLUDED.join(', ')}. Secret names and the tracker to reconnect travel as reminders.
+          {t('Not included: {list}. Secret names and the tracker to reconnect travel as reminders.', { list: EXCLUDED.join(', ') })}
         </p>
         <div>
           <Button
@@ -119,7 +121,7 @@ function ExportPanel() {
             disabled={download.isPending || projects.isPending}
             onClick={() => download.mutate()}
           >
-            {download.isPending ? 'Preparing…' : 'Download'}
+            {download.isPending ? t('Preparing…') : t('Download')}
           </Button>
         </div>
       </div>
@@ -148,16 +150,18 @@ function previewInput(bundle: ConfigBundle, choices: Choices): ConfigBundlePrevi
 }
 
 function HostedNotice() {
+  useLocale()
   return (
-    <SettingsField title="Import" hint="Apply a configuration bundle exported from another cezar.">
+    <SettingsField title={t('Import')} hint={t('Apply a configuration bundle exported from another cezar.')}>
       <p data-slot="transfer-import-hosted" className="text-ui text-soft-foreground">
-        Import is only available on a local cockpit.
+        {t('Import is only available on a local cockpit.')}
       </p>
     </SettingsField>
   )
 }
 
 function ImportPanel({ localHandoff }: { localHandoff: boolean }) {
+  useLocale()
   const inputId = useId()
   const fileInput = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<{ name: string; bundle: ConfigBundle; nonce: number } | null>(null)
@@ -179,7 +183,7 @@ function ImportPanel({ localHandoff }: { localHandoff: boolean }) {
       importConfigBundle({ ...previewInput(file!.bundle, choices), planDigest: plan.planDigest }),
     onSuccess: (result) => {
       setApplied(result.applied)
-      toast(`Applied ${result.applied.length} section${result.applied.length === 1 ? '' : 's'}`)
+      toast(result.applied.length === 1 ? t('Applied {n} section', { n: result.applied.length }) : t('Applied {n} sections', { n: result.applied.length }))
     },
     // A 409 is usually a stale preview: show the server's words and preview again.
     onError: () => void preview.refetch(),
@@ -196,7 +200,7 @@ function ImportPanel({ localHandoff }: { localHandoff: boolean }) {
     setChoices(NO_CHOICES)
     if (picked.size > MAX_BUNDLE_BYTES) {
       setFile(null)
-      setFileError('this file is larger than 5 MB')
+      setFileError(t('this file is larger than 5 MB'))
       return
     }
     const parsed = parseConfigBundle(await picked.text())
@@ -220,8 +224,8 @@ function ImportPanel({ localHandoff }: { localHandoff: boolean }) {
 
   return (
     <SettingsField
-      title="Import"
-      hint="Apply a configuration bundle exported from another cezar. Nothing is written until you apply, and automations always land paused."
+      title={t('Import')}
+      hint={t('Apply a configuration bundle exported from another cezar. Nothing is written until you apply, and automations always land paused.')}
     >
       <div data-slot="transfer-import" className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
@@ -235,10 +239,10 @@ function ImportPanel({ localHandoff }: { localHandoff: boolean }) {
             onChange={(event) => void onPick(event)}
           />
           <Button type="button" variant="outline" size="sm" onClick={() => fileInput.current?.click()}>
-            Choose file…
+            {t('Choose file…')}
           </Button>
           <label htmlFor={inputId} className="text-meta text-soft-foreground">
-            {file ? file.name : 'A .json file from Settings → Transfer → Export'}
+            {file ? file.name : t('A .json file from Settings → Transfer → Export')}
           </label>
         </div>
 
@@ -248,7 +252,7 @@ function ImportPanel({ localHandoff }: { localHandoff: boolean }) {
           </p>
         ) : null}
 
-        {file && !plan && preview.isFetching ? <p className="text-ui text-soft-foreground">Reading the file…</p> : null}
+        {file && !plan && preview.isFetching ? <p className="text-ui text-soft-foreground">{t('Reading the file…')}</p> : null}
 
         {plan ? (
           <PreviewView
@@ -288,6 +292,7 @@ function PreviewView({
   applied: string[] | null
   onApply: () => void
 }) {
+  useLocale()
   const projects = useProjects()
   const registered = (projects.data?.projects ?? []).filter((p) => p.status !== 'missing')
   const isSelected = (section: BundleSectionPlan) =>
@@ -329,14 +334,14 @@ function PreviewView({
     })
 
   const projectName = (index: number | undefined) =>
-    index === undefined ? 'Workspace' : (plan.projects.find((p) => p.index === index)?.name ?? `Project ${index + 1}`)
+    index === undefined ? t('Workspace') : (plan.projects.find((p) => p.index === index)?.name ?? t('Project {n}', { n: index + 1 }))
   const targetName = (id: string | undefined) => registered.find((p) => p.id === id)?.name ?? id
 
   return (
     <div data-slot="transfer-preview" aria-busy={busy} className="flex flex-col gap-6">
       {plan.projects.length > 0 ? (
         <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-semibold">Projects</h3>
+          <h3 className="text-sm font-semibold">{t('Projects')}</h3>
           <ul className="flex flex-col gap-2">
             {plan.projects.map((project) => (
               <li
@@ -355,7 +360,7 @@ function PreviewView({
                   registered={registered}
                   onChange={(value) => setMapping(project.index, value)}
                 />
-                {project.match === 'remote' ? <span className="text-meta text-soft-foreground">(same remote)</span> : null}
+                {project.match === 'remote' ? <span className="text-meta text-soft-foreground">{t('(same remote)')}</span> : null}
               </li>
             ))}
           </ul>
@@ -363,15 +368,15 @@ function PreviewView({
       ) : null}
 
       <section className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold">Sections</h3>
+        <h3 className="text-sm font-semibold">{t('Sections')}</h3>
         {plan.sections.length === 0 ? (
-          <p className="text-ui text-soft-foreground">This file changes nothing on this machine.</p>
+          <p className="text-ui text-soft-foreground">{t('This file changes nothing on this machine.')}</p>
         ) : (
           plan.sections.map((section) => (
             <SectionCard
               key={section.id}
               section={section}
-              title={`${projectName(section.projectIndex)} · ${KIND_LABELS[section.kind]}`}
+              title={`${projectName(section.projectIndex)} · ${t(KIND_LABELS[section.kind])}`}
               target={section.projectIndex === undefined ? undefined : targetName(section.targetProjectId)}
               checked={isSelected(section)}
               resolution={choices.resolutions[section.id]}
@@ -388,7 +393,7 @@ function PreviewView({
       <div className="flex flex-col gap-2">
         {blocked.length > 0 ? (
           <p data-slot="transfer-blocked" className="text-ui text-danger">
-            Untick or fix the sections with problems before applying.
+            {t('Untick or fix the sections with problems before applying.')}
           </p>
         ) : null}
         {applyError ? (
@@ -396,7 +401,9 @@ function PreviewView({
         ) : null}
         {applied ? (
           <p data-slot="transfer-applied" className="text-ui text-foreground">
-            Applied {applied.length} section{applied.length === 1 ? '' : 's'}. Imported automations are paused — enable them on each project’s Automations page.
+            {applied.length === 1
+              ? t('Applied {n} section. Imported automations are paused — enable them on each project’s Automations page.', { n: applied.length })
+              : t('Applied {n} sections. Imported automations are paused — enable them on each project’s Automations page.', { n: applied.length })}
           </p>
         ) : null}
         <div>
@@ -407,7 +414,7 @@ function PreviewView({
             disabled={busy || applying || selected.length === 0 || blocked.length > 0 || applied !== null}
             onClick={onApply}
           >
-            {applying ? 'Applying…' : `Apply selected (${selected.length})`}
+            {applying ? t('Applying…') : t('Apply selected ({n})', { n: selected.length })}
           </Button>
         </div>
       </div>
@@ -438,19 +445,20 @@ function MappingSelect({
   registered: ProjectListEntry[]
   onChange: (value: string) => void
 }) {
+  useLocale()
   return (
     <select
-      aria-label={`Import ${name} into`}
+      aria-label={t('Import {name} into', { name })}
       data-slot="transfer-mapping"
       value={value}
       onChange={(event) => onChange(event.target.value)}
       className={SELECT_CLASS}
     >
-      <option value="">Choose a project…</option>
+      <option value="">{t('Choose a project…')}</option>
       {registered.map((project) => (
         <option key={project.id} value={project.id}>{project.name}</option>
       ))}
-      <option value={SKIP}>Skip</option>
+      <option value={SKIP}>{t('Skip')}</option>
     </select>
   )
 }
@@ -474,6 +482,7 @@ function SectionCard({
   onKey: (key: string, value: 'keep' | 'take') => void
   onRow: (index: number, resolution: AutomationImportResolution | undefined) => void
 }) {
+  useLocale()
   return (
     <div
       data-slot="transfer-section-card"
@@ -486,7 +495,7 @@ function SectionCard({
         {target ? <span className="text-meta text-soft-foreground">→ {target}</span> : null}
         {section.runsCommands ? (
           <Badge variant="outline" data-slot="transfer-runs-commands" className="border-warning text-warning">
-            <TriangleAlertIcon aria-hidden /> runs shell commands
+            <TriangleAlertIcon aria-hidden /> {t('runs shell commands')}
           </Badge>
         ) : null}
       </label>
@@ -520,7 +529,7 @@ function SectionCard({
         </ul>
       ) : null}
       {section.changes.length === 0 && !section.automations?.length ? (
-        <p className="text-meta text-soft-foreground">Nothing to change.</p>
+        <p className="text-meta text-soft-foreground">{t('Nothing to change.')}</p>
       ) : null}
     </div>
   )
@@ -528,7 +537,7 @@ function SectionCard({
 
 /** One line of JSON, cut short — a diff row is a glance, not an editor. */
 export function formatValue(value: unknown): string {
-  if (value === undefined) return '(not set)'
+  if (value === undefined) return t('(not set)')
   const text = typeof value === 'string' ? JSON.stringify(value) : (JSON.stringify(value) ?? String(value))
   return text.length > 120 ? `${text.slice(0, 119)}…` : text
 }
@@ -542,6 +551,7 @@ function ChangeRow({
   value: 'keep' | 'take'
   onChange: (value: 'keep' | 'take') => void
 }) {
+  useLocale()
   return (
     <li data-slot="transfer-change" data-key={change.key} className="flex flex-wrap items-center gap-2 text-meta">
       <code className="font-mono text-foreground">{change.key}</code>
@@ -550,17 +560,17 @@ function ChangeRow({
       <span data-slot="transfer-change-to" className="font-mono text-foreground">{formatValue(change.to)}</span>
       {change.conflict ? (
         <select
-          aria-label={`${change.key}: keep or take`}
+          aria-label={t('{key}: keep or take', { key: change.key })}
           data-slot="transfer-change-action"
           value={value}
           onChange={(event) => onChange(event.target.value as 'keep' | 'take')}
           className={SELECT_CLASS}
         >
-          <option value="keep">Keep this machine’s</option>
-          <option value="take">Take imported</option>
+          <option value="keep">{t('Keep this machine’s')}</option>
+          <option value="take">{t('Take imported')}</option>
         </select>
       ) : (
-        <span className="text-soft-foreground">({change.action === 'take' ? 'new' : 'unchanged'})</span>
+        <span className="text-soft-foreground">({t(change.action === 'take' ? 'new' : 'unchanged')})</span>
       )}
     </li>
   )
@@ -582,6 +592,7 @@ function AutomationRow({
   resolution: AutomationImportResolution | undefined
   onChange: (resolution: AutomationImportResolution | undefined) => void
 }) {
+  useLocale()
   // Consent rides a resolution: an explicit `create` for a free name, a rename for a taken one.
   const setAccept = (accept: boolean) => {
     if (!accept) {
@@ -595,10 +606,10 @@ function AutomationRow({
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium text-foreground">{row.name}</span>
         <span className="text-soft-foreground">{row.kind}</span>
-        <Badge variant="secondary">{ROW_ACTION_LABELS[row.action]}{row.newName && row.action === 'rename' ? ` → ${row.newName}` : ''}</Badge>
+        <Badge variant="secondary">{t(ROW_ACTION_LABELS[row.action])}{row.newName && row.action === 'rename' ? ` → ${row.newName}` : ''}</Badge>
         {row.collision ? (
           <select
-            aria-label={`${row.name}: on a name collision`}
+            aria-label={t('{name}: on a name collision', { name: row.name })}
             data-slot="transfer-automation-action"
             value={resolution?.action ?? 'skip'}
             onChange={(event) =>
@@ -606,9 +617,9 @@ function AutomationRow({
             }
             className={SELECT_CLASS}
           >
-            <option value="skip">Skip</option>
-            <option value="rename">Rename</option>
-            {row.collision.id ? <option value="replace">Replace (and pause)</option> : null}
+            <option value="skip">{t('Skip')}</option>
+            <option value="rename">{t('Rename')}</option>
+            {row.collision.id ? <option value="replace">{t('Replace (and pause)')}</option> : null}
           </select>
         ) : null}
         {row.runsCommands ? (
@@ -619,7 +630,7 @@ function AutomationRow({
               checked={resolution?.acceptCommands === true}
               onChange={(event) => setAccept(event.target.checked)}
             />
-            <TriangleAlertIcon aria-hidden className="size-3" /> runs shell commands — allow
+            <TriangleAlertIcon aria-hidden className="size-3" /> {t('runs shell commands — allow')}
           </label>
         ) : null}
       </div>
@@ -631,26 +642,27 @@ function AutomationRow({
 }
 
 function Reminders({ plan }: { plan: ConfigBundlePreview }) {
+  useLocale()
   const perProject = plan.projects.filter((p) => p.reminders.secretNames.length > 0 || p.reminders.tracker)
   if (plan.reminders.workspaceSecretNames.length === 0 && perProject.length === 0) return null
   return (
     <section data-slot="transfer-reminders" className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold">Re-enter these secrets</h3>
+      <h3 className="text-sm font-semibold">{t('Re-enter these secrets')}</h3>
       <p className="text-meta text-soft-foreground">
-        A bundle never carries secret values or tracker credentials. Add them again on this machine after importing.
+        {t('A bundle never carries secret values or tracker credentials. Add them again on this machine after importing.')}
       </p>
       <ul className="flex flex-col gap-1 text-sm">
         {plan.reminders.workspaceSecretNames.length > 0 ? (
           <li data-slot="transfer-reminder" data-scope="workspace">
-            <span className="font-medium">Workspace secrets:</span> {plan.reminders.workspaceSecretNames.join(', ')}
+            <span className="font-medium">{t('Workspace secrets:')}</span> {plan.reminders.workspaceSecretNames.join(', ')}
           </li>
         ) : null}
         {perProject.map((project) => (
           <li key={project.index} data-slot="transfer-reminder" data-scope={`project:${project.index}`}>
             <span className="font-medium">{project.name}:</span>{' '}
-            {project.reminders.secretNames.length > 0 ? `secrets ${project.reminders.secretNames.join(', ')}` : null}
+            {project.reminders.secretNames.length > 0 ? t('secrets {names}', { names: project.reminders.secretNames.join(', ') }) : null}
             {project.reminders.secretNames.length > 0 && project.reminders.tracker ? '; ' : null}
-            {project.reminders.tracker ? `reconnect the ${project.reminders.tracker} tracker` : null}
+            {project.reminders.tracker ? t('reconnect the {tracker} tracker', { tracker: project.reminders.tracker }) : null}
           </li>
         ))}
       </ul>

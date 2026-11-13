@@ -1,6 +1,6 @@
-import { plural } from './webhook-presentation'
 import { useWebhookList } from '@/hooks/use-webhooks'
 import { useHealth, useRemoveProject } from '@/api/queries'
+import { t, useLocale } from '@/lib/i18n'
 import type { ProjectListEntry } from '@open-mercato/cezar-api-client'
 import {
   AlertDialog,
@@ -44,7 +44,7 @@ export function useProjectRemoval() {
         // about a button they may have pressed nervously.
         onSuccess: (result) => {
           if (result.warning) toast(result.warning, { tone: 'danger' })
-          toast(`${project.name} removed from the workspace — its files are untouched`)
+          toast(t('{name} removed from the workspace — its files are untouched', { name: project.name }))
           onRemoved?.()
         },
         onError: (error: Error) => toast(error.message, { tone: 'danger' }),
@@ -62,6 +62,7 @@ export function RemoveProjectDialog({
   onOpenChange: (open: boolean) => void
   onConfirm: () => void
 }) {
+  useLocale()
   const health = useHealth()
   const webhooks = useWebhookList(project?.id ?? 'default', project !== null && health.data?.capabilities?.webhooks === true)
   const affected = webhooks.data?.receivers.filter(receiver => ['active', 'suspended'].includes(receiver.state)) ?? []
@@ -71,13 +72,11 @@ export function RemoveProjectDialog({
     <AlertDialog open={project !== null} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove {project?.name} from the workspace?</AlertDialogTitle>
+          <AlertDialogTitle>{t('Remove {name} from the workspace?', { name: project?.name ?? '' })}</AlertDialogTitle>
           <AlertDialogDescription>
-            This only unregisters the project — <strong>nothing on disk is deleted</strong>. The
-            folder, its git history and its task history all stay exactly where they are, and
-            adding it back later finds everything intact.
-            {affected.length > 0 && <span className="mt-2 block">{plural(affected.length, 'receiver', 'receivers')} will be paused. {plural(pending, 'pending delivery', 'pending deliveries')} will be cancelled; {inFlight} in flight may still arrive.</span>}
-            {webhooks.error && <span className="mt-2 block">Webhook state is unavailable. Removal will report whether receivers could be paused.</span>}
+            {t('This only unregisters the project —')} <strong>{t('nothing on disk is deleted')}</strong>{t('. The folder, its git history and its task history all stay exactly where they are, and adding it back later finds everything intact.')}
+            {affected.length > 0 && <span className="mt-2 block">{`${affected.length === 1 ? t('{n} receiver will be paused.', { n: affected.length }) : t('{n} receivers will be paused.', { n: affected.length })} ${pending === 1 ? t('{n} pending delivery will be cancelled;', { n: pending }) : t('{n} pending deliveries will be cancelled;', { n: pending })} ${t('{n} in flight may still arrive.', { n: inFlight })}`}</span>}
+            {webhooks.error && <span className="mt-2 block">{t('Webhook state is unavailable. Removal will report whether receivers could be paused.')}</span>}
             {/* Wrapped, not truncated: the path is how the user tells which folder this is. */}
             <span data-testid="remove-project-root" className="mt-1 block break-all font-mono text-meta text-foreground">
               {project?.root}
@@ -85,13 +84,13 @@ export function RemoveProjectDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Keep it</AlertDialogCancel>
+          <AlertDialogCancel>{t('Keep it')}</AlertDialogCancel>
           <AlertDialogAction
             data-action="projects-confirm-remove"
             className="bg-danger text-danger-foreground hover:brightness-[0.96]"
             onClick={onConfirm}
           >
-            Remove from list
+            {t('Remove from list')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

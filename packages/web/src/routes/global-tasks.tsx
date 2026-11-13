@@ -438,13 +438,13 @@ export function GlobalTasksRoute() {
   return (
     <div data-route="global-tasks" className="flex min-h-full flex-col">
       <header className="sticky top-0 z-10 hidden h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-5 md:flex">
-        <h1 className="text-base font-semibold">All tasks</h1>
+        <h1 className="text-base font-semibold">{t('All tasks')}</h1>
         <div className="inline-flex gap-0.5 rounded-md bg-muted p-[3px]">
           <ViewTab view="active" current={view} onSelect={setView}>
-            Active
+            {t('Active')}
           </ViewTab>
           <ViewTab view="archived" current={view} onSelect={setView}>
-            Archived
+            {t('Archived')}
           </ViewTab>
         </div>
         <div className="flex-1" />
@@ -745,11 +745,11 @@ function FilterBar({
         // invisible, and the sentence that fixes it is one line long — with the door in it,
         // since the pane that fixes it is two clicks away and outside this page.
         <p data-slot="no-tags-hint" className="text-meta text-soft-foreground">
-          Tag connected repositories in{' '}
+          {t('Tag connected repositories in')}{' '}
           <Link to="/settings/global/projects" className="font-medium text-violet hover:underline">
             Settings → Projects
           </Link>{' '}
-          to group their tasks together here.
+          {t('to group their tasks together here.')}
         </p>
       )}
     </div>

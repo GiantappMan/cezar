@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Link } from '@/lib/project-router'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 import {
@@ -125,6 +126,7 @@ export function LayoutCards({
    */
   const items: StripTab[] = notesHref ? stripTabs(fixedViews) : [...fixedViews]
   const isActive = (tab: StripTab) => (tab === 'notes' ? notesActive : fixedActive === tab)
+  useLocale()
 
   const rootRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(0)
@@ -305,7 +307,7 @@ export function LayoutCards({
             {badges?.[view] ? (
               <span
                 data-slot="tab-badge"
-                aria-label={`${badges[view]} ${label.toLowerCase()}`}
+                aria-label={t('{count} {label}', { count: badges[view]!, label: label.toLowerCase() })}
                 className="rounded-full bg-muted px-1.5 py-px text-micro font-semibold tabular-nums text-muted-foreground"
               >
                 {badges[view]}
@@ -326,8 +328,8 @@ export function LayoutCards({
               variant="ghost"
               size="icon-sm"
               data-action="more-views"
-              aria-label={`${overflow.length} more views`}
-              title="More views"
+              aria-label={t('{count} more views', { count: overflow.length })}
+              title={t('More views')}
               className="mb-1 size-7 shrink-0 text-muted-foreground"
             >
               <MoreHorizontalIcon aria-hidden="true" />
@@ -340,7 +342,7 @@ export function LayoutCards({
                   <DropdownMenuItem key="notes" asChild>
                     <Link to={notesHref!}>
                       <NotebookTextIcon aria-hidden="true" />
-                      <span className="truncate">Notes</span>
+                      <span className="truncate">{t('Notes')}</span>
                       {keyHints.get('view:notes') ? <DropdownMenuShortcut>{keyHints.get('view:notes')}</DropdownMenuShortcut> : null}
                     </Link>
                   </DropdownMenuItem>
@@ -362,7 +364,7 @@ export function LayoutCards({
 
       {closeTarget ? (
         <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded bg-background px-2 py-0.5 text-xs font-medium text-foreground shadow-sm">
-          Drop to close this column
+          {t('Drop to close this column')}
         </span>
       ) : null}
 
@@ -446,7 +448,7 @@ function suggestName(layouts: readonly WorkspaceLayout[], active: string | null,
   const current = active === null ? undefined : layouts.find((layout) => layout.name === active)
   if (current && current.name !== WORKING_LAYOUT_NAME) return layoutDisplayName(current.name)
   if (current) return current.columns.map((column) => viewLabel(column.view)).join(' + ')
-  return fixed ? `${viewLabel(fixed)} layout` : ''
+  return fixed ? t('{view} layout', { view: viewLabel(fixed) }) : ''
 }
 
 /**
@@ -484,6 +486,7 @@ function LayoutMenu({
   // The menu closing into the dialog must not take focus back to its button (the name field has it).
   const intoDialog = useRef(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  useLocale()
 
   return (
     <>
@@ -496,12 +499,12 @@ function LayoutMenu({
             ref={triggerRef}
             data-action="layouts"
             data-active-layout={current ? current.name : undefined}
-            aria-label={current ? `Layout: ${layoutDisplayName(current.name)}` : 'Layouts'}
-            title="Layouts — open a saved one, or save what is on screen"
+            aria-label={current ? t('Layout: {name}', { name: layoutDisplayName(current.name) }) : t('Layouts')}
+            title={t('Layouts — open a saved one, or save what is on screen')}
             className={cn('h-7 max-w-48 shrink-0 gap-1.5 px-2 text-label', current ? 'text-foreground' : 'text-muted-foreground')}
           >
             <LayoutGlyph count={current?.columns.length ?? 2} />
-            <span className="truncate max-md:hidden">{current ? layoutDisplayName(current.name) : 'Layout'}</span>
+            <span className="truncate max-md:hidden">{current ? layoutDisplayName(current.name) : t('Layout')}</span>
             <ChevronDownIcon aria-hidden="true" className="size-3.5 opacity-60" />
           </Button>
         </DropdownMenuTrigger>
@@ -514,11 +517,10 @@ function LayoutMenu({
             event.preventDefault()
           }}
         >
-          <DropdownMenuLabel>Saved layouts</DropdownMenuLabel>
+          <DropdownMenuLabel>{t('Saved layouts')}</DropdownMenuLabel>
           {saved.length === 0 ? (
             <p className="px-2 pb-1.5 text-xs text-muted-foreground">
-              None yet — arrange the view (drag a tab onto it), then save it here. Saved layouts are offered in every
-              task.
+              {t('None yet — arrange the view (drag a tab onto it), then save it here. Saved layouts are offered in every task.')}
             </p>
           ) : null}
           {saved.map((layout) => (
@@ -531,7 +533,7 @@ function LayoutMenu({
               onPick={() => onApplySaved?.(layout)}
               remove={
                 onDeleteSaved
-                  ? { label: `Delete saved layout ${layout.name}`, run: () => onDeleteSaved(layout.name) }
+                  ? { label: t('Delete saved layout {name}', { name: layout.name }), run: () => onDeleteSaved(layout.name) }
                   : undefined
               }
             />
@@ -539,7 +541,7 @@ function LayoutMenu({
           {local.length > 0 ? (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel>This task</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('This task')}</DropdownMenuLabel>
               {local.map((layout) => (
                 <LayoutRow
                   key={`task:${layout.name}`}
@@ -548,7 +550,7 @@ function LayoutMenu({
                   selected={layout.name === active}
                   kind="task"
                   onPick={() => onSelect(layout.name)}
-                  remove={{ label: `Close layout ${layoutDisplayName(layout.name)}`, run: () => onClose(layout.name) }}
+                  remove={{ label: t('Close layout {name}', { name: layoutDisplayName(layout.name) }), run: () => onClose(layout.name) }}
                 />
               ))}
             </>
@@ -565,7 +567,7 @@ function LayoutMenu({
                 }}
               >
                 <SaveIcon aria-hidden="true" />
-                Save current view as layout…
+                {t('Save current view as layout…')}
               </DropdownMenuItem>
             </>
           ) : null}
@@ -601,6 +603,7 @@ function LayoutRow({
   onPick: () => void
   remove?: { label: string; run: () => void }
 }) {
+  useLocale()
   return (
     <DropdownMenuItem
       data-layout={name}
@@ -625,7 +628,7 @@ function LayoutRow({
         <button
           type="button"
           aria-label={remove.label}
-          title={`${remove.label} (Delete)`}
+          title={t('{label} (Delete)', { label: remove.label })}
           className="flex size-5 items-center justify-center rounded-sm text-muted-foreground opacity-0 group-hover/layout:opacity-100 group-focus/layout:opacity-100 hover:bg-background hover:text-foreground"
           onPointerUp={(event) => event.stopPropagation()}
           onClick={(event) => {
@@ -665,6 +668,7 @@ function SaveLayoutDialog({
   }, [open, suggested])
   const name = value.trim()
   const reserved = name !== '' && isReservedLayoutName(name)
+  useLocale()
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onCancel()}>
@@ -683,13 +687,13 @@ function SaveLayoutDialog({
           }}
         >
           <DialogHeader>
-            <DialogTitle>Save layout</DialogTitle>
-            <DialogDescription>Saved layouts are offered in every task, in every project.</DialogDescription>
+            <DialogTitle>{t('Save layout')}</DialogTitle>
+            <DialogDescription>{t('Saved layouts are offered in every task, in every project.')}</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-1.5">
             <Input
               autoFocus
-              aria-label="Layout name"
+              aria-label={t('Layout name')}
               maxLength={MAX_LAYOUT_NAME_LENGTH}
               value={value}
               onChange={(event) => setValue(event.target.value)}
@@ -698,19 +702,19 @@ function SaveLayoutDialog({
             {reserved ? (
               <p className="text-xs text-danger">
                 {name === WORKING_LAYOUT_NAME
-                  ? `“${WORKING_LAYOUT_NAME}” is the task's unsaved arrangement — pick another.`
-                  : 'That name belongs to a view tab — pick another.'}
+                  ? t('“{name}” is the task\'s unsaved arrangement — pick another.', { name: WORKING_LAYOUT_NAME })
+                  : t('That name belongs to a view tab — pick another.')}
               </p>
             ) : taken.has(name) ? (
-              <p className="text-xs text-muted-foreground">Replaces the saved layout “{name}”.</p>
+              <p className="text-xs text-muted-foreground">{t('Replaces the saved layout “{name}”.', { name })}</p>
             ) : null}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button type="submit" disabled={name === '' || reserved}>
-              Save
+              {t('Save')}
             </Button>
           </DialogFooter>
         </form>

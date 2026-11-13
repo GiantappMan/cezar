@@ -6,6 +6,7 @@ import { orderManagers, useManagers } from '@/api/managers'
 import { useHealth } from '@/api/queries'
 import { CenteredState } from '@/components/centered-state'
 import { Button } from '@/components/ui/button'
+import { t, useLocale } from '@/lib/i18n'
 import { useNow } from '@/lib/use-now'
 import { noteManagerChatSource } from '@/lib/manager-telemetry'
 import type { ManagerSummary } from '@open-mercato/cezar-api-client'
@@ -39,15 +40,16 @@ export function pendingFirst(managers: readonly ManagerSummary[]): ManagerSummar
 
 /** The phone has no sidebar column, so its list is a screen (spec, Surface). */
 function ManagerListScreen({ managers }: { managers: readonly ManagerSummary[] }) {
+  useLocale()
   const now = useNow(60_000)
   return (
     <div data-route="manager-list" className="flex flex-col gap-0.5 p-2">
-      <h1 className="sr-only">Managers</h1>
+      <h1 className="sr-only">{t('Managers')}</h1>
       {pendingFirst(managers).map((manager) => <ManagerRow key={manager.id} manager={manager} active={false} now={now} state={FROM_MANAGER_LIST} source="list" />)}
       <Button asChild variant="ghost" className="mt-1 justify-start gap-2 text-muted-foreground pointer-coarse:min-h-11">
         <Link to="/manager/new">
           <PlusIcon aria-hidden="true" className="size-4" />
-          New manager
+          {t('New manager')}
         </Link>
       </Button>
     </div>
@@ -57,6 +59,7 @@ function ManagerListScreen({ managers }: { managers: readonly ManagerSummary[] }
 /** `/manager`: the most recent chat, the list with `?all=1` or several on a phone, or the first-run
  *  setup. `all=1` is the chat's back arrow: one manager must not loop straight back into it. */
 export function ManagerIndexRoute() {
+  useLocale()
   const enabled = useHealth().data?.capabilities.managers === true
   const managers = useManagers(enabled)
   const desktop = useDesktopViewport()
@@ -66,7 +69,7 @@ export function ManagerIndexRoute() {
   // The first-run form's create lands here before its own navigate can say where focus goes.
   const [firstRun, setFirstRun] = useState(false)
   if (managers.data && ordered.length === 0 && !firstRun) setFirstRun(true)
-  if (managers.isError) return <CenteredState icon={<BotIcon aria-hidden="true" />} tone="danger" title="Managers are unavailable" subtitle={managers.error.message} />
+  if (managers.isError) return <CenteredState icon={<BotIcon aria-hidden="true" />} tone="danger" title={t('Managers are unavailable')} subtitle={managers.error.message} />
   if (!managers.data) return <ManagerIndexLoading />
   if (ordered.length === 0) return <ManagerNewRoute />
   if (params.get('all') === '1' || (!desktop && ordered.length > 1)) return <ManagerListScreen managers={ordered} />

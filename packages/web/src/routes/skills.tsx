@@ -221,12 +221,12 @@ function SkillsCatalog() {
             className="flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none aria-pressed:bg-muted aria-pressed:text-foreground"
           >
             <ListChevronsUpDownIcon aria-hidden="true" className="size-3" />
-            Details
+            {t('Details')}
           </button>
           <button
             type="button"
             data-slot="skills-refresh"
-            title="git fetch the team skills repos"
+            title={t('git fetch the team skills repos')}
             disabled={refresh.isPending}
             onClick={() => refresh.mutate()}
             className="flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-55"
@@ -235,7 +235,7 @@ function SkillsCatalog() {
               aria-hidden="true"
               className={cn('size-3', refresh.isPending && 'motion-safe:animate-spin')}
             />
-            Refresh
+            {t('Refresh')}
           </button>
         </div>
         {repoGroups.length > 1 ? (

@@ -50,6 +50,7 @@ import { useProjectOrder } from '@/lib/use-project-order'
 import { taskReference, taskReferences } from '@/lib/tasks-table'
 import { usageMetricVisibility } from '@/lib/token-metrics'
 import { useNow } from '@/lib/use-now'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /**
@@ -149,6 +150,7 @@ export function ProjectGroups({
   /** Nav items (`to`) whose feature shipped since the user started — the active group's dot. */
   newNavItems?: ReadonlySet<string>
 }) {
+  useLocale()
   const { pathname } = useLocation()
   // The shell renders outside the routes, so there is no `ProjectScopeProvider` above it — the
   // URL's own prefix is the scope, exactly as `project-router` resolves it for links.
@@ -343,7 +345,7 @@ export function ProjectGroups({
           onClick={() => setEditingFolder(null)}
           className="flex h-7 items-center gap-1 rounded px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
         >
-          <FolderPlusIcon className="size-3.5" aria-hidden="true" /> New folder
+          <FolderPlusIcon className="size-3.5" aria-hidden="true" /> {t('New folder')}
         </button>
       </div>
       <DndContext
@@ -540,6 +542,7 @@ function ProjectGroup({
   position: number
   total: number
 }) {
+  useLocale()
   const missing = project.status === 'missing'
   // A missing project holds its place in the order but is not draggable: its row is deliberately
   // inert (there is nothing behind the chevron either), and a folder that is gone is one to
@@ -834,7 +837,7 @@ function ProjectGroup({
                   )}
                 >
                   <Icon className="size-3.5 shrink-0" aria-hidden="true" />
-                  {item.label}
+                  {t(item.label)}
                   {/* `/api/todos` is fetched for the active scope only, so only the active
                       group has a real count to show — a badge on the others would be the active
                       project's number wearing someone else's name. */}
@@ -849,13 +852,13 @@ function ProjectGroup({
                   {item.badge === 'skills-update' && active && skillsUpdateAvailable ? (
                     <span data-slot="nav-update-marker" className="ml-auto flex items-center">
                       <span className="size-1.5 rounded-full bg-violet" aria-hidden="true" />
-                      <span className="sr-only">Skills update available</span>
+                      <span className="sr-only">{t('Skills update available')}</span>
                     </span>
                   ) : null}
                   {active && newNavItems.has(item.to) ? (
                     <span data-slot="nav-new-marker" className="ml-auto flex items-center">
                       <span className="size-1.5 rounded-full bg-violet" aria-hidden="true" />
-                      <span className="sr-only">New</span>
+                      <span className="sr-only">{t('New')}</span>
                     </span>
                   ) : null}
                 </Link>
@@ -894,7 +897,7 @@ function ProjectGroup({
             data-slot="project-group-more"
             className="flex h-9 items-center rounded-md px-3 text-label text-muted-foreground transition-colors hover:text-foreground md:h-7"
           >
-            More…
+            {t('More…')}
           </Link>
         </div>
       )}

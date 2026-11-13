@@ -4,6 +4,7 @@ import { Link as RouterLink } from 'react-router'
 import type { BackendCheck, ForgeInfo, HealthResponse, Runner } from '@open-mercato/cezar-api-client'
 import { StatusDot } from '@/components/status-dot'
 import { formatMem } from '@/lib/tasks-table'
+import { t, useLocale } from '@/lib/i18n'
 import { Link } from '@/lib/project-router'
 import {
   DropdownMenu,
@@ -46,15 +47,15 @@ const isRunner = (check: BackendCheck): boolean => Object.hasOwn(RUNNER_NAMES, c
 export function toolsBlocker(health: HealthResponse): string | null {
   const runners = health.checks.filter(isRunner)
   if (runners.length && !runners.some((check) => check.available)) {
-    return 'no agent CLI found — install one to run tasks'
+    return t('no agent CLI found — install one to run tasks')
   }
   // Absent from `checks[]` (an older server) means unprobed, not broken: nothing to claim.
   const preferred = runners.find((check) => check.name === health.defaultRunner)
   if (preferred && !preferred.available) {
-    return `default runner (${health.defaultRunner}) not found`
+    return t('default runner ({runner}) not found', { runner: health.defaultRunner })
   }
   // Below the floor the server refuses to start agents (9cdcedc3) — that stops a task too.
-  if (health.disk?.level === 'critical') return `disk almost full — ${formatFree(health.disk.freeBytes)} free`
+  if (health.disk?.level === 'critical') return t('disk almost full — {free} free', { free: formatFree(health.disk.freeBytes) })
   return null
 }
 
@@ -71,9 +72,13 @@ function formatFree(bytes: number): string {
 export function diskNote(health: HealthResponse): string | null {
   const disk = health.disk
   if (!disk || disk.level === 'ok') return null
-  const used = disk.worktreesBytes ? ` Task worktrees use ${formatMem(disk.worktreesBytes)}.` : ''
-  const effect = disk.level === 'critical' ? ' New agents will not start until space is freed.' : ''
-  return `Only ${formatFree(disk.freeBytes)} free on the disk holding task worktrees.${used}${effect} Reclaim finished tasks' worktrees (branches are kept) or delete old tasks.`
+  const used = disk.worktreesBytes ? t(' Task worktrees use {n}.', { n: formatMem(disk.worktreesBytes) }) : ''
+  const effect = disk.level === 'critical' ? t(' New agents will not start until space is freed.') : ''
+  return t('Only {free} free on the disk holding task worktrees.{used}{effect} Reclaim finished tasks\' worktrees (branches are kept) or delete old tasks.', {
+    free: formatFree(disk.freeBytes),
+    used,
+    effect,
+  })
 }
 
 /** The trigger's hover tooltip: the cezar version, then the blocker if there is one — else
@@ -82,10 +87,10 @@ export function toolsTooltip(health: HealthResponse): string {
   const base = `cezar v${health.version}`
   const blocker = toolsBlocker(health)
   if (blocker) return `${base} · ${blocker}`
-  const low = health.disk?.level === 'low' ? ` · low disk space (${formatFree(health.disk.freeBytes)} free)` : ''
+  const low = health.disk?.level === 'low' ? ` · ${t('low disk space ({free} free)', { free: formatFree(health.disk.freeBytes) })}` : ''
   const missing = health.checks.filter((check) => !check.available).map((check) => check.name)
   if (low) return `${base}${low}`
-  return missing.length ? `${base} · optional: ${missing.join(', ')} not installed` : base
+  return missing.length ? `${base} · ${t('optional: {tools} not installed', { tools: missing.join(', ') })}` : base
 }
 
 /**
@@ -98,14 +103,15 @@ export function toolsTooltip(health: HealthResponse): string {
 export function forgeNote(forge: ForgeInfo | null | undefined): string | null {
   if (forge === undefined || forge?.available) return null
   if (!forge) {
-    return 'No GitHub remote detected — the GitHub tab is hidden. Every plain-git feature still works.'
+    return t('No GitHub remote detected — the GitHub tab is hidden. Every plain-git feature still works.')
   }
   // A cold probe (no `available` yet) is not a failure — say nothing until it has answered.
   if (forge.available === undefined) return null
-  return `GitHub is unreachable — ${forge.reason ?? 'unknown reason'}. The GitHub tab can retry.`
+  return t('GitHub is unreachable — {reason}. The GitHub tab can retry.', { reason: forge.reason ?? t('unknown reason') })
 }
 
 export function ToolsMenu({ health, forge }: { health: HealthResponse | undefined; forge: ForgeInfo | null | undefined }) {
+  useLocale()
   if (!health) return null
   const note = forgeNote(forge)
 
@@ -124,7 +130,7 @@ export function ToolsMenu({ health, forge }: { health: HealthResponse | undefine
           className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-meta font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <StatusDot tone={blocker || disk ? 'pending' : 'success'} />
-          Tools
+          {t('Tools')}
           <ChevronDownIcon className="size-[11px]" aria-hidden="true" />
         </button>
       </DropdownMenuTrigger>

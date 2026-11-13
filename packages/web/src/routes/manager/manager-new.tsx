@@ -5,6 +5,7 @@ import { sendManagerMessage, useCreateManager, useManagers } from '@/api/manager
 import { useHealth } from '@/api/queries'
 import { Composer } from '@/components/composer/composer'
 import { enterInsertsNewline } from '@/lib/enter-key'
+import { t, useLocale } from '@/lib/i18n'
 import { trackManagerMessageSent } from '@/lib/manager-telemetry'
 import { toast } from '@/components/ui/toaster'
 import type { AttachmentEntry, CreateManagerInput, ManagerAccess, ManagerEffort, ManagerMascot, ManagerProjects } from '@open-mercato/cezar-api-client'
@@ -76,6 +77,7 @@ export function applySetupPatch(setup: Setup, patch: ManagerPatch): Setup {
 
 /** `/manager/new`: the prompt is both its instructions and the first thing it is told. */
 export function ManagerNewRoute() {
+  useLocale()
   const navigate = useNavigate()
   const enabled = useHealth().data?.capabilities.managers === true
   const managers = useManagers(enabled)
@@ -107,7 +109,7 @@ export function ManagerNewRoute() {
 
   return (
     <div data-route="manager-new" className="flex min-h-full flex-col items-center justify-center gap-5 px-4 py-8 md:py-10">
-      <h1 className="text-center text-2xl font-bold tracking-tight text-balance md:text-3xl">{first ? 'Set up your first manager' : 'New manager'}</h1>
+      <h1 className="text-center text-2xl font-bold tracking-tight text-balance md:text-3xl">{first ? t('Set up your first manager') : t('New manager')}</h1>
       <div className="w-full max-w-xl">
         <MascotPicker value={mascot} onChange={setMascot} />
       </div>
@@ -119,10 +121,10 @@ export function ManagerNewRoute() {
           // Never on a phone: the keyboard would cover the form (manager-focus.ts).
           autoFocus={!enterInsertsNewline()}
           autocompleteSkills={false}
-          placeholder="What should this manager do?"
-          ariaLabel="What should this manager do?"
-          sendAriaLabel="Create manager"
-          sendLabel="Create"
+          placeholder={t('What should this manager do?')}
+          ariaLabel={t('What should this manager do?')}
+          sendAriaLabel={t('Create manager')}
+          sendLabel={t('Create')}
         />
       </div>
       <div className="flex flex-wrap justify-center gap-1.5">
@@ -134,7 +136,7 @@ export function ManagerNewRoute() {
             onClick={() => setPrompt(preset.prompt)}
             className="rounded-full border border-border px-3 py-1 text-xs pointer-coarse:min-h-11 pointer-coarse:px-4 font-medium text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
-            {preset.label}
+            {t(preset.label)}
           </button>
         ))}
       </div>

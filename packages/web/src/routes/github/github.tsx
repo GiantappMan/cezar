@@ -184,6 +184,7 @@ export function GithubRoute({
   index?: boolean
 }) {
   const { n } = useParams()
+  useLocale()
   // One fast page now that the list is cursor-backed; later pages append without replacing this
   // first-paint result or refetching rows already shown.
   const list = useGithubInfinite(LIST_LIMIT)
@@ -431,7 +432,7 @@ export function GithubRoute({
           <CenteredState
             icon={<TriangleAlertIcon />}
             tone="danger"
-            title="Could not load GitHub"
+            title={t('Could not load GitHub')}
             subtitle={list.error.message}
           />
         </div>
@@ -449,7 +450,7 @@ export function GithubRoute({
         <CenteredState
           icon={<GithubIcon />}
           tone="neutral"
-          title="GitHub is unavailable here"
+          title={t('GitHub is unavailable here')}
           subtitle={gh.reason ?? 'unknown reason'}
           actions={
             <Button
@@ -458,7 +459,7 @@ export function GithubRoute({
               disabled={refresh.isPending}
               onClick={() => refresh.mutate()}
             >
-              Try again
+              {t('Try again')}
             </Button>
           }
         >
@@ -579,13 +580,13 @@ export function GithubRoute({
                 to="/automations/new"
                 className="ml-auto shrink-0 text-micro font-medium text-primary hover:underline"
               >
-                Set up automations
+                {t('Set up automations')}
               </Link>
             ) : null}
             <button
               type="button"
               data-slot="gh-refresh"
-              title="Refresh from GitHub"
+              title={t('Refresh from GitHub')}
               disabled={refresh.isPending}
               onClick={() => refresh.mutate()}
               // The automations link owns the `ml-auto` that pushes this cluster right; with the
@@ -599,15 +600,15 @@ export function GithubRoute({
                 aria-hidden="true"
                 className={cn('size-[9px]', refresh.isPending && 'motion-safe:animate-spin')}
               />
-              {gh.syncedAt ? `synced ${shortAge(gh.syncedAt)} ago` : 'refresh'}
+              {gh.syncedAt ? t('synced {age} ago', { age: shortAge(gh.syncedAt) }) : t('refresh')}
             </button>
           </div>
           <div data-slot="gh-tabs" className="mt-2.5 flex items-end gap-1">
             <TabLink to="/github" active={view === 'issues'} onClick={() => saveGithubView('issues')}>
-              Issues · {countLabel(gh.issuesTotal ?? gh.issues.length)}
+              {t('Issues')} · {countLabel(gh.issuesTotal ?? gh.issues.length)}
             </TabLink>
             <TabLink to="/github/prs" active={view === 'prs'} onClick={() => saveGithubView('prs')}>
-              Pull requests · {countLabel(gh.prsTotal ?? gh.prs.length)}
+              {t('Pull requests')} · {countLabel(gh.prsTotal ?? gh.prs.length)}
             </TabLink>
           </div>
           {/* Wraps rather than squeezes: on a phone the sort control below is ~145px, and with
@@ -623,8 +624,8 @@ export function GithubRoute({
               <input
                 type="search"
                 data-slot="gh-search"
-                aria-label={`Search ${view}`}
-                placeholder="Search #id, title, author…"
+                aria-label={t('Search {view}', { view })}
+                placeholder={t('Search #id, title, author…')}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 className="w-full rounded-md border border-input bg-card py-1 pr-2 pl-7 text-ui outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
@@ -641,11 +642,11 @@ export function GithubRoute({
                 payload's incoming order is itself `newest`. */}
             <Segmented<GithubSort>
               slot="gh-sort"
-              label="Sort order"
+              label={t('Sort order')}
               value={sort}
               options={[
-                { value: 'newest', label: 'Newest' },
-                { value: 'oldest', label: 'Oldest' },
+                { value: 'newest', label: t('Newest') },
+                { value: 'oldest', label: t('Oldest') },
               ]}
               onChange={saveGithubSort}
               className="shrink-0"
@@ -884,7 +885,7 @@ const GithubRow = memo(function GithubRow({
         data-slot="gh-row"
         data-number={item.number}
         aria-current={active ? 'page' : undefined}
-        title="Drag into the composer to prefill a task"
+        title={t('Drag into the composer to prefill a task')}
         className={cn(
           'relative flex touch-pan-y flex-col gap-1 rounded-md bg-background px-2.5 py-2 transition-colors hover:bg-muted',
           active && 'bg-muted',
@@ -950,6 +951,7 @@ function LabelFilter({
   onChange: (labels: string[]) => void
 }) {
   const [open, setOpen] = useState(false)
+  useLocale()
   const toggle = (label: string) =>
     onChange(selected.includes(label) ? selected.filter((l) => l !== label) : [...selected, label])
   return (
@@ -965,7 +967,7 @@ function LabelFilter({
           )}
         >
           <TagIcon aria-hidden="true" className="size-3.5" />
-          {selected.length > 0 ? `Labels · ${selected.length}` : 'Labels'}
+          {selected.length > 0 ? t('Labels · {n}', { n: selected.length }) : t('Labels')}
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" sideOffset={6} className="w-60 p-0">
@@ -1030,6 +1032,7 @@ function GithubDetail({
   checks?: GithubItem['checks']
 }) {
   const kindWord = item.kind === 'pr' ? 'pull request' : 'issue'
+  useLocale()
   const detailQuery = useGithubComments(item.kind, item.number)
   const detailBody = detailQuery.data?.detail?.body ?? item.body
   const detailAdditions = detailQuery.data?.detail?.additions ?? item.additions
@@ -1073,12 +1076,12 @@ function GithubDetail({
             data-slot="gh-open-link"
             className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground hover:underline"
           >
-            open on GitHub
+            {t('open on GitHub')}
             <ExternalLinkIcon aria-hidden="true" className="size-2.5" />
           </a>
         ) : (
           <span data-slot="gh-open-link" className="text-muted-foreground">
-            open on GitHub
+            {t('open on GitHub')}
           </span>
         )}
       </p>
@@ -1087,7 +1090,7 @@ function GithubDetail({
 
       {item.kind === 'pr' ? (
         <nav aria-label="Pull request detail" className="mt-4 flex border-b border-border">
-          <TabLink to={`/github/prs/${item.number}`} active={!changes}>Conversation</TabLink>
+          <TabLink to={`/github/prs/${item.number}`} active={!changes}>{t('Conversation')}</TabLink>
           <TabLink to={`/github/prs/${item.number}/changes`} active={changes}>Changes</TabLink>
         </nav>
       ) : null}
@@ -1313,10 +1316,10 @@ function GithubMergeBox({ number }: { number: number }) {
                 onChange={(event) => setMethod(event.target.value as GithubMergeMethod)}
                 className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               >
-                {state.methods.map((candidate) => <option key={candidate} value={candidate}>{mergeLabels[candidate]}</option>)}
+                {state.methods.map((candidate) => <option key={candidate} value={candidate}>{t(mergeLabels[candidate])}</option>)}
               </select>
               <Button disabled={!mergeEnabled} onClick={() => setConfirming(true)}>
-                {selectedMethod ? mergeLabels[selectedMethod] : 'Merge'}
+                {selectedMethod ? t(mergeLabels[selectedMethod]) : t('Merge')}
               </Button>
             </div>
           ) : null}
@@ -1325,17 +1328,17 @@ function GithubMergeBox({ number }: { number: number }) {
       <Dialog open={confirming} onOpenChange={setConfirming}>
         <DialogContent data-slot="gh-merge-confirm" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>{selectedMethod ? mergeLabels[selectedMethod] : 'Merge'} pull request #{number}?</DialogTitle>
+            <DialogTitle>{t('{method} pull request #{n}?', { method: selectedMethod ? t(mergeLabels[selectedMethod]) : t('Merge'), n: number })}</DialogTitle>
             <DialogDescription>
-              This will merge “{state.title}” into {state.baseRef}. GitHub will re-check the exact reviewed head before changing the repository.
-              {overrideRules && state.canOverride ? ' You are asking GitHub to bypass unmet repository requirements; GitHub may refuse if your permissions do not allow it.' : ''}
+              {t('This will merge “{title}” into {base}. GitHub will re-check the exact reviewed head before changing the repository.', { title: state.title, base: state.baseRef })}
+              {overrideRules && state.canOverride ? ` ${t('You are asking GitHub to bypass unmet repository requirements; GitHub may refuse if your permissions do not allow it.')}` : ''}
             </DialogDescription>
           </DialogHeader>
           {merge.error ? <p className="text-sm text-danger">{merge.error.message}</p> : null}
           <DialogFooter>
-            <Button variant="outline" disabled={merge.isPending} onClick={() => setConfirming(false)}>Cancel</Button>
+            <Button variant="outline" disabled={merge.isPending} onClick={() => setConfirming(false)}>{t('Cancel')}</Button>
             <Button disabled={merge.isPending} onClick={() => merge.mutate()}>
-              {merge.isPending ? 'Merging…' : selectedMethod ? mergeLabels[selectedMethod] : 'Merge'}
+              {merge.isPending ? t('Merging…') : selectedMethod ? t(mergeLabels[selectedMethod]) : t('Merge')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1421,6 +1424,7 @@ function GithubPrChanges({ item }: { item: GithubItem }) {
  *  loading → skeleton, unreachable → one-line reason + "open on GitHub", empty → nothing (the
  *  count badge already said there were none). */
 function GithubThread({ item, colors }: { item: GithubItem; colors: Record<string, string> }) {
+  useLocale()
   const thread = useGithubComments(item.kind, item.number)
   const data = thread.data
 
@@ -1473,7 +1477,7 @@ function GithubThread({ item, colors }: { item: GithubItem; colors: Record<strin
           rel="noopener noreferrer"
           className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground hover:underline"
         >
-          open on GitHub
+          {t('open on GitHub')}
           <ExternalLinkIcon aria-hidden="true" className="size-2.5" />
         </a>
       </section>
@@ -1495,7 +1499,7 @@ function GithubThread({ item, colors }: { item: GithubItem; colors: Record<strin
         {/* "Activity", not "Comments": heading a twenty-row list `Comments · 2` would be
             incoherent once events render. The comment count stays as a secondary. This is a
             different surface from the row badge, which still counts comments only. */}
-        Activity · {data.comments.length} comment{data.comments.length === 1 ? '' : 's'}
+        {t('Activity · {n} comments', { n: data.comments.length })}
       </h3>
       <ul className="flex flex-col gap-5">
         {groupCommitRuns(entries).map((grouped) =>
@@ -1519,7 +1523,7 @@ function GithubThread({ item, colors }: { item: GithubItem; colors: Record<strin
           data-slot="gh-thread-truncated"
           className="mt-4 inline-flex items-center gap-0.5 text-xs text-soft-foreground hover:text-foreground hover:underline"
         >
-          thread truncated — open on GitHub
+          {t('thread truncated — open on GitHub')}
           <ExternalLinkIcon aria-hidden="true" className="size-2.5" />
         </a>
       ) : null}
@@ -1683,6 +1687,7 @@ function EventRow({ event, colors }: { event: GithubTimelineEvent; colors: Recor
 /** The kind-specific middle of an event row. Split out so `EventRow` stays a layout shell and
  *  each phrase can be asserted on its own in tests. */
 function EventPhrase({ event, colors }: { event: GithubTimelineEvent; colors: Record<string, string> }) {
+  useLocale()
   switch (event.kind) {
     case 'committed':
       return (
@@ -1699,7 +1704,7 @@ function EventPhrase({ event, colors }: { event: GithubTimelineEvent; colors: Re
     case 'unlabeled':
       return (
         <span className="flex min-w-0 items-center gap-1.5">
-          <span className="shrink-0">{event.kind === 'labeled' ? 'added the' : 'removed the'}</span>
+          <span className="shrink-0">{event.kind === 'labeled' ? t('added the') : t('removed the')}</span>
           {event.label ? (
             <span
               data-slot="gh-event-label"
@@ -1709,30 +1714,30 @@ function EventPhrase({ event, colors }: { event: GithubTimelineEvent; colors: Re
               {event.label.name}
             </span>
           ) : null}
-          <span className="shrink-0">label</span>
+          <span className="shrink-0">{t('label')}</span>
         </span>
       )
     case 'assigned':
     case 'unassigned':
       return (
         <span className="truncate">
-          {event.kind === 'assigned' ? 'assigned' : 'unassigned'} {event.subject ?? 'someone'}
+          {event.kind === 'assigned' ? t('assigned') : t('unassigned')} {event.subject ?? t('someone')}
         </span>
       )
     case 'merged':
-      return <span>merged this</span>
+      return <span>{t('merged this')}</span>
     case 'closed':
-      return <span>closed this</span>
+      return <span>{t('closed this')}</span>
     case 'reopened':
-      return <span>reopened this</span>
+      return <span>{t('reopened this')}</span>
     case 'head_ref_force_pushed':
-      return <span>force-pushed</span>
+      return <span>{t('force-pushed')}</span>
     case 'renamed':
-      return <span className="truncate">renamed this to {event.subject ?? '—'}</span>
+      return <span className="truncate">{t('renamed this to {subject}', { subject: event.subject ?? '—' })}</span>
     case 'cross-referenced':
       return (
         <span className="truncate">
-          referenced this in {event.refNumber ? `#${event.refNumber}` : 'another thread'}
+          {t('referenced this in {ref}', { ref: event.refNumber ? `#${event.refNumber}` : t('another thread') })}
           {event.refTitle ? ` ${event.refTitle}` : ''}
         </span>
       )

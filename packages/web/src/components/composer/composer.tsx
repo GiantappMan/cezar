@@ -25,6 +25,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Command, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { toast } from '@/components/ui/toaster'
+import { t, useLocale } from '@/lib/i18n'
 import { insertTemplate } from '@/lib/prompt-templates'
 import { isEditableTarget } from '@/lib/use-command-shortcut'
 import { bumpSkillUsage, filterSkills, fuzzyMatch, isProjectSkill } from '@/lib/skills'
@@ -208,6 +209,7 @@ export function Composer({
 }: ComposerProps) {
   // Optionally controlled: `value` (when given) shadows the internal state, and every write is
   // mirrored to both — updater functions resolve against whichever is authoritative right now.
+  useLocale()
   const [internalText, setInternalText] = useState('')
   const text = value ?? internalText
   const textRef = useRef(text)
@@ -729,7 +731,7 @@ export function Composer({
         className={cn(micClass, 'cursor-not-allowed opacity-50 hover:bg-transparent')}
       >
         {micIcon}
-        {compact ? null : 'Dictation'}
+        {compact ? null : t('Dictation')}
       </Button>
     </IconTooltip>
   ) : dictation.supported ? (
@@ -739,12 +741,12 @@ export function Composer({
       size={micSize}
       disabled={disabled}
       aria-label="Start dictation"
-      title="Dictation"
+      title={t('Dictation')}
       className={micClass}
       onClick={dictation.start}
     >
       {micIcon}
-      {compact ? null : 'Dictation'}
+      {compact ? null : t('Dictation')}
     </Button>
   ) : null
   // Stop stays on screen for as long as the agent works — typing a message adds Send
@@ -855,7 +857,7 @@ export function Composer({
             {queued ? 'Queued — sends when the previous message lands.' : busy ? 'Sending…' : ''}
           </span>
           <span id={hintId} className="sr-only">
-            {newlineOnEnter ? 'Return adds a new line. Use the Send button to send.' : 'Enter sends. Shift+Enter adds a new line.'}
+            {newlineOnEnter ? t('Return adds a new line. Use the Send button to send.') : t('Enter sends. Shift+Enter adds a new line.')}
           </span>
           {images.length > 0 || draftItems ? (
             <div data-slot="composer-thumbs" className="flex flex-wrap items-center gap-2 px-4 pt-3">

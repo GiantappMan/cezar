@@ -10,6 +10,7 @@ import { StatusDot } from '@/components/status-dot'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { AUTOMATION_COST_VISIBLE, statusLabel, statusTone, usd } from '@/lib/automation-format'
+import { t, useLocale } from '@/lib/i18n'
 import { shortAge } from '@/lib/format'
 import { Link } from '@/lib/project-router'
 
@@ -21,6 +22,7 @@ export function RecentRunsCard({ automationId, onRunNow, onLog, busy = false, no
   busy?: boolean
   now?: number
 }) {
+  useLocale()
   const queryClient = useQueryClient()
   const scope = queryScope()
   const queryKey = useMemo(() => [scope, 'automation-log', automationId] as const, [scope, automationId])
@@ -46,20 +48,20 @@ export function RecentRunsCard({ automationId, onRunNow, onLog, busy = false, no
 
   return (
     <Card flush data-slot="recent-runs-card" className="min-w-0 px-3.5 py-3">
-      <h2 className="m-0 mb-2 text-meta font-semibold tracking-[.05em] uppercase text-soft-foreground">Recent runs</h2>
-      {query.isPending ? <p role="status" className="m-0 text-xs text-muted-foreground">Loading recent runs…</p> : null}
+      <h2 className="m-0 mb-2 text-meta font-semibold tracking-[.05em] uppercase text-soft-foreground">{t('Recent runs')}</h2>
+      {query.isPending ? <p role="status" className="m-0 text-xs text-muted-foreground">{t('Loading recent runs…')}</p> : null}
       {query.isError ? (
         <div role="alert" className="text-xs text-muted-foreground">
-          <p className="m-0">{query.data ? 'Could not refresh recent runs.' : 'Could not load recent runs.'}</p>
-          <Button variant="ghost" size="sm" disabled={query.isFetching} onClick={() => void query.refetch()}>Retry</Button>
+          <p className="m-0">{query.data ? t('Could not refresh recent runs.') : t('Could not load recent runs.')}</p>
+          <Button variant="ghost" size="sm" disabled={query.isFetching} onClick={() => void query.refetch()}>{t('Retry')}</Button>
         </div>
       ) : null}
-      {query.data && records.length === 0 ? <p className="m-0 text-xs text-muted-foreground">No runs launched yet.</p> : null}
+      {query.data && records.length === 0 ? <p className="m-0 text-xs text-muted-foreground">{t('No runs launched yet.')}</p> : null}
       {records.length > 0 ? (
-        <ul aria-label="Recent runs" className="m-0 list-none divide-y divide-border p-0">
+        <ul aria-label={t('Recent runs')} className="m-0 list-none divide-y divide-border p-0">
           {records.map((record) => {
             const run = liveRuns.data?.find((item) => item.id === record.runId) ?? query.data?.runs[record.runId]
-            const title = run?.title || `Task ${record.runId.slice(0, 8)}`
+            const title = run?.title || t('Task {id}', { id: record.runId.slice(0, 8) })
             return (
               <li key={record.runId} className="min-w-0 py-2 first:pt-0 last:pb-0">
                 <Link to={`/tasks/${encodeURIComponent(record.runId)}`} title={title} className="block truncate rounded-sm text-ui font-medium hover:underline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2">
@@ -67,7 +69,7 @@ export function RecentRunsCard({ automationId, onRunNow, onLog, busy = false, no
                 </Link>
                 <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-meta text-muted-foreground">
                   <StatusDot aria-hidden="true" tone={run ? statusTone(run.status) : 'neutral'} />
-                  <span>{run ? statusLabel(run.status) : 'Status unavailable'}</span>
+                  <span>{run ? statusLabel(run.status) : t('Status unavailable')}</span>
                   <time dateTime={record.ts} title={record.ts}>{shortAge(record.ts, now)}</time>
                   {AUTOMATION_COST_VISIBLE && run?.costUsd !== undefined ? <span className="ml-auto font-mono">{usd(run.costUsd)}</span> : null}
                 </div>
@@ -77,8 +79,8 @@ export function RecentRunsCard({ automationId, onRunNow, onLog, busy = false, no
         </ul>
       ) : null}
       <div className="mt-2.5 flex flex-wrap gap-1.5">
-        {onRunNow ? <Button variant="outline" size="sm" disabled={busy} onClick={onRunNow}><PlayIcon aria-hidden="true" className="size-3" />Run now</Button> : null}
-        {onLog ? <Button variant="ghost" size="sm" onClick={onLog}><ScrollTextIcon aria-hidden="true" className="size-3" />View log</Button> : null}
+        {onRunNow ? <Button variant="outline" size="sm" disabled={busy} onClick={onRunNow}><PlayIcon aria-hidden="true" className="size-3" />{t('Run now')}</Button> : null}
+        {onLog ? <Button variant="ghost" size="sm" onClick={onLog}><ScrollTextIcon aria-hidden="true" className="size-3" />{t('View log')}</Button> : null}
       </div>
     </Card>
   )

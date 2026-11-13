@@ -24,6 +24,7 @@ import {
   type ManagerReferenceProject,
 } from '@/lib/managers'
 import { runTitle } from '@/lib/task-groups'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { trackManagerMessageSent, trackManagerQuestionAnswered } from '@/lib/manager-telemetry'
 import { Markdown, TranscriptLink } from '@/routes/task-thread/markdown'
@@ -109,12 +110,13 @@ function CommandRow({ command }: { command: ManagerCommand }) {
 
 /** "Ran 2 commands ▸" */
 export function CommandsRow({ commands }: { commands: readonly ManagerCommand[] }) {
+  useLocale()
   const [open, setOpen] = useState(false)
   if (commands.length === 0) return null
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="mb-2" data-slot="manager-commands">
       <CollapsibleTrigger className="inline-flex items-center gap-1 rounded-sm pointer-coarse:min-h-11 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50">
-        Ran {commands.length} {commands.length === 1 ? 'command' : 'commands'}
+        {commands.length === 1 ? t('Ran 1 command') : t('Ran {n} commands', { n: commands.length })}
         <ChevronRightIcon aria-hidden="true" className={cn('size-3.5 transition-transform', open && 'rotate-90')} />
       </CollapsibleTrigger>
       <CollapsibleContent>
@@ -193,6 +195,7 @@ function ManagerQuestions({
 }) {
   const [isPending, setPending] = useState(false)
   const [error, setError] = useState<string>()
+  useLocale()
   const card = useMemo(() => ({ id: messageId, questions: ask.questions }), [messageId, ask])
   const answered = useRef<HTMLDivElement>(null)
   // Answered from this card: its chips unmount, so focus lands on what replaced them.
@@ -217,7 +220,7 @@ function ManagerQuestions({
       >
         <span className="flex items-center gap-1.5">
           <CheckIcon aria-hidden="true" className="size-3.5 shrink-0 text-success" />
-          Answered
+          {t('Answered')}
         </span>
         <dl data-slot="manager-ask-answers" className="flex flex-col gap-0.5 pl-5">
           {lines.map(({ header, value }, index) => (
@@ -241,7 +244,7 @@ function ManagerQuestions({
       >
         {/* Answered in other words (typed, or with files): that message below says it (#2038 walk). */}
         <CheckIcon aria-hidden="true" className="size-3.5 shrink-0 text-success" />
-        <span>Answered<span className="sr-only">:</span></span>
+        <span>{t('Answered')}<span className="sr-only">:</span></span>
         <span data-slot="manager-ask-topics" className="min-w-0 break-words text-foreground">{ask.questions.map((question) => question.header).join(' · ')}</span>
       </div>
     )
@@ -257,7 +260,7 @@ function ManagerQuestions({
       return undefined
     } catch (failure) {
       sentHere.current = false
-      const message = failure instanceof Error ? failure.message : 'Your answer did not reach the manager.'
+      const message = failure instanceof Error ? failure.message : t('Your answer did not reach the manager.')
       setError(message)
       return message
     } finally {
@@ -270,7 +273,7 @@ function ManagerQuestions({
         ask={card}
         ownerId={managerId}
         delivery={{ mode: 'live', isPending, ...(error ? { error } : {}), send }}
-        asker="Your decision"
+        asker={t('Your decision')}
       />
     </div>
   )
@@ -281,9 +284,10 @@ const THINKING_DELAYS = ['0ms', '160ms', '320ms']
 /** A reply with no words yet: without it the row is a bare timestamp, and a phone keyboard hides
  *  the footer spinner. Not a live region — the announcer speaks once the reply settles. */
 function Thinking() {
+  useLocale()
   return (
     <p data-slot="manager-thinking" className="flex items-baseline gap-1 text-sm text-muted-foreground">
-      Thinking<span className="sr-only">…</span>
+      {t('Thinking')}<span className="sr-only">…</span>
       <span aria-hidden="true" className="inline-flex gap-0.5">
         {THINKING_DELAYS.map((delay) => (
           <span key={delay} style={{ animationDelay: delay }} className="size-1 rounded-full bg-current animate-pulse motion-reduce:animate-none" />
@@ -304,6 +308,7 @@ function AssistantMessage({
   projects: readonly ManagerReferenceProject[]
   answerOnCard: boolean
 }) {
+  useLocale()
   const segments = useMemo(
     () => parseManagerText(message.text, message.commands, projects),
     [message.text, message.commands, projects],
@@ -312,14 +317,16 @@ function AssistantMessage({
   return (
     <article data-slot="manager-assistant" className="min-w-0">
       <p data-slot="manager-message-meta" className="mb-1 flex items-baseline gap-2 text-xs text-muted-foreground">
-        {message.turn === 'job' && message.jobName ? <span className="font-medium">{message.automationReport ? 'Automation' : 'Job'}: {message.jobName}</span> : null}
-        {message.turn === 'watch' ? <span className="font-medium">Watch check</span> : null}
+        {message.turn === 'job' && message.jobName ? (
+          <span className="font-medium">{t('{kind}: {name}', { kind: message.automationReport ? t('Automation') : t('Job'), name: message.jobName })}</span>
+        ) : null}
+        {message.turn === 'watch' ? <span className="font-medium">{t('Watch check')}</span> : null}
         <time dateTime={message.at} title={new Date(message.at).toLocaleString()}>{managerMessageTime(message.at)}</time>
       </p>
       {message.important ? (
         <p data-slot="manager-important" className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-foreground">
           <BellRingIcon aria-hidden="true" className="size-3.5 text-pending-strong" />
-          {message.headline ?? 'Important'}
+          {message.headline ?? t('Important')}
         </p>
       ) : null}
       <CommandsRow commands={message.commands} />
@@ -340,7 +347,7 @@ function AssistantMessage({
           <ManagerQuestions managerId={origin.id} messageId={message.id} ask={message.ask} answer={message.askAnswer} answerOnCard={answerOnCard} />
         </div>
       ) : null}
-      {message.stopped ? <p className="mt-1 text-sm text-muted-foreground italic">Response stopped.</p> : null}
+      {message.stopped ? <p className="mt-1 text-sm text-muted-foreground italic">{t('Response stopped.')}</p> : null}
       {message.resumeAt ? <ResumeHint managerId={origin.id} at={message.resumeAt} /> : null}
       {message.error ? (
         // No `role="alert"`: a chat opened on old failures must not shout them all; the announcer says new ones.
@@ -356,13 +363,14 @@ function AssistantMessage({
 /** A usage limit ended the turn: it is waiting, not broken — the task view's auto-resume hint. */
 function ResumeHint({ managerId, at }: { managerId: string; at: string }) {
   const [pending, setPending] = useState(false)
+  useLocale()
   const date = new Date(at)
   if (!Number.isFinite(date.getTime())) return null
   const label = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'long' }).format(date)
   const cancel = () => {
     setPending(true)
     stopManager(managerId)
-      .then(() => toast('This manager will not resume itself'))
+      .then(() => toast(t('This manager will not resume itself')))
       .catch((error: unknown) => toast(error instanceof Error ? error.message : String(error), { tone: 'danger' }))
       .finally(() => setPending(false))
   }
@@ -370,7 +378,7 @@ function ResumeHint({ managerId, at }: { managerId: string; at: string }) {
     <p data-slot="manager-resume-hint" className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
       <StatusDot tone="pending" pulse />
       <span>
-        Usage limit reached — resumes automatically at{' '}
+        {t('Usage limit reached — resumes automatically at')}{' '}
         <time dateTime={at} className="font-medium text-foreground">{label}</time>
       </span>
       <button
@@ -380,7 +388,7 @@ function ResumeHint({ managerId, at }: { managerId: string; at: string }) {
         onClick={cancel}
         className="font-medium text-foreground underline decoration-border underline-offset-2 hover:decoration-foreground disabled:opacity-50"
       >
-        Don’t resume
+        {t('Don’t resume')}
       </button>
     </p>
   )

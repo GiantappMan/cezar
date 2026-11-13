@@ -5,6 +5,7 @@ import type { AutomationsResponse } from '@open-mercato/cezar-api-client'
 import { GithubIcon } from '@/components/icons'
 import { ChoiceTile, GuideDialog, OnboardingPage, PreviewWindow, previewLine, quietLink, type GuidePage } from '@/components/onboarding-kit'
 import { Button } from '@/components/ui/button'
+import { t, useLocale } from '@/lib/i18n'
 import { Link, useNavigate } from '@/lib/project-router'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +20,7 @@ import { cn } from '@/lib/utils'
 export type TriggerKind = 'schedule' | 'github' | 'tracker'
 
 export function AutomationsOnboarding({ data }: { data: AutomationsResponse }) {
+  useLocale()
   const navigate = useNavigate()
   const [guide, setGuide] = React.useState(false)
   const githubMissing = data.available === false
@@ -27,26 +29,26 @@ export function AutomationsOnboarding({ data }: { data: AutomationsResponse }) {
     <OnboardingPage
       wide
       slot="automations"
-      title="Let the routine run itself"
-      why="An automation is a prompt cezar turns into a task on its own: at a time you set, when something happens on GitHub, or when an issue moves in Jira or Linear."
+      title={t('Let the routine run itself')}
+      why={t('An automation is a prompt cezar turns into a task on its own: at a time you set, when something happens on GitHub, or when an issue moves in Jira or Linear.')}
     >
       <div data-slot="automation-triggers" className="mt-8 grid w-full gap-3 sm:grid-cols-3">
         <ChoiceTile
-          title="On a schedule"
-          description="Every weekday at 9:00, Fridays at 16:00, every six hours."
+          title={t('On a schedule')}
+          description={t('Every weekday at 9:00, Fridays at 16:00, every six hours.')}
           recommended
           onClick={() => open('schedule')}
           picture={<SchedulePicture />}
         />
         <ChoiceTile
-          title="When GitHub changes"
-          description={githubMissing ? 'Sign in to the GitHub CLI first.' : 'A new pull request, an issue labelled, a review requested.'}
+          title={t('When GitHub changes')}
+          description={githubMissing ? t('Sign in to the GitHub CLI first.') : t('A new pull request, an issue labelled, a review requested.')}
           onClick={() => (githubMissing ? navigate('/github') : open('github'))}
           picture={githubMissing ? <GithubIcon className="size-9 text-muted-foreground" aria-hidden={true} /> : <GithubPicture />}
         />
         <ChoiceTile
-          title="When an issue moves"
-          description="A Jira or Linear issue is created or changes status."
+          title={t('When an issue moves')}
+          description={t('A Jira or Linear issue is created or changes status.')}
           onClick={() => open('tracker')}
           picture={<TrackerPicture />}
         />
@@ -59,8 +61,8 @@ export function AutomationsOnboarding({ data }: { data: AutomationsResponse }) {
               {at + 1}
             </span>
             <span className="flex flex-col gap-1">
-              <span className="text-lead text-foreground">{step.title}</span>
-              <span className="text-label text-muted-foreground">{step.body}</span>
+              <span className="text-lead text-foreground">{t(step.title)}</span>
+              <span className="text-label text-muted-foreground">{t(step.body)}</span>
             </span>
           </li>
         ))}
@@ -70,12 +72,12 @@ export function AutomationsOnboarding({ data }: { data: AutomationsResponse }) {
         <Button asChild className="font-normal">
           <Link to="/automations/new">
             <PlusIcon className="size-[15px]" aria-hidden="true" />
-            New automation
+            {t('New automation')}
           </Link>
         </Button>
         <button type="button" className={quietLink} onClick={() => setGuide(true)}>
           <CircleHelpIcon className="size-3.5" aria-hidden="true" />
-          See it in pictures
+          {t('See it in pictures')}
         </button>
       </div>
       {guide ? <AutomationsGuide onOpenChange={setGuide} /> : null}
@@ -100,12 +102,13 @@ const HOW_IT_WORKS = [
 
 /** The header's way into the same story, for whoever already has automations and wants the picture. */
 export function AutomationsGuideButton() {
+  useLocale()
   const [open, setOpen] = React.useState(false)
   return (
     <>
-      <Button variant="ghost" size="sm" data-slot="automations-guide" aria-label="How automations work" className="text-muted-foreground" onClick={() => setOpen(true)}>
+      <Button variant="ghost" size="sm" data-slot="automations-guide" aria-label={t('How automations work')} className="text-muted-foreground" onClick={() => setOpen(true)}>
         <CircleHelpIcon aria-hidden="true" className="size-3.5" />
-        <span className="max-md:hidden">How it works</span>
+        <span className="max-md:hidden">{t('How it works')}</span>
       </Button>
       {open ? <AutomationsGuide onOpenChange={setOpen} /> : null}
     </>
@@ -113,35 +116,36 @@ export function AutomationsGuideButton() {
 }
 
 function AutomationsGuide({ onOpenChange }: { onOpenChange: (open: boolean) => void }) {
+  useLocale()
   const navigate = useNavigate()
   const pages: GuidePage[] = [
     {
       id: 'prompt',
-      title: 'A prompt that runs itself',
-      body: 'An automation is the same thing you type into New task, kept and run for you. Placeholders fill in what changed: the pull request, the issue, the date.',
+      title: t('A prompt that runs itself'),
+      body: t('An automation is the same thing you type into New task, kept and run for you. Placeholders fill in what changed: the pull request, the issue, the date.'),
       picture: <PromptPicture />,
     },
     {
       id: 'triggers',
-      title: 'Three ways to start',
-      body: 'On a schedule, when GitHub changes, or when an issue moves in Jira or Linear. A GitHub or tracker automation polls every few minutes and starts one task per match.',
+      title: t('Three ways to start'),
+      body: t('On a schedule, when GitHub changes, or when an issue moves in Jira or Linear. A GitHub or tracker automation polls every few minutes and starts one task per match.'),
       picture: <TriggersPicture />,
     },
     {
       id: 'paused',
-      title: 'Paused first, then live',
-      body: 'A new automation is paused. Preview shows what it would have matched, or when it runs next. Enable it when that looks right, and pause it again any time.',
+      title: t('Paused first, then live'),
+      body: t('A new automation is paused. Preview shows what it would have matched, or when it runs next. Enable it when that looks right, and pause it again any time.'),
       picture: <PausedPicture />,
     },
     {
       id: 'tasks',
-      title: 'Every run is a task',
-      body: 'Each run shows up in the task list like one you started yourself, in its own worktree, ending at the review gate. The automation’s log keeps every run.',
+      title: t('Every run is a task'),
+      body: t('Each run shows up in the task list like one you started yourself, in its own worktree, ending at the review gate. The automation’s log keeps every run.'),
       picture: <RunsPicture />,
-      action: { label: 'New automation', onClick: () => navigate('/automations/new') },
+      action: { label: t('New automation'), onClick: () => navigate('/automations/new') },
     },
   ]
-  return <GuideDialog slot="automations-guide-page" title="How automations work" description="Four things to know." pages={pages} onOpenChange={onOpenChange} />
+  return <GuideDialog slot="automations-guide-page" title={t('How automations work')} description={t('Four things to know.')} pages={pages} onOpenChange={onOpenChange} />
 }
 
 // ---- pictures -----------------------------------------------------------------------------------

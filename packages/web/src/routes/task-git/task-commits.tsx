@@ -12,6 +12,7 @@ import { Diff, type DiffMode } from '@/components/diff'
 import { DiffStatLabel } from '@/components/diff-stat'
 import { Button } from '@/components/ui/button'
 import { useIsDesktop } from '@/lib/use-desktop'
+import { t, useLocale } from '@/lib/i18n'
 import { useRememberedState } from '@/lib/view-memory'
 import { cn } from '@/lib/utils'
 
@@ -49,6 +50,7 @@ export function CommitsView({
   const [picked, setPicked] = useRememberedState<string | null>(stateKey, null)
   const sha = embedded ? (picked ?? undefined) : urlSha
   const commits = useRunCommits(run.id, isRunActive(run.status))
+  useLocale()
 
   return (
     // One commit's diff fills `main` from md up so the diff scrolls in its own column (see
@@ -63,7 +65,7 @@ export function CommitsView({
             <div className="shrink-0 border-b border-border px-4 py-1.5 md:px-6">
               <Button variant="ghost" size="xs" data-action="all-commits" onClick={() => setPicked(null)}>
                 <ArrowLeftIcon aria-hidden="true" />
-                All commits
+                {t('All commits')}
               </Button>
             </div>
           ) : null}
@@ -71,7 +73,7 @@ export function CommitsView({
         </>
       ) : commits.isPending ? (
         <p data-slot="commits-loading" className="px-4 py-6 text-center text-xs text-soft-foreground md:px-6">
-          Loading commits…
+          {t('Loading commits…')}
         </p>
       ) : commits.isError ? (
         <CenteredState
@@ -80,8 +82,8 @@ export function CommitsView({
           heading="h2"
           title={
             commits.error instanceof ApiError && commits.error.status === 409
-              ? 'No commits to show'
-              : 'Could not load the commits'
+              ? t('No commits to show')
+              : t('Could not load the commits')
           }
           subtitle={commits.error.message}
         />
@@ -90,8 +92,8 @@ export function CommitsView({
           icon={<GitCommitHorizontalIcon />}
           tone="neutral"
           heading="h2"
-          title="No commits yet"
-          subtitle="This task hasn't committed anything on its branch. Autosave commits and any the agent makes appear here."
+          title={t('No commits yet')}
+          subtitle={t('This task hasn\'t committed anything on its branch. Autosave commits and any the agent makes appear here.')}
         />
       ) : (
         <CommitList
@@ -112,6 +114,7 @@ export function CommitsView({
 function CommitDiffView({ runId, sha }: { runId: string; sha: string }) {
   const commit = useRunCommit(runId, sha)
   const desktop = useIsDesktop()
+  useLocale()
   const [mode, setMode] = useState<DiffMode>('unified')
   const [wrap, setWrap] = useState(false)
 
@@ -125,7 +128,7 @@ function CommitDiffView({ runId, sha }: { runId: string; sha: string }) {
         <Button asChild variant="ghost" size="sm" data-slot="commit-back">
           <Link to={`/tasks/${runId}/commits`}>
             <ArrowLeftIcon aria-hidden="true" />
-            All commits
+            {t('All commits')}
           </Link>
         </Button>
         {commit.data ? <DiffStatLabel stat={commit.data.stat} /> : null}
@@ -136,14 +139,14 @@ function CommitDiffView({ runId, sha }: { runId: string; sha: string }) {
 
       {commit.isPending ? (
         <p data-slot="commit-loading" className="px-4 py-6 text-center text-xs text-soft-foreground md:px-6">
-          Loading commit…
+          {t('Loading commit…')}
         </p>
       ) : commit.isError ? (
         <CenteredState
           icon={refused ? <SearchXIcon /> : <TriangleAlertIcon />}
           tone={refused ? 'neutral' : 'danger'}
           heading="h2"
-          title={refused ? 'Commit not found' : 'Could not load the commit'}
+          title={refused ? t('Commit not found') : t('Could not load the commit')}
           subtitle={commit.error.message}
         />
       ) : (
@@ -160,8 +163,8 @@ function CommitDiffView({ runId, sha }: { runId: string; sha: string }) {
               icon={<GitCommitHorizontalIcon />}
               tone="neutral"
               heading="h2"
-              title="No file changes"
-              subtitle="This commit carries no diff of its own — a merge commit's changes live on the commits it merged."
+              title={t('No file changes')}
+              subtitle={t('This commit carries no diff of its own — a merge commit\'s changes live on the commits it merged.')}
             />
           ) : (
             // The diff's own scroller from md up: its file headers stick to ITS top, so a run

@@ -6,6 +6,7 @@ import type {
 } from '@open-mercato/cezar-api-client'
 import { compareIsoDesc, groupTitle, runTitle, type ListView } from '@/lib/task-groups'
 import { isAwaitingAnswer } from '@/lib/attention'
+import { t } from '@/lib/i18n'
 
 /**
  * The pure half of the Tasks table (the `/` overview): search, the header's archive count, the
@@ -72,10 +73,12 @@ export function scheduledResume(
     label: sameDay
       ? time
       : `${new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(at)} ${time}`,
-    title: `Resumes automatically at ${new Intl.DateTimeFormat(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'long',
-    }).format(at)}`,
+    title: t('Resumes automatically at {time}', {
+      time: new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'long',
+      }).format(at),
+    }),
   }
 }
 

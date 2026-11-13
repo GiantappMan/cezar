@@ -28,6 +28,7 @@ import { toast } from '@/components/ui/toaster'
 import { ChatSkeleton, LoadingState } from '@/components/loading-state'
 import { Spinner } from '@/components/ui/spinner'
 import { MANAGER_COMMANDS, managerReplyAnnouncement, parseManagerCommand } from '@/lib/managers'
+import { t, useLocale } from '@/lib/i18n'
 import { useKeyboardInsetVar, useKeyboardOpen } from '@/lib/keyboard-inset'
 import { cn } from '@/lib/utils'
 import { trackManagerMessageSent, trackManagerQuestionAnswered, useManagerChatOpened } from '@/lib/manager-telemetry'
@@ -356,6 +357,7 @@ function useChatRecovery(chat: ReturnType<typeof useManagerChat>) {
 /** The phone's ←: back to the list it came from, else the list in this chat's place. A push
  *  made the system Back reopen the chat just left (round-3 review). */
 function BackToList() {
+  useLocale()
   const navigate = useNavigate()
   const { state } = useLocation()
   const fromList = cameFromManagerList(state)
@@ -364,7 +366,7 @@ function BackToList() {
       <Link
         to="/manager?all=1"
         replace
-        aria-label="All managers"
+        aria-label={t('All managers')}
         onClick={(event) => {
           if (!fromList || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
           event.preventDefault()
@@ -379,13 +381,14 @@ function BackToList() {
 
 function WorkingSpinner({ className }: { className?: string }) {
   return (
-    <span role="status" aria-label="Working" data-slot="manager-working" className={cn('flex shrink-0', className)}>
+    <span role="status" aria-label={t('Working')} data-slot="manager-working" className={cn('flex shrink-0', className)}>
       <LoaderCircleIcon aria-hidden="true" className="size-4 animate-spin text-info motion-reduce:animate-none" />
     </span>
   )
 }
 
 function ManagerChat({ manager }: { manager: ManagerSummary }) {
+  useLocale()
   const { id } = manager
   const chat = useManagerChat(id)
   const registry = useProjects().data?.projects
@@ -449,7 +452,7 @@ function ManagerChat({ manager }: { manager: ManagerSummary }) {
     if (command?.name === 'stop') return stopManager(id)
     if (command?.name === 'check') {
       await checkManager(id)
-      toast('Check started')
+      toast(t('Check started'))
       return undefined
     }
     const sent = await sendManagerMessage(id, command?.prompt ?? text, attachments)
@@ -487,7 +490,7 @@ function ManagerChat({ manager }: { manager: ManagerSummary }) {
       <section
         ref={scroll.ref}
         data-slot="manager-transcript"
-        aria-label={`Conversation with ${manager.name}`}
+        aria-label={t('Conversation with {name}', { name: manager.name })}
         tabIndex={0}
         onScroll={scroll.onScroll}
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain outline-none [overflow-anchor:none] focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-inset"
@@ -501,7 +504,7 @@ function ManagerChat({ manager }: { manager: ManagerSummary }) {
           {hasNextPage ? (
             <Button variant="ghost" size="sm" className="self-center" disabled={isFetchingNextPage} aria-busy={isFetchingNextPage || undefined} onClick={loadOlder}>
               {isFetchingNextPage ? <Spinner /> : null}
-              Load earlier messages
+              {t('Load earlier messages')}
             </Button>
           ) : null}
           {chat.isError ? (
@@ -524,15 +527,15 @@ function ManagerChat({ manager }: { manager: ManagerSummary }) {
                 }}
               >
                 {chat.isFetching ? <Spinner /> : null}
-                Retry
+                {t('Retry')}
               </Button>
             </div>
           ) : null}
           {/* No reveal delay: the header is already real, and an invisible placeholder is a blank frame. */}
-          {chat.isPending ? <LoadingState label="Loading messages…" delayMs={0}><ChatSkeleton /></LoadingState> : null}
+          {chat.isPending ? <LoadingState label={t('Loading messages…')} delayMs={0}><ChatSkeleton /></LoadingState> : null}
           {chat.isSuccess && chat.messages.length === 0 ? (
             <p data-slot="manager-empty" className="py-10 text-center text-sm text-muted-foreground">
-              Ask {manager.name} what needs you, or to start something.
+              {t('Ask {name} what needs you, or to start something.', { name: manager.name })}
             </p>
           ) : null}
           <PrTitlesContext.Provider value={prTitles}>
@@ -562,13 +565,13 @@ function ManagerChat({ manager }: { manager: ManagerSummary }) {
               className="flex h-9 items-center gap-2 rounded-full border border-border bg-background px-3.5 text-sm shadow-modal outline-none hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 pointer-coarse:h-11"
             >
               <StatusDot tone="pending" />
-              {pending.count} {pending.count === 1 ? 'approval' : 'approvals'} waiting
+              {pending.count === 1 ? t('1 approval waiting') : t('{count} approvals waiting', { count: pending.count })}
             </button>
           ) : null}
           {scroll.away ? (
             <button
               type="button"
-              aria-label="Scroll to bottom"
+              aria-label={t('Scroll to bottom')}
               data-slot="manager-scroll-bottom"
               onClick={scroll.jump}
               className="flex size-9 items-center justify-center rounded-full border border-border bg-background shadow-modal outline-none hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 pointer-coarse:size-11"
@@ -585,7 +588,7 @@ function ManagerChat({ manager }: { manager: ManagerSummary }) {
                 type="button"
                 variant="outline"
                 size="sm"
-                aria-label={`${name}: ${description}`}
+                aria-label={t('{name}: {description}', { name, description: t(description) })}
                 className="rounded-full pointer-coarse:h-11 pointer-coarse:px-4"
                 onClick={() => sendChip(name)}
               >
@@ -606,10 +609,10 @@ function ManagerChat({ manager }: { manager: ManagerSummary }) {
           }}
           onSubmit={submit}
           slashCommands={MANAGER_COMMANDS}
-          placeholder="Type / for commands"
-          ariaLabel={`Message ${manager.name}`}
+          placeholder={t('Type / for commands')}
+          ariaLabel={t('Message {name}', { name: manager.name })}
           sendShortcut="↵"
-          {...(working ? { stop: { label: 'Stop', onStop: stop } } : {})}
+          {...(working ? { stop: { label: t('Stop'), onStop: stop } } : {})}
         />
         {keyboardOpen ? null : (
           // Phones: Refresh lives in the gear menu and the spinner beside the name.
@@ -625,6 +628,7 @@ function ManagerChat({ manager }: { manager: ManagerSummary }) {
 }
 
 export function ManagerChatRoute() {
+  useLocale()
   const { id = '' } = useParams()
   const enabled = useHealth().data?.capabilities.managers === true
   const managers = useManagers(enabled)
@@ -635,13 +639,13 @@ export function ManagerChatRoute() {
   if (manager) seen.current = id
   if (manager) return <ManagerChat key={id} manager={manager} />
   if (managers.data && seen.current === id) return <Navigate to="/manager" replace state={FOCUS_COMPOSER} />
-  if (managers.isError) return <CenteredState icon={<BotIcon aria-hidden="true" />} tone="danger" title="Managers are unavailable" subtitle={managers.error.message} />
+  if (managers.isError) return <CenteredState icon={<BotIcon aria-hidden="true" />} tone="danger" title={t('Managers are unavailable')} subtitle={managers.error.message} />
   if (managers.data) {
     return (
       <CenteredState
         icon={<BotIcon aria-hidden="true" />}
-        title="This manager no longer exists"
-        actions={<Button asChild variant="outline"><Link to="/manager">Back to managers</Link></Button>}
+        title={t('This manager no longer exists')}
+        actions={<Button asChild variant="outline"><Link to="/manager">{t('Back to managers')}</Link></Button>}
       />
     )
   }

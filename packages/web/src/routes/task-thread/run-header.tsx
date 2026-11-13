@@ -164,6 +164,7 @@ function RunHeaderView({
   headerActions,
   wide = false,
 }: RunHeaderProps) {
+  useLocale()
   const attention = deriveAttention(run)
   const budget = budgetStop(run)
   const canTerminal = useCanOpenTerminal(run)
@@ -226,9 +227,9 @@ function RunHeaderView({
                 size="icon-sm"
                 data-action="collapse-header"
                 className="hidden text-muted-foreground md:inline-flex"
-                aria-label={collapsed ? 'Expand header' : 'Collapse header'}
+                aria-label={collapsed ? t('Expand header') : t('Collapse header')}
                 aria-expanded={!collapsed}
-                title={collapsed ? 'Expand header' : 'Collapse header'}
+                title={collapsed ? t('Expand header') : t('Collapse header')}
                 onClick={() => setCollapsed(!collapsed)}
               >
                 {collapsed ? <ChevronsUpDownIcon aria-hidden="true" /> : <ChevronsDownUpIcon aria-hidden="true" />}
@@ -239,7 +240,7 @@ function RunHeaderView({
                 variant="ghost"
                 size="icon-sm"
                 className="md:hidden"
-                aria-label={detailsOpen ? 'Hide run details' : 'Show run details'}
+                aria-label={detailsOpen ? t('Hide run details') : t('Show run details')}
                 aria-controls={detailsId}
                 aria-expanded={detailsOpen}
                 onClick={toggleDetails}

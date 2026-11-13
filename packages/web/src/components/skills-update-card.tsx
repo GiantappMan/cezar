@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { startedRunPath } from '@/routes/new-task-form'
 import type { SkillsUpdateDropOutcome, SkillsUpdateState } from '@open-mercato/cezar-api-client'
 import { trackMessageSent, trackSkillsUpdateApplyDropped } from '@/lib/telemetry'
+import { t, useLocale } from '@/lib/i18n'
 
 type UpdateRequest =
   | { action: 'check'; seq: number }
@@ -164,17 +165,18 @@ export function SkillsUpdateCard({
   const failed = scopes.filter((scope) => scope.status === 'error' || scope.status === 'unavailable')
   const succeeded = scopes.filter((scope) => scope.updatedAt && !failed.includes(scope))
 
-  let message = 'Checking installed Open Mercato skills…'
-  if (loadError) message = 'Update status is unavailable right now.'
-  else if (state?.status === 'available') message = 'An update is available for your installed Open Mercato skills.'
-  else if (state?.status === 'updating') message = 'Updating installed Open Mercato skills…'
+  useLocale()
+  let message = t('Checking installed Open Mercato skills…')
+  if (loadError) message = t('Update status is unavailable right now.')
+  else if (state?.status === 'available') message = t('An update is available for your installed Open Mercato skills.')
+  else if (state?.status === 'updating') message = t('Updating installed Open Mercato skills…')
   else if (state?.status === 'current' && !tracked) {
-    message = state.needsUpgradeNotes ? 'Skill files were updated.' : 'No installed Open Mercato skills are tracked for updates.'
+    message = state.needsUpgradeNotes ? t('Skill files were updated.') : t('No installed Open Mercato skills are tracked for updates.')
   }
-  else if (state?.status === 'current') message = 'Installed Open Mercato skills are up to date.'
+  else if (state?.status === 'current') message = t('Installed Open Mercato skills are up to date.')
   else if (state?.status === 'unavailable') {
-    message = state.scopes.find((scope) => scope.reason)?.reason ?? 'Automatic updates are unavailable.'
-  } else if (state?.status === 'error') message = 'The update did not finish for every installation.'
+    message = state.scopes.find((scope) => scope.reason)?.reason ?? t('Automatic updates are unavailable.')
+  } else if (state?.status === 'error') message = t('The update did not finish for every installation.')
 
   return (
     <>
@@ -188,25 +190,26 @@ export function SkillsUpdateCard({
             <p className="text-ui font-medium text-foreground">{message}</p>
             {state?.checkedAt ? (
               <p className="mt-1 text-xs text-soft-foreground">
-                Last checked {new Date(state.checkedAt).toLocaleString()}.
+                {t('Last checked {time}.', { time: new Date(state.checkedAt).toLocaleString() })}
               </p>
             ) : null}
             {trackedScopes.length > 0 ? (
               <ul className="mt-1 text-xs text-soft-foreground">
                 {trackedScopes.map((scope) => (
                   <li key={scope.scope}>
-                    {scopeLabel(scope.scope)} · {scope.skills.length} tracked
+                    {scopeLabel(scope.scope)} · {t('{n} tracked', { n: scope.skills.length })}
                   </li>
                 ))}
               </ul>
             ) : null}
             {failed.length > 0 ? (
               <p className="mt-1 text-xs text-destructive">
-                Failed: {failed.map((scope) => scopeLabel(scope.scope)).join(', ')}
-                {succeeded.length
-                  ? '; updated: ' + succeeded.map((scope) => scopeLabel(scope.scope)).join(', ')
-                  : ''}
-                .
+                {t('Failed: {failed}{updated}.', {
+                  failed: failed.map((scope) => scopeLabel(scope.scope)).join(', '),
+                  updated: succeeded.length
+                    ? t('; updated: {list}', { list: succeeded.map((scope) => scopeLabel(scope.scope)).join(', ') })
+                    : '',
+                })}
               </p>
             ) : null}
           </div>
@@ -216,7 +219,7 @@ export function SkillsUpdateCard({
                 aria-hidden="true"
                 className={cn('size-3.5', pending && 'motion-safe:animate-spin')}
               />
-              {pending ? 'Updating…' : retryable ? 'Retry' : 'Update now'}
+              {pending ? t('Updating…') : retryable ? t('Retry') : t('Update now')}
             </Button>
           ) : state?.status === 'current' ? (
             <Button
@@ -226,7 +229,7 @@ export function SkillsUpdateCard({
               disabled={checkMutation.isPending}
               onClick={() => run('check')}
             >
-              Check again
+              {t('Check again')}
             </Button>
           ) : state?.status === 'unavailable' || loadError ? (
             <Button
@@ -236,14 +239,13 @@ export function SkillsUpdateCard({
               disabled={checkMutation.isPending}
               onClick={() => run('check')}
             >
-              Retry check
+              {t('Retry check')}
             </Button>
           ) : null}
         </div>
         {state?.status === 'unavailable' || loadError ? (
           <div className="mt-2 text-xs text-soft-foreground">
-            Manual examples: <code>npx skills update -p</code> · <code>npx skills update -g</code>. These broad
-            commands may update other tracked sources.
+            {t('Manual examples:')} <code>npx skills update -p</code> · <code>npx skills update -g</code>. {t('These broad commands may update other tracked sources.')}
           </div>
         ) : null}
         {state?.needsUpgradeNotes ? (
@@ -256,8 +258,7 @@ export function SkillsUpdateCard({
               className="mt-0.5 size-3.5 shrink-0 text-primary"
             />
             <span>
-              Skill files were updated. Run <code>/om-apply-upgrade-notes</code> in each configured repository to
-              apply descriptor migrations while preserving local edits.
+              {t('Skill files were updated. Run {cmd} in each configured repository to apply descriptor migrations while preserving local edits.', { cmd: '/om-apply-upgrade-notes' })}
             </span>
           </div>
         ) : null}

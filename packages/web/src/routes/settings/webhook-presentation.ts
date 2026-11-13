@@ -1,6 +1,7 @@
 import type { SelfUpdateStatus, WebhookDeliveryStatus, WebhookReceiver, WebhookReceiverState } from '@open-mercato/cezar-api-client'
 
 import type { StatusDotTone } from '@/components/status-dot'
+import { t } from '@/lib/i18n'
 
 export const endpointHealthTone: Record<WebhookReceiverState, StatusDotTone> = {
   inactive: 'neutral', active: 'success', paused: 'neutral', suspended: 'pending', disabled: 'danger',
@@ -59,8 +60,8 @@ function humanize(code: string) {
   const text = code.replaceAll('_', ' ').replace(/^http /i, 'HTTP ')
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
-export const reasonLabel = (code: string) => reasonLabels[code] ?? humanize(code)
-export const activityLabel = (code: string) => activityLabels[code] ?? humanize(code)
+export const reasonLabel = (code: string) => (reasonLabels[code] ? t(reasonLabels[code]) : humanize(code))
+export const activityLabel = (code: string) => (activityLabels[code] ? t(activityLabels[code]) : humanize(code))
 
 export function plural(count: number, one: string, many: string) {
   return `${count} ${count === 1 ? one : many}`
@@ -70,17 +71,17 @@ export function webhookTimeZone(zone?: string) {
   try {
     if (zone) { new Intl.DateTimeFormat(undefined, { timeZone: zone }); return { zone, label: zone } }
   } catch { /* An unsupported server zone falls back to this browser's own time. */ }
-  return { zone: undefined, label: 'your local time' }
+  return { zone: undefined, label: t('your local time') }
 }
 export function webhookTime(value: string, zone?: string) {
   const date = new Date(value)
-  if (!Number.isFinite(date.getTime())) return 'Time unavailable'
+  if (!Number.isFinite(date.getTime())) return t('Time unavailable')
   return date.toLocaleString(undefined, { timeZone: webhookTimeZone(zone).zone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
 }
 
 export function webhookGuide(_metadata?: Pick<SelfUpdateStatus, 'version' | 'installKind'>) {
   return {
     href: 'https://github.com/open-mercato/cezar/blob/main/packages/cezar/docs/webhooks.md',
-    note: 'Webhook guide',
+    note: t('Webhook guide'),
   }
 }

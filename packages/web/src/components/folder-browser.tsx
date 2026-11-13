@@ -5,6 +5,7 @@ import { ApiError } from '@/api/client'
 import { useFsBrowse } from '@/api/queries'
 import type { FsBrowseDir } from '@open-mercato/cezar-api-client'
 import { parentDir } from '@/lib/fs-path'
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { LoadingState } from '@/components/loading-state'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -59,6 +60,7 @@ export function FolderBrowser({
   const listing = useFsBrowse(path, showHidden)
   const parent = listing.data?.parent ?? null
   const errorParent = path === null ? null : parentDir(path)
+  useLocale()
 
   return (
     <>
@@ -72,17 +74,17 @@ export function FolderBrowser({
           {listing.data?.path ?? ''}
         </p>
       ) : (
-        <LoadingState label="Loading folder…" data-slot="fs-breadcrumb">
+        <LoadingState label={t('Loading folder…')} data-slot="fs-breadcrumb">
           <Skeleton className="my-[3px] h-3 w-48 max-w-full" />
         </LoadingState>
       )}
 
       {!listing.isError && listing.data?.parent === null ? (
         <p data-slot="fs-root-hint" className="text-label text-soft-foreground">
-          This is the browse root. To browse elsewhere, change{' '}
+          {t('This is the browse root. To browse elsewhere, change')}{' '}
           {/* A document navigation also dismisses pickers owned above the route (#1688). */}
           <a href="/settings/global/projects" className="text-foreground underline underline-offset-4 hover:text-muted-foreground">
-            Default browse folder in Settings → Projects
+            {t('Default browse folder in Settings → Projects')}
           </a>.
         </p>
       ) : null}
@@ -90,29 +92,29 @@ export function FolderBrowser({
       {listing.isError ? (
         <div className="flex min-w-0 flex-col gap-2">
           <p data-slot="fs-error" className="min-w-0 break-words text-ui text-danger">
-            {listing.error instanceof Error ? listing.error.message : 'could not list that folder'}
+            {listing.error instanceof Error ? listing.error.message : t('could not list that folder')}
           </p>
           {/* macOS remembers a "Don't Allow" and never asks again — the switch is in System
               Settings. The desktop shell hands a `_blank` link to `open`, which opens the pane. */}
           {listing.error instanceof ApiError && listing.error.status === 403 ? (
             <p data-slot="fs-privacy-hint" className="text-label text-soft-foreground">
-              Allow it under Privacy &amp; Security ▸ Files &amp; Folders, then try again.
+              {t('Allow it under Privacy & Security ▸ Files & Folders, then try again.')}
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2 text-label">
             {errorParent !== null ? (
               <button type="button" data-slot="fs-error-back" onClick={() => onEnter(errorParent)} className={errorAction}>
                 <CornerLeftUpIcon className="size-3.5" aria-hidden />
-                Back
+                {t('Back')}
               </button>
             ) : null}
             {listing.error instanceof ApiError && listing.error.status === 403 ? (
               <>
                 <a data-slot="fs-privacy-settings" href={PRIVACY_SETTINGS_URL} target="_blank" rel="noreferrer" className={errorAction}>
-                  Open Privacy Settings
+                  {t('Open Privacy Settings')}
                 </a>
                 <button type="button" data-slot="fs-retry" onClick={() => void listing.refetch()} className={errorAction}>
-                  Try again
+                  {t('Try again')}
                 </button>
               </>
             ) : null}
@@ -133,7 +135,7 @@ export function FolderBrowser({
                 className="flex flex-1 items-center gap-2 px-3 py-2 text-left text-ui hover:bg-muted"
               >
                 <CornerLeftUpIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                Up one level
+                {t('Up one level')}
               </button>
             </li>
           ) : null}
@@ -160,7 +162,7 @@ export function FolderBrowser({
               <button
                 type="button"
                 data-slot="fs-enter"
-                aria-label={`Open ${dir.name}`}
+                aria-label={t('Open {name}', { name: dir.name })}
                 onClick={() => onEnter(dir.path)}
                 className="flex shrink-0 items-center px-2.5 text-muted-foreground hover:bg-muted hover:text-foreground"
               >
@@ -176,7 +178,7 @@ export function FolderBrowser({
 
       {listing.data?.truncated ? (
         <p data-slot="fs-truncated" className="text-meta text-muted-foreground">
-          Too many folders to list — only the first ones are shown.
+          {t('Too many folders to list — only the first ones are shown.')}
         </p>
       ) : null}
     </>

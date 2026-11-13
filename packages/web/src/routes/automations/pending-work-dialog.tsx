@@ -11,8 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+import { t, useLocale } from '@/lib/i18n'
 
 /** The disclosure lines for what a paused automation still has in flight (#1980). */
 export function pendingWorkLines(work: AutomationWork): string[] {
@@ -20,11 +19,19 @@ export function pendingWorkLines(work: AutomationWork): string[] {
   const continuing = work.queued.filter((run) => run.kind === 'continuation').length
   const fresh = work.queued.length - continuing
   if (work.queued.length) {
-    const split = [fresh ? `${fresh} never started` : '', continuing ? `${continuing} continuing earlier work` : ''].filter(Boolean).join(', ')
-    lines.push(`${plural(work.queued.length, 'queued task')} (${split}) will still start when a slot frees up, unless you cancel them.`)
+    const split = [fresh ? t('{n} never started', { n: fresh }) : '', continuing ? t('{n} continuing earlier work', { n: continuing }) : ''].filter(Boolean).join(', ')
+    lines.push(t('{n} queued task{s} ({split}) will still start when a slot frees up, unless you cancel them.', {
+      n: work.queued.length,
+      s: work.queued.length === 1 ? '' : 's',
+      split,
+    }))
   }
   if (work.active.length) {
-    lines.push(`${plural(work.active.length, 'task')} ${work.active.length === 1 ? 'is' : 'are'} running or waiting and will keep going — stop them from Tasks. They can no longer dispatch new subtasks.`)
+    lines.push(t('{n} task{s} {verb} running or waiting and will keep going — stop them from Tasks. They can no longer dispatch new subtasks.', {
+      n: work.active.length,
+      s: work.active.length === 1 ? '' : 's',
+      verb: work.active.length === 1 ? 'is' : 'are',
+    }))
   }
   return lines
 }
@@ -54,6 +61,7 @@ export function PendingWorkDialog({
   /** Pause (when `pausing`), then cancel the queued tasks when `cancelQueued`. */
   onConfirm: (cancelQueued: boolean) => void
 }) {
+  useLocale()
   const stop = (event: SyntheticEvent) => event.stopPropagation()
   const lines = work ? pendingWorkLines(work) : []
   const queued = work?.queued.length ?? 0
@@ -61,27 +69,27 @@ export function PendingWorkDialog({
     <AlertDialog open={work !== undefined} onOpenChange={onOpenChange}>
       <AlertDialogContent onClick={stop}>
         <AlertDialogHeader>
-          <AlertDialogTitle>{pausing ? `Pause “${automation.name}”?` : `Work still pending for “${automation.name}”`}</AlertDialogTitle>
+          <AlertDialogTitle>{pausing ? t('Pause “{name}”?', { name: automation.name }) : t('Work still pending for “{name}”', { name: automation.name })}</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-2">
-              <p>{pausing ? 'Pausing stops new launches. Tasks it already started are not stopped:' : 'This automation is paused, but tasks it started earlier remain:'}</p>
+              <p>{pausing ? t('Pausing stops new launches. Tasks it already started are not stopped:') : t('This automation is paused, but tasks it started earlier remain:')}</p>
               {lines.length ? (
                 <ul className="list-disc space-y-1 pl-5">
                   {lines.map((line) => <li key={line}>{line}</li>)}
                 </ul>
-              ) : <p>Nothing is queued or running.</p>}
+              ) : <p>{t('Nothing is queued or running.')}</p>}
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{pausing ? 'Cancel' : 'Close'}</AlertDialogCancel>
-          {pausing ? <AlertDialogAction onClick={() => onConfirm(false)}>Pause</AlertDialogAction> : null}
+          <AlertDialogCancel>{pausing ? t('Cancel') : t('Close')}</AlertDialogCancel>
+          {pausing ? <AlertDialogAction onClick={() => onConfirm(false)}>{t('Pause')}</AlertDialogAction> : null}
           {queued > 0 ? (
             <AlertDialogAction
               className="bg-danger text-danger-foreground hover:brightness-[0.96]"
               onClick={() => onConfirm(true)}
             >
-              {pausing ? `Pause and cancel ${plural(queued, 'queued task')}` : `Cancel ${plural(queued, 'queued task')}`}
+              {pausing ? t('Pause and cancel {n} queued task{s}', { n: queued, s: queued === 1 ? '' : 's' }) : t('Cancel {n} queued task{s}', { n: queued, s: queued === 1 ? '' : 's' })}
             </AlertDialogAction>
           ) : null}
         </AlertDialogFooter>

@@ -444,8 +444,8 @@ export function TaskPalette() {
           if (!next) trackPaletteDismissed(mode === 'tasks' ? 'tasks' : mode === 'files' ? 'files' : 'actions')
           setOpen(next)
         }}
-        title="Task palette"
-        description="Act on a task, switch tasks, or open one of its files"
+        title={t('Task palette')}
+        description={t('Act on a task, switch tasks, or open one of its files')}
         showCloseButton={false}
         filter={prefixedScore}
         commandProps={{

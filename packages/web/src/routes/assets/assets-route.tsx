@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useProjectAssets, useRuns } from '@/api/queries'
 import type { ProjectAsset, RunStatus } from '@open-mercato/cezar-api-client'
 import { CenteredState } from '@/components/centered-state'
+import { t, useLocale } from '@/lib/i18n'
 import { shortAge } from '@/lib/format'
 import { Link } from '@/lib/project-router'
 import { cn } from '@/lib/utils'
@@ -16,6 +17,7 @@ import { ASSET_FILTERS, assetState, filterAssets, subjectLink, taskAssetPath, ty
  * SSE frame (global-events.tsx); a row's run status reads from the stream-patched runs list.
  */
 export function AssetsRoute() {
+  useLocale()
   const assets = useProjectAssets()
   const runs = useRuns()
   const [filter, setFilter] = useState<AssetFilter>('all')
@@ -28,26 +30,26 @@ export function AssetsRoute() {
     <div data-route="assets" className="flex min-h-full flex-col">
       {/* Desktop header — below `md` the shell's top bar already says "Assets". */}
       <header className="sticky top-0 z-10 hidden h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-5 md:flex">
-        <h1 className="text-base font-semibold">Assets</h1>
-        <p className="text-ui text-soft-foreground">Every page and report your agents wrote, newest first.</p>
+        <h1 className="text-base font-semibold">{t('Assets')}</h1>
+        <p className="text-ui text-soft-foreground">{t('Every page and report your agents wrote, newest first.')}</p>
       </header>
 
       <div className="flex flex-1 flex-col gap-3 p-3 pb-[calc(90px+env(safe-area-inset-bottom))] md:p-5 md:pb-5">
         {assets.isPending ? (
-          <p data-slot="assets-loading" className="py-6 text-center text-xs text-soft-foreground">Loading assets…</p>
+          <p data-slot="assets-loading" className="py-6 text-center text-xs text-soft-foreground">{t('Loading assets…')}</p>
         ) : assets.isError ? (
           <p role="alert" className="py-6 text-center text-xs text-destructive">
-            Could not load assets: {assets.error instanceof Error ? assets.error.message : String(assets.error)}
+            {t('Could not load assets: {error}', { error: assets.error instanceof Error ? assets.error.message : String(assets.error) })}
           </p>
         ) : total === 0 ? (
           <CenteredState
             icon={<LayersIcon />}
-            title="No assets yet"
-            subtitle="When an agent writes a page or report into its artifacts folder, it shows up here and in its task's Assets tab."
+            title={t('No assets yet')}
+            subtitle={t('When an agent writes a page or report into its artifacts folder, it shows up here and in its task\'s Assets tab.')}
           />
         ) : (
           <>
-            <div role="group" aria-label="Filter assets" className="flex w-fit max-w-full flex-wrap gap-0.5 rounded-lg bg-muted p-0.5">
+            <div role="group" aria-label={t('Filter assets')} className="flex w-fit max-w-full flex-wrap gap-0.5 rounded-lg bg-muted p-0.5">
               {ASSET_FILTERS.map(({ id, label }) => (
                 <button
                   key={id}
@@ -60,14 +62,14 @@ export function AssetsRoute() {
                     filter === id && 'bg-card font-semibold text-foreground shadow-xs',
                   )}
                 >
-                  {label}
+                  {t(label)}
                 </button>
               ))}
             </div>
 
             {rows.length === 0 ? (
               <p data-slot="assets-filter-empty" className="py-6 text-center text-xs text-soft-foreground">
-                No {ASSET_FILTERS.find((f) => f.id === filter)?.label.toLowerCase()} assets.
+                {t('No {kind} assets.', { kind: ASSET_FILTERS.find((f) => f.id === filter)?.label.toLowerCase() ?? '' })}
               </p>
             ) : (
               <>
@@ -75,11 +77,11 @@ export function AssetsRoute() {
                   <table data-slot="assets-table" className="w-full border-collapse text-ui">
                     <thead>
                       <tr className="border-b border-border text-left text-meta font-medium text-muted-foreground">
-                        <th scope="col" className="px-3 py-2 font-medium">Asset</th>
-                        <th scope="col" className="px-3 py-2 font-medium">Subject</th>
-                        <th scope="col" className="px-3 py-2 font-medium">State</th>
-                        <th scope="col" className="px-3 py-2 font-medium">Version</th>
-                        <th scope="col" className="px-3 py-2 font-medium">Updated</th>
+                        <th scope="col" className="px-3 py-2 font-medium">{t('Asset')}</th>
+                        <th scope="col" className="px-3 py-2 font-medium">{t('Subject')}</th>
+                        <th scope="col" className="px-3 py-2 font-medium">{t('State')}</th>
+                        <th scope="col" className="px-3 py-2 font-medium">{t('Version')}</th>
+                        <th scope="col" className="px-3 py-2 font-medium">{t('Updated')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -113,7 +115,7 @@ export function AssetsRoute() {
               </>
             )}
             {assets.data?.truncated ? (
-              <p data-slot="assets-truncated" className="text-xs text-soft-foreground">Showing the newest {total} assets.</p>
+              <p data-slot="assets-truncated" className="text-xs text-soft-foreground">{t('Showing the newest {n} assets.', { n: total })}</p>
             ) : null}
           </>
         )}
@@ -159,21 +161,23 @@ const STATE_STYLE: Record<AssetState, { label: string; dot: string | null; class
 }
 
 function StateChip({ state }: { state: AssetState }) {
+  useLocale()
   const { label, dot, className } = STATE_STYLE[state]
   return (
     <span
       data-slot="asset-state"
       data-state={state}
-      title={state === 'none' ? 'No subject, or its state cannot be told' : undefined}
+      title={state === 'none' ? t('No subject, or its state cannot be told') : undefined}
       className={cn('inline-flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-meta font-medium whitespace-nowrap', className)}
     >
       {dot ? <span aria-hidden="true" className={cn('size-1.5 rounded-full', dot)} /> : null}
-      {label}
+      {t(label)}
     </span>
   )
 }
 
 function Age({ iso }: { iso: string }) {
+  useLocale()
   const age = shortAge(iso)
-  return <time dateTime={iso} title={new Date(iso).toLocaleString()}>{age ? `${age} ago` : ''}</time>
+  return <time dateTime={iso} title={new Date(iso).toLocaleString()}>{age ? t('{age} ago', { age }) : ''}</time>
 }

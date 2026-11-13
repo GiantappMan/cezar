@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import { managerMascotSchema, type ManagerMascot } from '@open-mercato/cezar-api-client'
 
+import { t, useLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { MascotPortrait } from './mascot-portrait'
 
@@ -23,10 +24,11 @@ function Portrait({ mascot, size, sizes }: { mascot: ManagerMascot; size: string
 /** Native radios preserve arrow-key selection and one tab stop for the whole gallery. `compact`
  *  is for a dialog, where the gallery must not push the form's other fields out of reach. */
 export function MascotPicker({ value, onChange, compact = false }: { value: ManagerMascot | undefined; onChange: (mascot: ManagerMascot) => void; compact?: boolean }) {
+  useLocale()
   const name = useId()
   return (
     <fieldset className="min-w-0" data-slot="manager-mascot-picker">
-      <legend className="mb-2 text-sm font-medium">Character</legend>
+      <legend className="mb-2 text-sm font-medium">{t('Character')}</legend>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
         {managerMascotSchema.options.map((mascot) => (
           <label key={mascot} className="relative cursor-pointer">
@@ -44,12 +46,12 @@ export function MascotPicker({ value, onChange, compact = false }: { value: Mana
               value === mascot ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-background text-muted-foreground hover:bg-muted',
             )}>
               <Portrait mascot={mascot} size={compact ? 'size-10' : 'size-12 sm:size-16'} sizes={compact ? '40px' : '(min-width: 640px) 64px, 48px'} />
-              <span>{MASCOT_NAMES[mascot]}</span>
+              <span>{t(MASCOT_NAMES[mascot])}</span>
             </span>
           </label>
         ))}
       </div>
-      {compact ? null : <p className="mt-2 text-xs text-muted-foreground">Choose a look. Your instructions define what this manager does.</p>}
+      {compact ? null : <p className="mt-2 text-xs text-muted-foreground">{t('Choose a look. Your instructions define what this manager does.')}</p>}
     </fieldset>
   )
 }

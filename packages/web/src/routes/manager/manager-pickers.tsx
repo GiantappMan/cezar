@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { accessLabel, cronLabel, effortLabel, projectsLabel } from '@/lib/managers'
+import { t, useLocale } from '@/lib/i18n'
 import { usableRunners } from '@/lib/provider-status'
 import { cn } from '@/lib/utils'
 import { modelsForRunner } from '@/routes/new-task-form'
@@ -56,12 +57,13 @@ function Check({ on }: { on: boolean }) {
 
 /** Inside a command row, so its own click and Enter must not also tick the row. */
 function AccessToggle({ access, label, onChange }: { access: ManagerAccess; label: string; onChange: (next: ManagerAccess) => void }) {
+  useLocale()
   return (
     <button
       type="button"
       data-slot="manager-access-toggle"
       data-access={access}
-      aria-label={`${label}: ${access === 'read' ? 'read-only' : 'write access'}. Switch.`}
+      aria-label={t('{label}: {mode}. Switch.', { label, mode: access === 'read' ? t('read-only') : t('write access') })}
       className={cn(
         'shrink-0 rounded-full border px-2 py-0.5 text-meta font-medium outline-none hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50',
         access === 'read' ? 'border-pending-strong/45 text-pending-strong' : 'border-border text-muted-foreground',
@@ -73,7 +75,7 @@ function AccessToggle({ access, label, onChange }: { access: ManagerAccess; labe
         onChange(access === 'read' ? 'write' : 'read')
       }}
     >
-      {access === 'read' ? 'Read-only' : 'Write'}
+      {access === 'read' ? t('Read-only') : t('Write')}
     </button>
   )
 }
@@ -92,6 +94,7 @@ export function ProjectsPicker({
   onAccess: (patch: ManagerPatch) => void
 }) {
   const registry = useProjects().data?.projects
+  useLocale()
   const projects = registry ?? []
   const nameOf = (id: string) => projects.find((project) => project.id === id)?.name
   // A project removed from cezar stays in the definition, where no option could untick it.
@@ -99,7 +102,7 @@ export function ProjectsPicker({
   const allRemoved = value !== 'all' && registry !== undefined && selected.length === 0
   const accessOf = (id: string) => managerAccessOf({ access, projectAccess }, id)
   const reached = value === 'all' ? projects.map((project) => project.id) : selected
-  const label = allRemoved ? 'Project removed' : projectsLabel(value === 'all' ? value : selected, nameOf)
+  const label = allRemoved ? t('Project removed') : t(projectsLabel(value === 'all' ? value : selected, nameOf))
   const toggle = (id: string) => {
     const next = selected.includes(id) ? selected.filter((entry) => entry !== id) : [...selected, id]
     // The contract refuses an empty list, and no project at all is not a manager.
@@ -108,22 +111,22 @@ export function ProjectsPicker({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button type="button" data-slot="manager-projects-picker" aria-label="Connected projects" className={PICKER_TRIGGER}>
-          <TriggerLabel>{[label, accessLabel(reached.map(accessOf))].filter(Boolean).join(' · ')}</TriggerLabel>
+        <button type="button" data-slot="manager-projects-picker" aria-label={t('Connected projects')} className={PICKER_TRIGGER}>
+          <TriggerLabel>{[label, t(accessLabel(reached.map(accessOf)))].filter(Boolean).join(' · ')}</TriggerLabel>
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" sideOffset={6} className="w-72 max-w-[calc(100vw-2rem)] p-0">
-        <Command label="Connected projects">
-          <CommandInput placeholder="search projects…" />
+        <Command label={t('Connected projects')}>
+          <CommandInput placeholder={t('search projects…')} />
           <CommandList className="max-h-[min(16rem,calc(var(--radix-popover-content-available-height)-3rem))]">
-            <CommandEmpty>Nothing matches.</CommandEmpty>
+            <CommandEmpty>{t('Nothing matches.')}</CommandEmpty>
             <CommandGroup>
               <CommandItem value="all projects" data-slot="manager-project-all" onSelect={() => onChange('all')}>
-                All projects
+                {t('All projects')}
                 <span className="ml-auto flex items-center gap-2">
                   <Check on={value === 'all'} />
                   {/* Everything at once, so it clears each project's own setting. */}
-                  <AccessToggle access={access ?? 'write'} label="All projects" onChange={(next) => onAccess({ access: next, projectAccess: {} })} />
+                  <AccessToggle access={access ?? 'write'} label={t('All projects')} onChange={(next) => onAccess({ access: next, projectAccess: {} })} />
                 </span>
               </CommandItem>
               {projects.map((project) => (
@@ -177,6 +180,7 @@ export function ModelPicker({
   pill?: boolean
 }) {
   const runner = useManagerRunner(pinnedRunner)
+  useLocale()
   // Pi fails closed on `bashAllowlist`, so a Pi manager would have no `cez-manager` to act with.
   const runners = usableRunners(useProviderStatus().data).filter((candidate) => candidate !== 'pi')
   const catalog = useRunnerModels(runner)
@@ -187,17 +191,17 @@ export function ModelPicker({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button type="button" data-slot="manager-model-picker" aria-label="Model and effort" className={cn(PICKER_TRIGGER, pill && 'h-10 max-w-44 rounded-full bg-muted px-3')}>
+        <button type="button" data-slot="manager-model-picker" aria-label={t('Model and effort')} className={cn(PICKER_TRIGGER, pill && 'h-10 max-w-44 rounded-full bg-muted px-3')}>
           <TriggerLabel>
             <span className="text-foreground">{label}</span>
-            {effortApplies && effort ? <span className="ml-1.5">{effortLabel(effort)}</span> : null}
+            {effortApplies && effort ? <span className="ml-1.5">{t(effortLabel(effort))}</span> : null}
           </TriggerLabel>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="max-h-[min(24rem,var(--radix-dropdown-menu-content-available-height))] overflow-y-auto">
         {runners.length > 1 ? (
           <>
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Agent</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">{t('Agent')}</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={runner}
               // A model and an account belong to their runner, so changing agent drops both pins.
@@ -210,7 +214,7 @@ export function ModelPicker({
             <DropdownMenuSeparator />
           </>
         ) : null}
-        <DropdownMenuLabel className="text-xs text-muted-foreground">Model</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs text-muted-foreground">{t('Model')}</DropdownMenuLabel>
         <DropdownMenuRadioGroup value={model ?? ''} onValueChange={(next) => onChange({ model: next === '' ? null : next })}>
           {models.map((entry) => (
             <DropdownMenuRadioItem key={entry.id} value={entry.id}>{entry.label}</DropdownMenuRadioItem>
@@ -219,12 +223,12 @@ export function ModelPicker({
         {effortApplies ? (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Effort</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">{t('Effort')}</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={effort ?? ''}
               onValueChange={(next) => onChange({ effort: next === '' ? null : managerEffortSchema.parse(next) })}
             >
-              <DropdownMenuRadioItem value="">Default</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="">{t('Default')}</DropdownMenuRadioItem>
               {managerEffortSchema.options.map((entry) => (
                 <DropdownMenuRadioItem key={entry} value={entry}>{effortLabel(entry)}</DropdownMenuRadioItem>
               ))}
@@ -246,14 +250,15 @@ export function AccountPicker({
   onChange: (patch: ManagerPatch) => void
 }) {
   const runner = useManagerRunner(pinnedRunner)
+  useLocale()
   const logins = useAgentAccounts().accounts.filter((account) => account.provider === runner)
   const current = logins.find((account) => account.id === agentProfile)
   const named = logins.filter((account) => account.id !== DEFAULT_AGENT_ACCOUNT_ID)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button type="button" data-slot="manager-account-picker" aria-label="Agent account" className={PICKER_TRIGGER}>
-          <TriggerLabel>{current ? `Account ${current.label}` : 'Account'}</TriggerLabel>
+        <button type="button" data-slot="manager-account-picker" aria-label={t('Agent account')} className={PICKER_TRIGGER}>
+          <TriggerLabel>{current ? t('Account {label}', { label: current.label }) : t('Account')}</TriggerLabel>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
@@ -261,7 +266,7 @@ export function AccountPicker({
           value={agentProfile ?? DEFAULT_AGENT_ACCOUNT_ID}
           onValueChange={(next) => onChange({ agentProfile: next === DEFAULT_AGENT_ACCOUNT_ID ? null : next })}
         >
-          <DropdownMenuRadioItem value={DEFAULT_AGENT_ACCOUNT_ID}>Default</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value={DEFAULT_AGENT_ACCOUNT_ID}>{t('Default')}</DropdownMenuRadioItem>
           {named.map((account) => (
             <DropdownMenuRadioItem key={account.id} value={account.id}>{account.label}</DropdownMenuRadioItem>
           ))}
@@ -280,11 +285,12 @@ export function RefreshPicker({
   onChange: (patch: ManagerPatch) => void
   className?: string
 }) {
+  useLocale()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button type="button" data-slot="manager-chron-picker" aria-label="Watch check cadence" className={cn(PICKER_TRIGGER, className)}>
-          <TriggerLabel>Refresh: {cronLabel(minutes)}</TriggerLabel>
+        <button type="button" data-slot="manager-chron-picker" aria-label={t('Watch check cadence')} className={cn(PICKER_TRIGGER, className)}>
+          <TriggerLabel>{t('Refresh: {label}', { label: t(cronLabel(minutes)) })}</TriggerLabel>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
@@ -293,7 +299,7 @@ export function RefreshPicker({
           onValueChange={(next) => onChange({ cronMinutes: managerCronMinutesSchema.parse(Number(next)) })}
         >
           {MANAGER_CRON_MINUTES.map((entry) => (
-            <DropdownMenuRadioItem key={entry} value={String(entry)}>{cronLabel(entry)}</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem key={entry} value={String(entry)}>{t(cronLabel(entry))}</DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

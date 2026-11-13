@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { StatusDot } from '@/components/status-dot'
 import { compactTokens, shortAge } from '@/lib/format'
+import { t, useLocale } from '@/lib/i18n'
 import { useAutomationsGate } from '@/routes/automations/use-automations'
 import { useDashboardAutomations } from './automations-data'
 import { ExportRows } from './export-rows'
@@ -21,7 +22,7 @@ import { FilterSelect, filterLabel, Freshness, widgetHeader, widgetHeading } fro
 import { useDashboardFilter } from './url-filter'
 
 type Period = DashboardInsights['period']
-const periodText = (period: Period) => `Last ${period === '7d' ? 7 : 30} calendar days`
+const periodText = (period: Period) => t('Last {n} calendar days', { n: period === '7d' ? 7 : 30 })
 const bandLabel = 'eyebrow text-muted-foreground'
 const panel = 'min-w-0 rounded-lg border bg-card-2 p-4'
 const th =
@@ -43,30 +44,32 @@ function PeriodSelect({
   value: Period
   onChange: (value: Period) => void
 }) {
+  useLocale()
   return (
     <label className={filterLabel}>
       {label}
       <FilterSelect value={value} onChange={(e) => onChange(e.target.value === '30d' ? '30d' : '7d')}>
-        <option value="7d">Last 7 days</option>
-        <option value="30d">Last 30 days</option>
+        <option value="7d">{t('Last 7 days')}</option>
+        <option value="30d">{t('Last 30 days')}</option>
       </FilterSelect>
     </label>
   )
 }
 
 function InsightState({ query }: { query: ReturnType<typeof useDashboardInsights> }) {
+  useLocale()
   if (query.isPending)
     return (
       <p role="status" className="text-sm text-muted-foreground">
-        Loading insights…
+        {t('Loading insights…')}
       </p>
     )
   if (!query.isError) return null
   return (
     <p role="alert" className="text-sm">
-      {query.data ? 'Showing previous results. ' : ''}Could not refresh insights.{' '}
+      {query.data ? t('Showing previous results. ') : ''}{t('Could not refresh insights.')}{' '}
       <Button variant="outline" onClick={() => void query.refetch()}>
-        Retry insights
+        {t('Retry insights')}
       </Button>
     </p>
   )
@@ -103,11 +106,12 @@ function Count({ value, prefix = '', className }: { value: number; prefix?: stri
 }
 
 function Delivered({ data }: { data: DashboardInsights }) {
+  useLocale()
   const d = data.delivered
   const stats: { label: string; value: ReactNode; note?: string }[] = [
-    { label: 'PRs opened', value: d.prsOpened, note: `${d.prsTouched} touched` },
+    { label: t('PRs opened'), value: d.prsOpened, note: t('{n} touched', { n: d.prsTouched }) },
     {
-      label: 'Lines',
+      label: t('Lines'),
       value: (
         <span className="flex flex-wrap gap-x-1.5">
           <Count value={d.additions} prefix="+" className="text-success" />
@@ -115,11 +119,11 @@ function Delivered({ data }: { data: DashboardInsights }) {
         </span>
       ),
     },
-    { label: 'Files', value: <Count value={d.files} /> },
-    { label: 'Issues', value: <Count value={d.issues} /> },
+    { label: t('Files'), value: <Count value={d.files} /> },
+    { label: t('Issues'), value: <Count value={d.issues} /> },
   ]
   return (
-    <section className={panel} aria-label="Delivered">
+    <section className={panel} aria-label={t('Delivered')}>
       <ExportRows
         rows={Object.entries(d).map(([metric, value]) => ({
           section: 'delivered',
@@ -131,10 +135,10 @@ function Delivered({ data }: { data: DashboardInsights }) {
               ? 'files'
               : 'count',
           asOf: data.asOf,
-          note: `Completed since ${data.windowStart}`,
+          note: t('Completed since {date}', { date: data.windowStart }),
         }))}
       />
-      <h3 className={bandLabel}>Delivered</h3>
+      <h3 className={bandLabel}>{t('Delivered')}</h3>
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
         {stats.map((s) => (
           <div key={s.label} className="min-w-0">
@@ -147,18 +151,18 @@ function Delivered({ data }: { data: DashboardInsights }) {
         ))}
       </dl>
       <span className="mt-3 block text-xs text-soft-foreground">
-        From {d.completedTasks} completed {d.completedTasks === 1 ? 'task' : 'tasks'} ·{' '}
-        {d.measuredTasks} with a stored diff
+        {t('From {n} completed task{s} · {m} with a stored diff', { n: d.completedTasks, s: d.completedTasks === 1 ? '' : 's', m: d.measuredTasks })}
       </span>
     </section>
   )
 }
 
 function FailureReasons({ data }: { data: DashboardInsights }) {
+  useLocale()
   const projectName = useProjectName()
   const { total, reasons } = data.failures
   return (
-    <section className={panel} aria-label="Why tasks failed">
+    <section className={panel} aria-label={t('Why tasks failed')}>
       <ExportRows
         rows={reasons.map((r) => ({
           section: 'failures',
@@ -171,15 +175,15 @@ function FailureReasons({ data }: { data: DashboardInsights }) {
         }))}
       />
       <div className="flex items-baseline justify-between gap-2">
-        <h3 className={bandLabel}>Why tasks failed</h3>
+        <h3 className={bandLabel}>{t('Why tasks failed')}</h3>
         {total > 0 && (
-          <span className="font-mono text-meta text-soft-foreground">{total} failed</span>
+          <span className="font-mono text-meta text-soft-foreground">{t('{n} failed', { n: total })}</span>
         )}
       </div>
       {total === 0 ? (
         <span className="mt-4 flex items-center gap-2.5 text-sm text-muted-foreground">
           <StatusDot tone="success" />
-          No failed outcomes in this period
+          {t('No failed outcomes in this period')}
         </span>
       ) : (
         <ul className="mt-3 space-y-3">
@@ -206,6 +210,7 @@ function FailureReason({
   total: number
   projectName: (id: string) => string
 }) {
+  useLocale()
   const { latest } = reason
   return (
     <li className="min-w-0">
@@ -219,12 +224,12 @@ function FailureReason({
         <div className="h-full rounded-full bg-danger/70" style={{ width: `${(reason.count / total) * 100}%` }} />
       </div>
       <span className="mt-1.5 block truncate text-xs text-soft-foreground" title={latest.message}>
-        Latest:{' '}
+        {t('Latest:')}{' '}
         <Link className="text-muted-foreground hover:text-foreground hover:underline" to={taskPath(latest.projectId, latest.id)}>
           {latest.title}
         </Link>{' '}
         · {projectName(latest.projectId)}
-        {latest.step ? ` · ${latest.step}` : ''} · {shortAge(latest.at)} ago
+        {latest.step ? ` · ${latest.step}` : ''} · {t('{age} ago', { age: shortAge(latest.at) })}
       </span>
     </li>
   )
@@ -244,37 +249,37 @@ const percent = (part: number, whole: number) => (whole ? Math.round((part / who
 
 /** Which backend and model finish work, how fast, and at what reported cost. */
 export function BackendComparison() {
+  useLocale()
   const [period, setPeriod] = useDashboardFilter('backends', ['7d', '30d'] as const, '7d')
   const query = useDashboardInsights(period)
   const data = query.data
   const cost = data?.visibility.cost
   return (
     <section data-dashboard-module="backends" className="min-w-0">
-    <Card className="gap-0 py-0" data-export-context={`Backends: ${periodText(period)}; finished tasks`}>
+    <Card className="gap-0 py-0" data-export-context={t('Backends: {window}; finished tasks', { window: periodText(period) })}>
       <div className={widgetHeader}>
-        <h2 className={widgetHeading}>Backends & models</h2>
-        <PeriodSelect label="Finished" value={period} onChange={setPeriod} />
+        <h2 className={widgetHeading}>{t('Backends & models')}</h2>
+        <PeriodSelect label={t('Finished')} value={period} onChange={setPeriod} />
       </div>
       <div className="space-y-3 p-4">
         <InsightState query={query} />
         {data && (
           <>
             <p className="text-xs text-muted-foreground">
-              Tasks that finished done or failed in the period, by the backend and model their
-              steps ran on. Includes subtasks. Cost is reported USD only.
+              {t('Tasks that finished done or failed in the period, by the backend and model their steps ran on. Includes subtasks. Cost is reported USD only.')}
             </p>
             <Coverage coverage={data.coverage} retry={() => void query.refetch()} />
             {data.backends.length ? (
-              <div className="overflow-x-auto" role="region" aria-label="Backend comparison" tabIndex={0}>
+              <div className="overflow-x-auto" role="region" aria-label={t('Backend comparison')} tabIndex={0}>
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr>
-                      <th className={th}>Backend</th>
-                      <th className={`${th} text-right`}>Finished</th>
-                      <th className={th}>Success</th>
-                      <th className={`${th} text-right`}>Median cycle</th>
-                      {cost && <th className={`${th} text-right`}>Reported USD</th>}
-                      {cost && <th className={`${th} text-right`}>Per completed</th>}
+                      <th className={th}>{t('Backend')}</th>
+                      <th className={`${th} text-right`}>{t('Finished')}</th>
+                      <th className={th}>{t('Success')}</th>
+                      <th className={`${th} text-right`}>{t('Median cycle')}</th>
+                      {cost && <th className={`${th} text-right`}>{t('Reported USD')}</th>}
+                      {cost && <th className={`${th} text-right`}>{t('Per completed')}</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -285,7 +290,7 @@ export function BackendComparison() {
                 </table>
               </div>
             ) : (
-              <p className="py-4 text-sm text-muted-foreground">No finished tasks in this period.</p>
+              <p className="py-4 text-sm text-muted-foreground">{t('No finished tasks in this period.')}</p>
             )}
             <span className="block font-mono text-meta text-soft-foreground">
               <Freshness at={data.asOf} />
@@ -311,14 +316,15 @@ export function BackendComparison() {
 }
 
 function BackendRow({ stat: b, cost }: { stat: DashboardBackendStat; cost: boolean }) {
+  useLocale()
   const rate = percent(b.done, b.finished)
   const usd = b.costUsd?.value
   return (
     <tr className="border-t transition-colors hover:bg-muted/30">
       <td className="px-3 py-2.5">
-        <span className="block font-medium">{backendName(b.backend)}</span>
+        <span className="block font-medium">{t(backendName(b.backend))}</span>
         <span className="block font-mono text-meta text-soft-foreground">
-          {b.backend === 'mixed' ? 'steps ran on different backends' : (b.model ?? 'default model')}
+          {b.backend === 'mixed' ? t('steps ran on different backends') : (b.model ?? t('default model'))}
         </span>
       </td>
       <td className="px-3 py-2.5 text-right tabular-nums">{b.finished}</td>
@@ -330,7 +336,7 @@ function BackendRow({ stat: b, cost }: { stat: DashboardBackendStat; cost: boole
           <span className="w-10 text-right font-mono text-xs tabular-nums">{rate}%</span>
         </span>
         <span className="block text-xs text-soft-foreground">
-          {b.done} done · {b.failed} failed
+          {t('{done} done · {failed} failed', { done: b.done, failed: b.failed })}
         </span>
       </td>
       <td className="px-3 py-2.5 text-right tabular-nums">
@@ -340,7 +346,7 @@ function BackendRow({ stat: b, cost }: { stat: DashboardBackendStat; cost: boole
         <td className="px-3 py-2.5 text-right tabular-nums">
           {usd == null ? '—' : formatAmount(usd, true)}
           <span className="block text-xs text-soft-foreground">
-            {b.costUsd?.reportedTasks ?? 0}/{b.finished} reported
+            {t('{a}/{b} reported', { a: b.costUsd?.reportedTasks ?? 0, b: b.finished })}
           </span>
         </td>
       )}
@@ -366,6 +372,7 @@ type AutomationRow = {
 
 /** What each automation launched in the period, including the ones that launched nothing. */
 export function AutomationOutcomes() {
+  useLocale()
   const [period, setPeriod] = useDashboardFilter('automations', ['7d', '30d'] as const, '7d')
   const gate = useAutomationsGate()
   const query = useDashboardInsights(period)
@@ -413,44 +420,43 @@ export function AutomationOutcomes() {
   )
   return (
     <section data-dashboard-module="automation-outcomes" className="min-w-0">
-    <Card className="gap-0 py-0" data-export-context={`Automation outcomes: tasks created in ${periodText(period)}`}>
+    <Card className="gap-0 py-0" data-export-context={t('Automation outcomes: tasks created in {window}', { window: periodText(period) })}>
       <div className={widgetHeader}>
-        <h2 className={widgetHeading}>Automation outcomes</h2>
-        <PeriodSelect label="Launched" value={period} onChange={setPeriod} />
+        <h2 className={widgetHeading}>{t('Automation outcomes')}</h2>
+        <PeriodSelect label={t('Launched')} value={period} onChange={setPeriod} />
       </div>
       <div className="space-y-3 p-4">
         {gate.off ? (
-          <p className="text-sm text-muted-foreground">Automations are disabled in this workspace.</p>
+          <p className="text-sm text-muted-foreground">{t('Automations are disabled in this workspace.')}</p>
         ) : (
           <>
             <InsightState query={query} />
             {data && (
               <>
                 <p className="text-xs text-muted-foreground">
-                  Tasks each automation created in the period and how they ended. Active means
-                  still running, queued, waiting on you, or waiting to resume after a usage limit.
+                  {t('Tasks each automation created in the period and how they ended. Active means still running, queued, waiting on you, or waiting to resume after a usage limit.')}
                 </p>
                 <Coverage coverage={data.coverage} retry={() => void query.refetch()} />
                 {detailsFailed && (
                   <p role="alert" className="text-sm">
-                    Some automation details could not be loaded. Their outcomes are shown by id.{' '}
+                    {t('Some automation details could not be loaded. Their outcomes are shown by id.')}{' '}
                     <Button variant="ghost" onClick={definitions.retry}>
-                      Retry automations
+                      {t('Retry automations')}
                     </Button>
                   </p>
                 )}
                 {sorted.length ? (
-                  <div className="overflow-x-auto" role="region" aria-label="Automation outcomes" tabIndex={0}>
+                  <div className="overflow-x-auto" role="region" aria-label={t('Automation outcomes')} tabIndex={0}>
                     <table className="w-full text-left text-sm">
                       <thead>
                         <tr>
-                          <th className={th}>Automation</th>
-                          <th className={`${th} text-right`}>Tasks</th>
-                          <th className={`${th} text-right`}>Done</th>
-                          <th className={`${th} text-right`}>Failed</th>
-                          <th className={`${th} text-right`}>Active</th>
-                          <th className={th}>Last run</th>
-                          {cost && <th className={`${th} text-right`}>Reported USD</th>}
+                          <th className={th}>{t('Automation')}</th>
+                          <th className={`${th} text-right`}>{t('Tasks')}</th>
+                          <th className={`${th} text-right`}>{t('Done')}</th>
+                          <th className={`${th} text-right`}>{t('Failed')}</th>
+                          <th className={`${th} text-right`}>{t('Active')}</th>
+                          <th className={th}>{t('Last run')}</th>
+                          {cost && <th className={`${th} text-right`}>{t('Reported USD')}</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -467,7 +473,7 @@ export function AutomationOutcomes() {
                   </div>
                 ) : (
                   <p className="py-4 text-sm text-muted-foreground">
-                    No automations yet. Create one in a project's Automations page.
+                    {t('No automations yet. Create one in a project\'s Automations page.')}
                   </p>
                 )}
                 <span className="block font-mono text-meta text-soft-foreground">
@@ -505,6 +511,7 @@ function AutomationOutcome({
   cost: boolean
   projectName: (id: string) => string
 }) {
+  useLocale()
   const s = row.stat
   const cell = 'px-3 py-2.5 text-right tabular-nums'
   const zero = (n: number | undefined) => (n ? n : <span className="text-soft-foreground">0</span>)
@@ -525,12 +532,12 @@ function AutomationOutcome({
           <StatusDot tone={row.enabled ? 'success' : 'neutral'} />
           {projectName(row.projectId)} ·{' '}
           {row.definition === 'removed'
-            ? 'Removed'
+            ? t('Removed')
             : row.definition === 'unknown'
-              ? 'Details unavailable'
+              ? t('Details unavailable')
               : row.enabled
-                ? 'Enabled'
-                : 'Disabled'}
+                ? t('Enabled')
+                : t('Disabled')}
         </span>
       </td>
       <td className={cell}>{zero(s?.tasks)}</td>
@@ -540,7 +547,9 @@ function AutomationOutcome({
       <td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground">
         {s?.lastRunAt ? (
           <time dateTime={s.lastRunAt} title={new Date(s.lastRunAt).toLocaleString()}>
-            {shortAge(s.lastRunAt)} ago · {s.lastStatus}
+            {s.lastStatus
+              ? t('{age} ago · {status}', { age: shortAge(s.lastRunAt), status: t(s.lastStatus) })
+              : t('{age} ago', { age: shortAge(s.lastRunAt) })}
           </time>
         ) : (
           '—'

@@ -95,7 +95,7 @@ function SecretsSection({ scope, list, save, remove, invalidate }: SecretsSectio
               <li key={stored.name} className="flex items-center justify-between gap-3 px-3 py-2">
                 <div className="min-w-0">
                   <code className="text-sm">{stored.name}</code>
-                  <p className="text-xs text-muted-foreground">{stored.audiences.map((a) => t(AUDIENCE_LABELS[a]).split(/ \(/)[0].split('（')[0]).join(' · ')}</p>
+                  <p className="text-xs text-muted-foreground">{stored.audiences.map((a) => t(AUDIENCE_LABELS[a]).split(/ \(/)[0]!.split('（')[0]).join(' · ')}</p>
                 </div>
                 <Button variant="outline" aria-label={t('Delete {name}', { name: stored.name })} disabled={removing.isPending} onClick={() => removing.mutate(stored.name)}>
                   <Trash2Icon className="size-3.5" /> {t('Delete')}

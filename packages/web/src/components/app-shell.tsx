@@ -1242,9 +1242,9 @@ export function VersionChip({ version, latestVersion, brandName }: { version: st
         type="button"
         data-slot="version-chip"
         data-update-available={updateAvailable ? 'true' : undefined}
-        title={updateAvailable ? t('v{version} — update available: v{latest}', { version, latest: latestVersion }) : `v${version}`}
+        title={updateAvailable ? t('v{version} — update available: v{latest}', { version, latest: latestVersion! }) : `v${version}`}
         aria-label={updateAvailable
-          ? t('{brand} v{version}, update to v{latest} available — open updater', { brand: brandName, version, latest: latestVersion })
+          ? t('{brand} v{version}, update to v{latest} available — open updater', { brand: brandName, version, latest: latestVersion! })
           : t('{brand} v{version} — open updater', { brand: brandName, version })}
         onClick={() => setOpen(true)}
         className="flex min-w-0 cursor-pointer items-center gap-1 rounded-full border border-border px-1.5 py-px font-mono text-micro font-medium text-soft-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
